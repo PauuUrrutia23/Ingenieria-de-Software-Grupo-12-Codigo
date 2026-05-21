@@ -1,1 +1,1 @@
-CREATE DATABASE ingecon_incremento1;
+CREATE DATABASE servidor_web_Ingecon;
