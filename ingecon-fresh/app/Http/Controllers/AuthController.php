@@ -22,7 +22,7 @@ class AuthController extends Controller
     /**
      * Nombre de la cookie de sesión.
      */
-    private const COOKIE_NAME = 'ingecon_session';
+    private const COOKIE_NAME = 'ingecon_auth_token';
 
     /**
      * Máximo de intentos antes del bloqueo.

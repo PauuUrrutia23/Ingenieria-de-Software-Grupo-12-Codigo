@@ -14,7 +14,7 @@ class AdminAuth
     /**
      * Nombre de la cookie de sesión (debe coincidir con AuthController::COOKIE_NAME).
      */
-    private const COOKIE_NAME = 'ingecon_session';
+    private const COOKIE_NAME = 'ingecon_auth_token';
 
     /**
      * Verifica que la request incluya una cookie de sesión válida y activa.
