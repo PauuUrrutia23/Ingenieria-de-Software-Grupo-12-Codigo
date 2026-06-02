@@ -23,6 +23,14 @@ class ContactoController extends Controller
      */
     private const PDF_MAGIC_BYTES = '%PDF';
 
+    /**
+     * Mediador de base de datos (ver 02b_dbrouter_controller.md).
+     * Resuelto automáticamente por el contenedor de Laravel.
+     */
+    public function __construct(
+        private readonly DBRouterController $db
+    ) {}
+
     // =========================================================================
     // CU 1.1 / CU 1.2 — Enviando consulta / Ingresando datos (RF01, RF02)
     // =========================================================================
@@ -58,6 +66,7 @@ class ContactoController extends Controller
                 'fecha_consulta'  => ['required', 'date', 'after_or_equal:today'],
                 'adjunto'         => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
             ], [
+                // Mensajes de error personalizados en español (RF07)
                 'nombre.required'         => 'El campo Nombre es obligatorio.',
                 'nombre.max'              => 'El nombre no puede superar los 80 caracteres.',
                 'apellido.required'       => 'El campo Apellido es obligatorio.',
@@ -86,8 +95,8 @@ class ContactoController extends Controller
         // b) Buscar Visitante por email; crear si no existe (RF01)
         //    firstOrCreate evita duplicados de visitantes para el mismo email.
         // ------------------------------------------------------------------
-        $visitante = Visitante::firstOrCreate(
-            ['email' => $validated['email']],
+        $visitante = $this->db->obtenerOCrearVisitante(
+            $validated['email'],
             [
                 'nombre'   => $validated['nombre'],
                 'apellido' => $validated['apellido'],
@@ -100,7 +109,7 @@ class ContactoController extends Controller
         //    id_admin_responsable es nullable (columna corregida en migración):
         //    queda NULL hasta que un administrador tome la consulta.
         // ------------------------------------------------------------------
-        $consulta = Consulta::create([
+        $consulta = $this->db->crearConsulta([
             'mensaje'              => $validated['mensaje'],
             'fecha_consulta'       => $validated['fecha_consulta'],
             'estado'               => 'pendiente',
@@ -128,7 +137,7 @@ class ContactoController extends Controller
                 ]);
 
                 // Eliminar la consulta ya creada para mantener consistencia
-                $consulta->delete();
+                $this->db->eliminarConsulta($consulta);
 
                 return response()->json([
                     'success' => false,
@@ -147,7 +156,7 @@ class ContactoController extends Controller
                     'id_consulta' => $consulta->id_consulta,
                 ]);
 
-                $consulta->delete();
+                $this->db->eliminarConsulta($consulta);
 
                 return response()->json([
                     'success' => false,
@@ -158,7 +167,7 @@ class ContactoController extends Controller
             }
 
             // Crear registro ARCHIVO_ADJUNTO vinculado a la consulta
-            ArchivoAdjunto::create([
+            $this->db->crearArchivoAdjunto([
                 'archivo_pdf'    => $contenidoBinario,
                 'nombre_archivo' => $archivo->getClientOriginalName(),
                 'tipo_mime'      => 'application/pdf',

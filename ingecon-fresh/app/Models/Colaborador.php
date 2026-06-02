@@ -18,7 +18,7 @@ class Colaborador extends Model
     protected $fillable = [
         'nombre_comercial',
         'logotipo',
-        'tipo_mime_logotipo',  // Necesario para el Data URI correcto en el accessor logotipoBase64
+        'tipo_mime',      // Necesario para el Data URI correcto en el accessor logotipoBase64
         'id_admin',
     ];
 
@@ -76,10 +76,10 @@ class Colaborador extends Model
                 $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
                 $base64 = base64_encode($binary);
 
-                // Usar el tipo MIME almacenado en la columna tipo_mime_logotipo.
+                // Usar el tipo MIME almacenado en la columna tipo_mime.
                 // La columna fue agregada en la migración para soportar PNG, JPG, SVG y WebP.
                 // Por defecto es 'image/png' si no se especificó al guardar.
-                $mime = $this->attributes['tipo_mime_logotipo'] ?? 'image/png';
+                $mime = $this->attributes['tipo_mime'] ?? 'image/png';
 
                 return "data:{$mime};base64,{$base64}";
             }
