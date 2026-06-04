@@ -776,12 +776,6 @@ function adminProyectos() {
             this.erroresCrear.fotografias = '';
             const archivos = Array.from(event.target.files);
 
-            if (archivos.length > 15) {
-                this.erroresCrear.fotografias = 'No puedes seleccionar más de 15 fotografías.';
-                event.target.value = '';
-                return;
-            }
-
             const maxBytes = 5 * 1024 * 1024;
             for (const archivo of archivos) {
                 if (archivo.size > maxBytes) {
@@ -799,7 +793,19 @@ function adminProyectos() {
                 }
             }
 
-            this.formCrear.archivos = archivos;
+            // Filtrar duplicados por name+size+lastModified
+            const nuevosFiltrados = archivos.filter(a =>
+                !this.formCrear.archivos.some(e => e.name === a.name && e.size === a.size && e.lastModified === a.lastModified)
+            );
+
+            const totalDespues = this.formCrear.archivos.length + nuevosFiltrados.length;
+            if (totalDespues > 15) {
+                this.erroresCrear.fotografias = 'No puedes seleccionar más de 15 fotografías.';
+                event.target.value = '';
+                return;
+            }
+
+            this.formCrear.archivos = [...this.formCrear.archivos, ...nuevosFiltrados];
         },
 
         async submitCrear() {
@@ -951,7 +957,23 @@ function adminProyectos() {
                 }
             }
 
-            this.formEditar.archivosNuevos = archivos;
+            // Filtrar duplicados por name+size+lastModified
+            const nuevosFiltrados = archivos.filter(a =>
+                !this.formEditar.archivosNuevos.some(e => e.name === a.name && e.size === a.size && e.lastModified === a.lastModified)
+            );
+
+            // Validar límite total usando existentes - eliminadas + actuales + nuevos
+            const totalDespues = this.imagenesExistentes.length - this.idsEliminar.length
+                                 + this.formEditar.archivosNuevos.length + nuevosFiltrados.length;
+
+            if (totalDespues > 15) {
+                this.erroresEditar.fotografias_nuevas =
+                    `El proyecto no puede tener más de 15 imágenes. Tienes ${totalDespues}.`;
+                event.target.value = '';
+                return;
+            }
+
+            this.formEditar.archivosNuevos = [...this.formEditar.archivosNuevos, ...nuevosFiltrados];
         },
 
         async submitEditar() {
