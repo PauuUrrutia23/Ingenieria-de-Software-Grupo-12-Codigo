@@ -8,16 +8,16 @@ use App\Http\Controllers\ProyectoController;
 use Illuminate\Support\Facades\Route;
 
 // -----------------------------------------------------------------------
-// Pagina publica principal — sin autenticacion
+// Página pública principal — sin autenticación
 // -----------------------------------------------------------------------
 Route::get('/', [InstitucionalCtrl::class, 'index'])->name('inicio');
 
 // -----------------------------------------------------------------------
-// Rutas publicas — Galeria de proyectos
-// Sin autenticacion. Retornan JSON para consumo por Alpine.js.
+// Rutas públicas — Galería de proyectos
+// Sin autenticación. Retornan JSON para consumo por Alpine.js.
 // -----------------------------------------------------------------------
 
-// CU 3.2 / CU 3.3 — Busqueda y filtrado de proyectos (RF20, RF21)
+// CU 3.2 / CU 3.3 — Búsqueda y filtrado de proyectos (RF20, RF21)
 Route::get('/proyectos/buscar', [ProyectoController::class, 'buscar'])
     ->name('proyectos.buscar');
 
@@ -27,7 +27,7 @@ Route::get('/proyectos/{id}/detalle', [ProyectoController::class, 'detalle'])
     ->where('id', '[0-9]+');
 
 // -----------------------------------------------------------------------
-// Rutas publicas — Certificaciones (RF25, RF26)
+// Rutas públicas — Certificaciones (RF25, RF26)
 // -----------------------------------------------------------------------
 
 // CU 4.1 — Visualizar listado de certificaciones
@@ -40,7 +40,7 @@ Route::get('/certificaciones/{id}/descargar', [ProyectoController::class, 'desca
     ->where('id', '[0-9]+');
 
 // -------------------------------------------------------------------------
-// Rutas publicas de autenticacion
+// Rutas públicas de autenticación
 // -------------------------------------------------------------------------
 
 Route::post('/login', [AuthController::class, 'login'])
@@ -51,15 +51,15 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('admin.auth');
 
 // -------------------------------------------------------------------------
-// Ruta publica — Formulario de contacto
-// No requiere autenticacion.
+// Ruta pública — Formulario de contacto
+// No requiere autenticación.
 // -------------------------------------------------------------------------
 Route::post('/contacto', [ContactoController::class, 'store'])
     ->name('contacto.store');
 
 // -------------------------------------------------------------------------
-// Rutas protegidas del panel de administracion
-// Todas las rutas bajo /admin requieren sesion activa valida.
+// Rutas protegidas del panel de administración
+// Todas las rutas bajo /admin requieren sesión activa válida.
 // -------------------------------------------------------------------------
 
 Route::prefix('admin')
@@ -72,14 +72,14 @@ Route::prefix('admin')
         })->name('dashboard');
 
         // ---------------------------------------------------------------
-        // Modulo de Proyectos (RF49, RF50)
+        // Módulo de Proyectos (RF49, RF50)
         // ---------------------------------------------------------------
 
         // CU 7.6 / CU 7.7 — Listar proyectos del admin (retorna JSON)
         Route::get('/proyectos', [AdminController::class, 'indexProyectos'])
             ->name('proyectos.index');
 
-        // CU 7.6 — Crear nuevo proyecto con imagenes (RF49)
+        // CU 7.6 — Crear nuevo proyecto con imágenes (RF49)
         Route::post('/proyectos', [AdminController::class, 'storeProyecto'])
             ->name('proyectos.store');
 
@@ -88,13 +88,13 @@ Route::prefix('admin')
             ->name('proyectos.update')
             ->where('id', '[0-9]+');
 
-        // Vista HTML del modulo de proyectos
+        // Vista HTML del módulo de proyectos
         Route::get('/proyectos/panel', function () {
             return view('admin.proyectos');
         })->name('proyectos.panel');
 
         // -----------------------------------------------------------------------
-        // Modulo de Colaboradores (RF46 — CU 7.3)
+        // Módulo de Colaboradores (RF46 — CU 7.3)
         // -----------------------------------------------------------------------
 
         // Listar colaboradores del admin autenticado (retorna JSON)
@@ -105,7 +105,7 @@ Route::prefix('admin')
         Route::post('/colaboradores', [AdminController::class, 'storeColaborador'])
             ->name('colaboradores.store');
 
-        // Vista HTML del modulo de colaboradores
+        // Vista HTML del módulo de colaboradores
         Route::get('/colaboradores/panel', function () {
             return view('admin.colaboradores');
         })->name('colaboradores.panel');

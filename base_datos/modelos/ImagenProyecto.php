@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Support\Facades\DB;
 
 class ImagenProyecto extends Model
 {
@@ -35,17 +34,8 @@ class ImagenProyecto extends Model
     }
 
     // -------------------------------------------------------------------------
-    // Mutators / Accessors
+    // Accessors
     // -------------------------------------------------------------------------
-
-    protected function imagen(): Attribute
-    {
-        return Attribute::make(
-            set: fn ($value) => $value === null
-                ? null
-                : DB::raw("decode('" . bin2hex($value) . "', 'hex')"),
-        );
-    }
 
     /**
      * Retorna la imagen BYTEA como Data URI lista para usar en <img src="...">.

@@ -559,7 +559,6 @@ function adminColaboradores() {
 
                 if (data.success) {
                     this.colaboradores.unshift(data.colaborador);
-                    this.enviando = false;
                     this.cerrarModal();
                     return;
                 }

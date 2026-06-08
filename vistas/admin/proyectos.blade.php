@@ -845,7 +845,6 @@ function adminProyectos() {
 
                 if (data.success) {
                     this.proyectos.unshift(data.proyecto);
-                    this.enviando = false;
                     this.cerrarModalCrear();
                     return;
                 }
@@ -1010,7 +1009,6 @@ function adminProyectos() {
                     if (idx !== -1) {
                         this.proyectos[idx] = data.proyecto;
                     }
-                    this.enviando = false;
                     this.cerrarModalEditar();
                     return;
                 }

@@ -84,30 +84,25 @@
              Etiqueta de sección de navegación
              ============================================================ --}}
         <p class="px-5 pt-5 pb-2 text-xs font-semibold text-slate-400 uppercase tracking-widest">
-            Secciones
+            Navegación
         </p>
 
         {{-- ============================================================
              Links de navegación (RF12 — CU 2.2)
-             Cada link: cierra el panel + scroll suave a la sección
+             Usa enlaces reales (no scroll) para navegar entre páginas.
              ============================================================ --}}
         <nav aria-label="Menú lateral de secciones">
             <ul class="flex flex-col px-3 gap-0.5" role="list">
 
                 {{-- Inicio --}}
                 <li>
-                    <button
-                        type="button"
-                        @click="
-                            abierto = false;
-                            $nextTick(() => {
-                                document.getElementById('inicio').scrollIntoView({ behavior: 'smooth' });
-                            })
-                        "
+                    <a
+                        href="{{ route('inicio') }}"
+                        @click="abierto = false"
                         class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
                                text-sm font-medium text-slate-700
                                hover:bg-slate-100 hover:text-slate-900
-                               transition-colors text-left"
+                               transition-colors text-left no-underline"
                     >
                         {{-- Ícono casa --}}
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400 shrink-0"
@@ -122,23 +117,18 @@
                                      1.125-1.125V9.75M8.25 21h8.25"/>
                         </svg>
                         Inicio
-                    </button>
+                    </a>
                 </li>
 
-                {{-- Proyectos --}}
+                {{-- Proyectos — scroll a sección en la página de inicio --}}
                 <li>
-                    <button
-                        type="button"
-                        @click="
-                            abierto = false;
-                            $nextTick(() => {
-                                document.getElementById('proyectos').scrollIntoView({ behavior: 'smooth' });
-                            })
-                        "
+                    <a
+                        href="{{ route('inicio') }}#proyectos"
+                        @click="abierto = false"
                         class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
                                text-sm font-medium text-slate-700
                                hover:bg-slate-100 hover:text-slate-900
-                               transition-colors text-left"
+                               transition-colors text-left no-underline"
                     >
                         {{-- Ícono edificio/construcción --}}
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400 shrink-0"
@@ -152,23 +142,18 @@
                                      1.125 1.125V21"/>
                         </svg>
                         Proyectos
-                    </button>
+                    </a>
                 </li>
 
-                {{-- Certificaciones --}}
+                {{-- Certificaciones — vista independiente (RF25, RF26) --}}
                 <li>
-                    <button
-                        type="button"
-                        @click="
-                            abierto = false;
-                            $nextTick(() => {
-                                document.getElementById('certificaciones').scrollIntoView({ behavior: 'smooth' });
-                            })
-                        "
+                    <a
+                        href="{{ route('certificaciones.index') }}"
+                        @click="abierto = false"
                         class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
                                text-sm font-medium text-slate-700
                                hover:bg-slate-100 hover:text-slate-900
-                               transition-colors text-left"
+                               transition-colors text-left no-underline"
                     >
                         {{-- Ícono medalla/certificado --}}
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400 shrink-0"
@@ -187,23 +172,18 @@
                                      0 011.043 3.296A3.745 3.745 0 0121 12z"/>
                         </svg>
                         Certificaciones
-                    </button>
+                    </a>
                 </li>
 
-                {{-- Contacto --}}
+                {{-- Contacto — scroll a sección en la página de inicio --}}
                 <li>
-                    <button
-                        type="button"
-                        @click="
-                            abierto = false;
-                            $nextTick(() => {
-                                document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
-                            })
-                        "
+                    <a
+                        href="{{ route('inicio') }}#contacto"
+                        @click="abierto = false"
                         class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
                                text-sm font-medium text-slate-700
                                hover:bg-slate-100 hover:text-slate-900
-                               transition-colors text-left"
+                               transition-colors text-left no-underline"
                     >
                         {{-- Ícono sobre/mensaje --}}
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400 shrink-0"
@@ -219,7 +199,7 @@
                                      01-1.07-1.916V6.75"/>
                         </svg>
                         Contacto
-                    </button>
+                    </a>
                 </li>
 
             </ul>

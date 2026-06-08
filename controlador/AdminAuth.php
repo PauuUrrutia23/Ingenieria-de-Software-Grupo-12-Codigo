@@ -2,7 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Http\Controllers\DBRouterController;
+use App\Models\Administrador;
+use App\Models\Sesion;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -13,16 +14,7 @@ class AdminAuth
     /**
      * Nombre de la cookie de sesión (debe coincidir con AuthController::COOKIE_NAME).
      */
-    private const COOKIE_NAME = 'ingecon_auth';
-
-    /**
-     * Mediador de base de datos (ver 02b_dbrouter_controller.md).
-     * Laravel resuelve el middleware a través del contenedor, por lo que
-     * la inyección por constructor funciona sin registro adicional.
-     */
-    public function __construct(
-        private readonly DBRouterController $db
-    ) {}
+    private const COOKIE_NAME = 'ingecon_session';
 
     /**
      * Verifica que la request incluya una cookie de sesión válida y activa.
@@ -55,7 +47,9 @@ class AdminAuth
         // b) Buscar la sesión directamente por ID — O(1), sin iterar
         //    Solo se verifica el token_hash de ese registro específico.
         // ------------------------------------------------------------------
-        $sesion = $this->db->buscarSesionActivaPorId((int) $idSesion);
+        $sesion = Sesion::where('id_sesion', (int) $idSesion)
+            ->where('estado', 'activa')
+            ->first();
 
         // ------------------------------------------------------------------
         // c) Verificar que el token en claro coincide con el hash almacenado
@@ -67,7 +61,7 @@ class AdminAuth
         // ------------------------------------------------------------------
         // d) Verificar que el administrador existe, está activo y no bloqueado
         // ------------------------------------------------------------------
-        $admin = $this->db->buscarAdminPorId($sesion->id_admin);
+        $admin = Administrador::find($sesion->id_admin);
 
         if (! $admin || ! $admin->activo) {
             return $this->rechazar($request, 'Tu cuenta no tiene acceso al panel de administración.');

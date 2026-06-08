@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Support\Facades\DB;
 
 class Colaborador extends Model
 {
@@ -18,7 +17,7 @@ class Colaborador extends Model
     protected $fillable = [
         'nombre_comercial',
         'logotipo',
-        'tipo_mime',      // Necesario para el Data URI correcto en el accessor logotipoBase64
+        'tipo_mime_logotipo',  // Necesario para el Data URI correcto en el accessor logotipoBase64
         'id_admin',
     ];
 
@@ -35,17 +34,8 @@ class Colaborador extends Model
     }
 
     // -------------------------------------------------------------------------
-    // Mutators / Accessors
+    // Accessors
     // -------------------------------------------------------------------------
-
-    protected function logotipo(): Attribute
-    {
-        return Attribute::make(
-            set: fn ($value) => $value === null
-                ? null
-                : DB::raw("decode('" . bin2hex($value) . "', 'hex')"),
-        );
-    }
 
     /**
      * Retorna el logotipo BYTEA como Data URI lista para usar en <img src="...">.
@@ -76,10 +66,10 @@ class Colaborador extends Model
                 $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
                 $base64 = base64_encode($binary);
 
-                // Usar el tipo MIME almacenado en la columna tipo_mime.
+                // Usar el tipo MIME almacenado en la columna tipo_mime_logotipo.
                 // La columna fue agregada en la migración para soportar PNG, JPG, SVG y WebP.
                 // Por defecto es 'image/png' si no se especificó al guardar.
-                $mime = $this->attributes['tipo_mime'] ?? 'image/png';
+                $mime = $this->attributes['tipo_mime_logotipo'] ?? 'image/png';
 
                 return "data:{$mime};base64,{$base64}";
             }

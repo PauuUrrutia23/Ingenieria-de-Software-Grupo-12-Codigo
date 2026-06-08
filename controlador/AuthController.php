@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\EnviarEmailBloqueoJob;
+use App\Models\Administrador;
+use App\Models\Sesion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +22,7 @@ class AuthController extends Controller
     /**
      * Nombre de la cookie de sesión.
      */
-    private const COOKIE_NAME = 'ingecon_auth';
+    private const COOKIE_NAME = 'ingecon_session';
 
     /**
      * Máximo de intentos antes del bloqueo.
@@ -31,14 +33,6 @@ class AuthController extends Controller
      * Duración del bloqueo en minutos.
      */
     private const BLOQUEO_MINUTOS = 60;
-
-    /**
-     * Mediador de base de datos. Toda lectura/escritura pasa por aquí
-     * (ver 02b_dbrouter_controller.md). Resuelto por el contenedor de Laravel.
-     */
-    public function __construct(
-        private readonly DBRouterController $db
-    ) {}
 
     // =========================================================================
     // CU 5.1 — Autenticando Personal de Administración (RF28)
@@ -68,7 +62,7 @@ class AuthController extends Controller
         // ------------------------------------------------------------------
         // b) Buscar Administrador por correo
         // ------------------------------------------------------------------
-        $admin = $this->db->buscarAdminPorCorreo($validated['correo']);
+        $admin = Administrador::where('correo', $validated['correo'])->first();
 
         // ------------------------------------------------------------------
         // c) Administrador no existe → error genérico (no revelar existencia)
@@ -120,7 +114,7 @@ class AuthController extends Controller
                 // CU 5.7 — Bloquear cuenta por 60 minutos
                 $admin->bloqueado_hasta   = now()->addMinutes(self::BLOQUEO_MINUTOS);
                 $admin->intentos_fallidos = 0;
-                $this->db->guardarAdmin($admin);
+                $admin->save();
 
                 // Disparar job asíncrono para enviar email de bloqueo
                 EnviarEmailBloqueoJob::dispatch($admin->id_admin, now()->toImmutable());
@@ -138,7 +132,7 @@ class AuthController extends Controller
                 ], 423);
             }
 
-            $this->db->guardarAdmin($admin);
+            $admin->save();
 
             $restantes = self::MAX_INTENTOS - $admin->intentos_fallidos;
 
@@ -156,13 +150,13 @@ class AuthController extends Controller
         // Resetear contadores de seguridad
         $admin->intentos_fallidos = 0;
         $admin->bloqueado_hasta   = null;
-        $this->db->guardarAdmin($admin);
+        $admin->save();
 
         // Generar token aleatorio de 64 caracteres
         $token = Str::random(64);
 
         // Persistir sesión con hash del token (nunca guardar el token en claro)
-        $sesion = $this->db->crearSesion([
+        $sesion = Sesion::create([
             'token_hash'   => Hash::make($token),
             'fecha_inicio' => now(),
             'estado'       => 'activa',
@@ -219,21 +213,24 @@ class AuthController extends Controller
                 // --------------------------------------------------------------
                 // b) Recuperar admin inyectado por el middleware AdminAuth
                 // --------------------------------------------------------------
-                /** @var \App\Models\Administrador $admin */
+                /** @var Administrador $admin */
                 $admin = $request->attributes->get('admin');
 
                 if ($admin) {
                     // ----------------------------------------------------------
                     // c) Buscar la sesión directamente por ID — sin iterar
                     // ----------------------------------------------------------
-                    $sesionActiva = $this->db->buscarSesionActivaDeAdmin((int) $idSesion, $admin->id_admin);
+                    $sesionActiva = Sesion::where('id_sesion', (int) $idSesion)
+                        ->where('id_admin', $admin->id_admin)
+                        ->where('estado', 'activa')
+                        ->first();
 
                     if ($sesionActiva && Hash::check($token, $sesionActiva->token_hash)) {
                         // ------------------------------------------------------
                         // c) Invalidar la sesión
                         // ------------------------------------------------------
                         $sesionActiva->estado = 'cerrada';
-                        $this->db->guardarSesion($sesionActiva);
+                        $sesionActiva->save();
                     }
                 }
             }

@@ -17,15 +17,6 @@ class AdminController extends Controller
      */
     private const MAX_IMAGENES = 15;
 
-    /**
-     * Mediador de base de datos (ver 02b_dbrouter_controller.md).
-     * Resuelto automáticamente por el contenedor de Laravel. Este mismo
-     * constructor cubre también los métodos de colaboradores (09).
-     */
-    public function __construct(
-        private readonly DBRouterController $db
-    ) {}
-
     // =========================================================================
     // Listar proyectos del admin autenticado
     // =========================================================================
@@ -45,12 +36,16 @@ class AdminController extends Controller
         /** @var \App\Models\Administrador $admin */
         $admin = $request->attributes->get('admin');
 
-        $proyectos = $this->db->listarProyectosDeAdmin($admin->id_admin);
+        $proyectos = Proyecto::where('id_admin', $admin->id_admin)
+            ->with(['imagenesProyecto' => fn($q) => $q->orderBy('id_imagen')->limit(1)])
+            ->withCount('imagenesProyecto')
+            ->orderBy('id_proyecto', 'desc')
+            ->get();
 
         $resultado = $proyectos->map(function (Proyecto $p) {
             $thumbnail = null;
 
-            $primeraImagen = $p->imagenes->first();
+            $primeraImagen = $p->imagenesProyecto->first();
             if ($primeraImagen) {
                 $raw    = $primeraImagen->getRawOriginal('imagen');
                 $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
@@ -69,7 +64,7 @@ class AdminController extends Controller
                 'anio_ejecucion'     => $p->anio_ejecucion,
                 'estado_publicacion' => $p->estado_publicacion,
                 'categoria'          => $p->categoria,
-                'cantidad_imagenes'  => $p->imagenes_count,
+                'cantidad_imagenes'  => $p->imagenes_proyecto_count,
                 'thumbnail_base64'   => $thumbnail,
             ];
         });
@@ -90,9 +85,6 @@ class AdminController extends Controller
      */
     public function storeProyecto(Request $request): JsonResponse
     {
-        // ------------------------------------------------------------------
-        // Validación
-        // ------------------------------------------------------------------
         try {
             $validated = $request->validate([
                 'nombre_obra'    => ['required', 'string', 'max:150'],
@@ -119,7 +111,7 @@ class AdminController extends Controller
         // ------------------------------------------------------------------
         // a) Crear el proyecto en estado borrador
         // ------------------------------------------------------------------
-        $proyecto = $this->db->crearProyecto([
+        $proyecto = Proyecto::create([
             'nombre_obra'        => $validated['nombre_obra'],
             'descripcion_tecnica'=> null,
             'region'             => null,
@@ -153,7 +145,7 @@ class AdminController extends Controller
                 continue;
             }
 
-            $imagen = $this->db->crearImagenProyecto([
+            $imagen = ImagenProyecto::create([
                 'imagen'         => $binary,
                 'nombre_archivo' => $foto->getClientOriginalName(),
                 'tipo_mime'      => $foto->getMimeType(),
@@ -177,7 +169,7 @@ class AdminController extends Controller
                 'nombre_obra'        => $proyecto->nombre_obra,
                 'estado_publicacion' => $proyecto->estado_publicacion,
                 'categoria'          => $proyecto->categoria,
-                'cantidad_imagenes'  => $this->db->contarImagenesDeProyecto($proyecto),
+                'cantidad_imagenes'  => $proyecto->imagenesProyecto()->count(),
                 'thumbnail_base64'   => $thumbnail,
             ],
         ], 201);
@@ -197,9 +189,6 @@ class AdminController extends Controller
      */
     public function updateProyecto(Request $request, int $id): JsonResponse
     {
-        // ------------------------------------------------------------------
-        // Validación
-        // ------------------------------------------------------------------
         try {
             $validated = $request->validate([
                 'nombre_obra'            => ['required', 'string', 'max:150'],
@@ -232,7 +221,7 @@ class AdminController extends Controller
         // ------------------------------------------------------------------
         // a) Buscar proyecto y verificar propiedad
         // ------------------------------------------------------------------
-        $proyecto = $this->db->buscarProyectoPorId($id);
+        $proyecto = Proyecto::find($id);
 
         if (! $proyecto) {
             return response()->json(['success' => false, 'message' => 'Proyecto no encontrado.'], 404);
@@ -250,7 +239,7 @@ class AdminController extends Controller
         // ------------------------------------------------------------------
         $idsEliminar  = $validated['imagenes_eliminar'] ?? [];
         $nuevasFotos  = $request->file('fotografias_nuevas') ?? [];
-        $cantActual   = $this->db->contarImagenesDeProyecto($proyecto);
+        $cantActual   = $proyecto->imagenesProyecto()->count();
         $cantEliminar = count($idsEliminar);
         $cantNuevas   = count($nuevasFotos);
         $totalFinal   = $cantActual - $cantEliminar + $cantNuevas;
@@ -283,13 +272,15 @@ class AdminController extends Controller
             'categoria'           => $validated['categoria'] ?? $proyecto->categoria,
             'estado_publicacion'  => $validated['estado_publicacion'] ?? $proyecto->estado_publicacion,
         ]);
-        $this->db->guardarProyecto($proyecto);
+        $proyecto->save();
 
         // ------------------------------------------------------------------
         // d) Eliminar imágenes marcadas — solo las del proyecto correcto
         // ------------------------------------------------------------------
         if (! empty($idsEliminar)) {
-            $this->db->eliminarImagenesDeProyecto($idsEliminar, $proyecto->id_proyecto);
+            ImagenProyecto::whereIn('id_imagen', $idsEliminar)
+                ->where('id_proyecto', $proyecto->id_proyecto)
+                ->delete();
         }
 
         // ------------------------------------------------------------------
@@ -301,7 +292,7 @@ class AdminController extends Controller
             $binary = file_get_contents($foto->getRealPath());
             if ($binary === false) continue;
 
-            $this->db->crearImagenProyecto([
+            ImagenProyecto::create([
                 'imagen'         => $binary,
                 'nombre_archivo' => $foto->getClientOriginalName(),
                 'tipo_mime'      => $foto->getMimeType(),
@@ -312,7 +303,7 @@ class AdminController extends Controller
         // ------------------------------------------------------------------
         // f) Recargar thumbnail actualizado
         // ------------------------------------------------------------------
-        $primeraImagen = $this->db->primeraImagenDeProyecto($proyecto);
+        $primeraImagen = $proyecto->imagenesProyecto()->orderBy('id_imagen')->first();
         $thumbnail     = null;
 
         if ($primeraImagen) {
@@ -335,7 +326,7 @@ class AdminController extends Controller
                 'anio_ejecucion'      => $proyecto->anio_ejecucion,
                 'estado_publicacion'  => $proyecto->estado_publicacion,
                 'categoria'           => $proyecto->categoria,
-                'cantidad_imagenes'   => $this->db->contarImagenesDeProyecto($proyecto),
+                'cantidad_imagenes'   => $proyecto->imagenesProyecto()->count(),
                 'thumbnail_base64'    => $thumbnail,
             ],
         ]);
@@ -361,7 +352,15 @@ class AdminController extends Controller
         /** @var \App\Models\Administrador $admin */
         $admin = $request->attributes->get('admin');
 
-        $colaboradores = $this->db->listarColaboradoresDeAdmin($admin->id_admin);
+        $colaboradores = Colaborador::where('id_admin', $admin->id_admin)
+            ->select([
+                'id_colaborador',
+                'nombre_comercial',
+                'logotipo',
+                'tipo_mime_logotipo',
+            ])
+            ->orderBy('nombre_comercial', 'asc')
+            ->get();
 
         $resultado = $colaboradores->map(function (Colaborador $c) {
             $logotipoBase64 = null;
@@ -374,7 +373,7 @@ class AdminController extends Controller
 
                 if ($binary) {
                     // Usar tipo_mime almacenado o fallback a image/png
-                    $mime           = $c->tipo_mime ?: 'image/png';
+                    $mime           = $c->tipo_mime_logotipo ?: 'image/png';
                     $logotipoBase64 = "data:{$mime};base64," . base64_encode($binary);
                 }
             }
@@ -450,11 +449,11 @@ class AdminController extends Controller
         // ------------------------------------------------------------------
         // c) Crear el colaborador con logotipo en BYTEA
         // ------------------------------------------------------------------
-        $colaborador = $this->db->crearColaborador([
-            'nombre_comercial' => $validated['nombre_comercial'],
-            'logotipo'         => $binary,
-            'tipo_mime'        => $tipoMime,
-            'id_admin'         => $admin->id_admin,
+        $colaborador = Colaborador::create([
+            'nombre_comercial'    => $validated['nombre_comercial'],
+            'logotipo'            => $binary,
+            'tipo_mime_logotipo'  => $tipoMime,
+            'id_admin'            => $admin->id_admin,
         ]);
 
         // ------------------------------------------------------------------

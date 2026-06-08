@@ -49,7 +49,7 @@
                 <span class="text-white text-xs font-black tracking-tighter">IC</span>
             </div>
             <a
-                href="/"
+                href="{{ route('inicio') }}"
                 class="text-slate-900 font-bold text-lg tracking-wide
                        hover:text-slate-700 transition-colors whitespace-nowrap"
                 aria-label="Ingecon — Volver al inicio"
@@ -69,51 +69,47 @@
             <ul class="hidden md:flex items-center gap-1" role="list">
 
                 <li>
-                    <button
-                        type="button"
-                        @click="document.getElementById('inicio').scrollIntoView({ behavior: 'smooth' })"
+                    <a
+                        href="{{ route('inicio') }}"
                         class="px-3 py-1.5 text-sm font-medium text-slate-600
                                hover:text-slate-900 hover:bg-slate-100
-                               rounded-lg transition-colors"
+                               rounded-lg transition-colors no-underline"
                     >
                         Inicio
-                    </button>
+                    </a>
                 </li>
 
                 <li>
-                    <button
-                        type="button"
-                        @click="document.getElementById('proyectos').scrollIntoView({ behavior: 'smooth' })"
+                    <a
+                        href="{{ route('inicio') }}#proyectos"
                         class="px-3 py-1.5 text-sm font-medium text-slate-600
                                hover:text-slate-900 hover:bg-slate-100
-                               rounded-lg transition-colors"
+                               rounded-lg transition-colors no-underline"
                     >
                         Proyectos
-                    </button>
+                    </a>
                 </li>
 
                 <li>
-                    <button
-                        type="button"
-                        @click="document.getElementById('certificaciones').scrollIntoView({ behavior: 'smooth' })"
+                    <a
+                        href="{{ route('certificaciones.index') }}"
                         class="px-3 py-1.5 text-sm font-medium text-slate-600
                                hover:text-slate-900 hover:bg-slate-100
-                               rounded-lg transition-colors"
+                               rounded-lg transition-colors no-underline"
                     >
                         Certificaciones
-                    </button>
+                    </a>
                 </li>
 
                 <li>
-                    <button
-                        type="button"
-                        @click="document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' })"
+                    <a
+                        href="{{ route('inicio') }}#contacto"
                         class="px-3 py-1.5 text-sm font-medium text-slate-600
                                hover:text-slate-900 hover:bg-slate-100
-                               rounded-lg transition-colors"
+                               rounded-lg transition-colors no-underline"
                     >
                         Contacto
-                    </button>
+                    </a>
                 </li>
 
             </ul>

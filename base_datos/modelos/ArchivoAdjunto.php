@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Support\Facades\DB;
 
 class ArchivoAdjunto extends Model
 {
@@ -35,17 +34,8 @@ class ArchivoAdjunto extends Model
     }
 
     // -------------------------------------------------------------------------
-    // Mutators / Accessors
+    // Accessors
     // -------------------------------------------------------------------------
-
-    protected function archivoPdf(): Attribute
-    {
-        return Attribute::make(
-            set: fn ($value) => $value === null
-                ? null
-                : DB::raw("decode('" . bin2hex($value) . "', 'hex')"),
-        );
-    }
 
     /**
      * Retorna el PDF almacenado en BYTEA como cadena base64 lista para embeber

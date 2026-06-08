@@ -23,11 +23,12 @@ class AdminSeeder extends Seeder
             return;
         }
 
-        DB::statement("INSERT INTO administrador (correo, password_hash, intentos_fallidos, bloqueado_hasta, activo) VALUES (?, ?, ?, ?, TRUE)", [
-            'admin@ingecon.cl',
-            Hash::make('Ingecon2024!'),
-            0,
-            null,
+        DB::table('administrador')->insert([
+            'correo'            => 'admin@ingecon.cl',
+            'password_hash'     => Hash::make('Ingecon2024!'),
+            'intentos_fallidos' => 0,
+            'bloqueado_hasta'   => null,
+            'activo'            => DB::raw('true'),
         ]);
 
         $this->command->info('Administrador inicial creado: admin@ingecon.cl');
