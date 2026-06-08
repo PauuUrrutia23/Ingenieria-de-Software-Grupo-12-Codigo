@@ -431,6 +431,8 @@ function adminColaboradores() {
 
                 if (res.ok) {
                     this.colaboradores = await res.json();
+                } else if (res.status === 401) {
+                    window.location.href = '/';
                 } else {
                     console.error('Error al cargar colaboradores:', res.status);
                 }
@@ -561,6 +563,11 @@ function adminColaboradores() {
                     this.colaboradores.unshift(data.colaborador);
                     this.enviando = false;
                     this.cerrarModal();
+                    return;
+                }
+
+                if (res.status === 401) {
+                    window.location.href = '/';
                     return;
                 }
 

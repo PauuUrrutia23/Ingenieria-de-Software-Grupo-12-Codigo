@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Certificado;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class InstitucionalCtrl extends Controller
@@ -26,7 +28,14 @@ class InstitucionalCtrl extends Controller
     {
         // Mismo origen de datos que ProyectoController@certificaciones:
         // el router centraliza la query (resuelve la duplicación DRY).
-        $certificados = $this->db->listarCertificadosActivos();
+        try {
+            $certificados = $this->db->listarCertificadosActivos();
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudieron listar los certificados para la página principal', [
+                'error' => $e->getMessage(),
+            ]);
+            $certificados = collect();
+        }
 
         $certificados->transform(function (Certificado $cert) {
             $cert->fecha_formateada = $cert->fecha_emision?->format('d/m/Y') ?? '—';
@@ -37,7 +46,14 @@ class InstitucionalCtrl extends Controller
         // el mismo render server-side, de modo que las secciones a las que
         // apunta la Barra de Navegación Fija se construyen con datos obtenidos
         // desde la Base de Datos (los proyectos se cargan en la galería).
-        $colaboradores = $this->db->listarColaboradores();
+        try {
+            $colaboradores = $this->db->listarColaboradores();
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudieron listar los colaboradores para la página principal', [
+                'error' => $e->getMessage(),
+            ]);
+            $colaboradores = collect();
+        }
 
         return view('public.index', compact('certificados', 'colaboradores'));
     }
@@ -53,7 +69,14 @@ class InstitucionalCtrl extends Controller
      */
     public function colaboradores(): View
     {
-        $colaboradores = $this->db->listarColaboradores();
+        try {
+            $colaboradores = $this->db->listarColaboradores();
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudieron listar los colaboradores para la página dedicada', [
+                'error' => $e->getMessage(),
+            ]);
+            $colaboradores = collect();
+        }
 
         return view('public.colaboradores-pagina', compact('colaboradores'));
     }

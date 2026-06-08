@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Certificado;
 use App\Models\ImagenProyecto;
 use App\Models\Proyecto;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class ProyectoController extends Controller
@@ -52,7 +54,19 @@ class ProyectoController extends Controller
         //    imagenesProyecto ordenadas y orden por anio_ejecucion DESC.
         //    Devuelve una Collection<Proyecto>; aquí solo se arma el JSON.
         // ------------------------------------------------------------------
-        $proyectos = $this->db->buscarProyectosPublicados($texto, $categoria);
+        try {
+            $proyectos = $this->db->buscarProyectosPublicados($texto, $categoria);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo buscar proyectos publicados', [
+                'error'     => $e->getMessage(),
+                'texto'     => $texto,
+                'categoria' => $categoria,
+            ]);
+            return response()->json([
+                'error'   => true,
+                'message' => 'La búsqueda no está disponible temporalmente.',
+            ], 500);
+        }
 
         // ------------------------------------------------------------------
         // f) Mapear colección a JSON serializable
@@ -111,7 +125,18 @@ class ProyectoController extends Controller
         // a) Buscar proyecto con TODAS sus imágenes para el carrusel del modal
         //    El router carga la relación imagenesProyecto ordenada.
         // ------------------------------------------------------------------
-        $proyecto = $this->db->buscarProyectoConImagenes($id);
+        try {
+            $proyecto = $this->db->buscarProyectoConImagenes($id);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo obtener el detalle del proyecto', [
+                'error'       => $e->getMessage(),
+                'id_proyecto' => $id,
+            ]);
+            return response()->json([
+                'error'   => 'No disponible',
+                'message' => 'El detalle no está disponible temporalmente.',
+            ], 500);
+        }
 
         // ------------------------------------------------------------------
         // b) No existe o no está publicado → 404
@@ -173,7 +198,14 @@ class ProyectoController extends Controller
     {
         // Sin filtros: lista todos los proyectos publicados (RF20/RF21 viven
         // en la galería interactiva; aquí es el listado completo de la sección).
-        $proyectos = $this->db->buscarProyectosPublicados('', '');
+        try {
+            $proyectos = $this->db->buscarProyectosPublicados('', '');
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudieron listar los proyectos para la galería', [
+                'error' => $e->getMessage(),
+            ]);
+            return view('public.proyectos-pagina', ['proyectos' => collect()]);
+        }
 
         // Serializar la imagen de portada (BYTEA → Data URI) para render directo.
         $listado = $proyectos->map(function (Proyecto $proyecto) {
@@ -227,7 +259,14 @@ class ProyectoController extends Controller
         //    El router excluye archivo_pdf (BYTEA) del SELECT y precarga
         //    el proyecto (id, nombre_obra, region) para evitar N+1.
         // ------------------------------------------------------------------
-        $certificados = $this->db->listarCertificadosActivos();
+        try {
+            $certificados = $this->db->listarCertificadosActivos();
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudieron listar los certificados activos', [
+                'error' => $e->getMessage(),
+            ]);
+            return view('public.certificaciones', ['certificados' => collect()]);
+        }
 
         // ------------------------------------------------------------------
         // b) Formatear fecha_emision a d/m/Y para la vista
@@ -274,7 +313,15 @@ class ProyectoController extends Controller
         //    El router selecciona columnas específicas (id, codigo_lote,
         //    archivo_pdf, estado) en lugar de un select * innecesario.
         // ------------------------------------------------------------------
-        $certificado = $this->db->buscarCertificadoParaDescarga($id);
+        try {
+            $certificado = $this->db->buscarCertificadoParaDescarga($id);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo recuperar el certificado para descarga', [
+                'error'          => $e->getMessage(),
+                'id_certificado' => $id,
+            ]);
+            abort(500, 'La descarga no está disponible temporalmente.');
+        }
 
         // ------------------------------------------------------------------
         // b) No existe → 404

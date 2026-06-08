@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Colaborador;
 use App\Models\ImagenProyecto;
 use App\Models\Proyecto;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -45,7 +46,18 @@ class AdminController extends Controller
         /** @var \App\Models\Administrador $admin */
         $admin = $request->attributes->get('admin');
 
-        $proyectos = $this->db->listarProyectosDeAdmin($admin->id_admin);
+        try {
+            $proyectos = $this->db->listarProyectosDeAdmin($admin->id_admin);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo listar los proyectos', [
+                'error'   => $e->getMessage(),
+                'id_admin'=> $admin->id_admin,
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'El listado de proyectos no está disponible temporalmente.',
+            ], 500);
+        }
 
         $resultado = $proyectos->map(function (Proyecto $p) {
             $thumbnail = null;
@@ -117,21 +129,32 @@ class AdminController extends Controller
         $admin = $request->attributes->get('admin');
 
         // ------------------------------------------------------------------
-        // a) Crear el proyecto en estado borrador
+        // a) Crear el proyecto en estado borrador (CU 49.1 Exc 3)
         // ------------------------------------------------------------------
-        $proyecto = $this->db->crearProyecto([
-            'nombre_obra'        => $validated['nombre_obra'],
-            'descripcion_tecnica'=> null,
-            'region'             => null,
-            'ubicacion_geografica'=> null,
-            'anio_ejecucion'     => null,
-            'estado_publicacion' => 'borrador',
-            'categoria'          => null,
-            'id_admin'           => $admin->id_admin,
-        ]);
+        try {
+            $proyecto = $this->db->crearProyecto([
+                'nombre_obra'        => $validated['nombre_obra'],
+                'descripcion_tecnica'=> null,
+                'region'             => null,
+                'ubicacion_geografica'=> null,
+                'anio_ejecucion'     => null,
+                'estado_publicacion' => 'borrador',
+                'categoria'          => null,
+                'id_admin'           => $admin->id_admin,
+            ]);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo crear el proyecto', [
+                'error'   => $e->getMessage(),
+                'id_admin'=> $admin->id_admin,
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo crear el proyecto. La base de datos no está disponible temporalmente.',
+            ], 500);
+        }
 
         // ------------------------------------------------------------------
-        // b) Persistir cada fotografía como BYTEA
+        // b) Persistir cada fotografía como BYTEA (CU 49.2 Exc 4)
         // ------------------------------------------------------------------
         $thumbnail = null;
 
@@ -153,12 +176,24 @@ class AdminController extends Controller
                 continue;
             }
 
-            $imagen = $this->db->crearImagenProyecto([
-                'imagen'         => $binary,
-                'nombre_archivo' => $foto->getClientOriginalName(),
-                'tipo_mime'      => $foto->getMimeType(),
-                'id_proyecto'    => $proyecto->id_proyecto,
-            ]);
+            try {
+                $this->db->crearImagenProyecto([
+                    'imagen'         => $binary,
+                    'nombre_archivo' => $foto->getClientOriginalName(),
+                    'tipo_mime'      => $foto->getMimeType(),
+                    'id_proyecto'    => $proyecto->id_proyecto,
+                ]);
+            } catch (QueryException $e) {
+                Log::error('BD: No se pudo almacenar la imagen del proyecto', [
+                    'error'       => $e->getMessage(),
+                    'id_proyecto' => $proyecto->id_proyecto,
+                    'archivo'     => $foto->getClientOriginalName(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudo almacenar una de las imágenes. La base de datos no está disponible temporalmente.',
+                ], 500);
+            }
 
             // Guardar thumbnail de la primera imagen válida
             if ($index === 0 && $thumbnail === null) {
@@ -272,7 +307,45 @@ class AdminController extends Controller
         }
 
         // ------------------------------------------------------------------
-        // c) Actualizar campos del proyecto
+        // c.1) Validaciones previas a la publicación (CU 49.3 Exc 2, Exc 3)
+        // ------------------------------------------------------------------
+        $nuevoEstado = $validated['estado_publicacion'] ?? $proyecto->estado_publicacion;
+
+        if ($nuevoEstado === 'publicado') {
+            $erroresPublicacion = [];
+
+            $descripcion = $validated['descripcion_tecnica'] ?? $proyecto->descripcion_tecnica;
+            $region      = $validated['region'] ?? $proyecto->region;
+            $ubicacion   = $validated['ubicacion_geografica'] ?? $proyecto->ubicacion_geografica;
+            $categoria   = $validated['categoria'] ?? $proyecto->categoria;
+
+            if (empty(trim($descripcion ?? ''))) {
+                $erroresPublicacion['descripcion_tecnica'] = ['La descripción técnica es obligatoria para publicar.'];
+            }
+            if (empty(trim($region ?? ''))) {
+                $erroresPublicacion['region'] = ['La región es obligatoria para publicar.'];
+            }
+            if (empty(trim($ubicacion ?? ''))) {
+                $erroresPublicacion['ubicacion_geografica'] = ['La ubicación geográfica es obligatoria para publicar.'];
+            }
+            if (empty($categoria)) {
+                $erroresPublicacion['categoria'] = ['La categoría es obligatoria para publicar.'];
+            }
+
+            if ($totalFinal === 0) {
+                $erroresPublicacion['fotografias_nuevas'] = ['El proyecto debe tener al menos una imagen para ser publicado.'];
+            }
+
+            if (! empty($erroresPublicacion)) {
+                return response()->json([
+                    'success' => false,
+                    'errors'  => $erroresPublicacion,
+                ], 422);
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // c.2) Actualizar campos del proyecto (CU 50.1 Exc 5 / CU 49.3 Exc 4)
         // ------------------------------------------------------------------
         $proyecto->fill([
             'nombre_obra'         => $validated['nombre_obra'],
@@ -283,7 +356,19 @@ class AdminController extends Controller
             'categoria'           => $validated['categoria'] ?? $proyecto->categoria,
             'estado_publicacion'  => $validated['estado_publicacion'] ?? $proyecto->estado_publicacion,
         ]);
-        $this->db->guardarProyecto($proyecto);
+
+        try {
+            $this->db->guardarProyecto($proyecto);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo actualizar el proyecto', [
+                'error'       => $e->getMessage(),
+                'id_proyecto' => $proyecto->id_proyecto,
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudieron guardar los cambios. La base de datos no está disponible temporalmente.',
+            ], 500);
+        }
 
         // ------------------------------------------------------------------
         // d) Eliminar imágenes marcadas — solo las del proyecto correcto
@@ -361,7 +446,18 @@ class AdminController extends Controller
         /** @var \App\Models\Administrador $admin */
         $admin = $request->attributes->get('admin');
 
-        $colaboradores = $this->db->listarColaboradoresDeAdmin($admin->id_admin);
+        try {
+            $colaboradores = $this->db->listarColaboradoresDeAdmin($admin->id_admin);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo listar los colaboradores', [
+                'error'   => $e->getMessage(),
+                'id_admin'=> $admin->id_admin,
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'El listado de colaboradores no está disponible temporalmente.',
+            ], 500);
+        }
 
         $resultado = $colaboradores->map(function (Colaborador $c) {
             $logotipoBase64 = null;
@@ -448,14 +544,27 @@ class AdminController extends Controller
         $tipoMime = $archivo->getMimeType();
 
         // ------------------------------------------------------------------
-        // c) Crear el colaborador con logotipo en BYTEA
+        // c) Crear el colaborador con logotipo en BYTEA (CU 46.1 Exc 3)
         // ------------------------------------------------------------------
-        $colaborador = $this->db->crearColaborador([
-            'nombre_comercial' => $validated['nombre_comercial'],
-            'logotipo'         => $binary,
-            'tipo_mime'        => $tipoMime,
-            'id_admin'         => $admin->id_admin,
-        ]);
+        try {
+            $colaborador = $this->db->crearColaborador([
+                'nombre_comercial' => $validated['nombre_comercial'],
+                'logotipo'         => $binary,
+                'tipo_mime'        => $tipoMime,
+                'id_admin'         => $admin->id_admin,
+            ]);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo crear el colaborador', [
+                'error'   => $e->getMessage(),
+                'id_admin'=> $admin->id_admin,
+            ]);
+            return response()->json([
+                'success' => false,
+                'errors'  => [
+                    'general' => ['No se pudo registrar el colaborador. La base de datos no está disponible temporalmente.'],
+                ],
+            ], 500);
+        }
 
         // ------------------------------------------------------------------
         // d) Generar Data URI para la respuesta inmediata en Alpine

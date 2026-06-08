@@ -441,11 +441,16 @@
                                 </label>
                                 <input id="editar-region" type="text"
                                        x-model="formEditar.region"
+                                       @input="erroresEditar.region = ''"
+                                       :class="erroresEditar.region ? 'border-red-400' : 'border-slate-300'"
                                        class="w-full px-4 py-2.5 rounded-lg border
                                               border-slate-300 text-sm focus:outline-none
                                               focus:ring-2 focus:ring-slate-300"
                                        maxlength="80" :disabled="enviando"
                                        placeholder="Ej: Metropolitana">
+                                <p x-show="erroresEditar.region" x-cloak
+                                   x-text="erroresEditar.region"
+                                   class="mt-1 text-xs text-red-600" role="alert"></p>
                             </div>
 
                             {{-- Año ejecución --}}
@@ -471,11 +476,16 @@
                                 </label>
                                 <input id="editar-ubicacion" type="text"
                                        x-model="formEditar.ubicacion_geografica"
+                                       @input="erroresEditar.ubicacion_geografica = ''"
+                                       :class="erroresEditar.ubicacion_geografica ? 'border-red-400' : 'border-slate-300'"
                                        class="w-full px-4 py-2.5 rounded-lg border
                                               border-slate-300 text-sm focus:outline-none
                                               focus:ring-2 focus:ring-slate-300"
                                        maxlength="150" :disabled="enviando"
                                        placeholder="Ej: Autopista del Sol, km 45">
+                                <p x-show="erroresEditar.ubicacion_geografica" x-cloak
+                                   x-text="erroresEditar.ubicacion_geografica"
+                                   class="mt-1 text-xs text-red-600" role="alert"></p>
                             </div>
 
                             {{-- Categoría --}}
@@ -486,6 +496,8 @@
                                 </label>
                                 <select id="editar-categoria"
                                         x-model="formEditar.categoria"
+                                        @change="erroresEditar.categoria = ''"
+                                        :class="erroresEditar.categoria ? 'border-red-400' : 'border-slate-300'"
                                         class="w-full px-4 py-2.5 rounded-lg border
                                                border-slate-300 text-sm bg-white
                                                focus:outline-none focus:ring-2
@@ -496,6 +508,9 @@
                                     <option value="Industrial">Industrial</option>
                                     <option value="Agrícola">Agrícola</option>
                                 </select>
+                                <p x-show="erroresEditar.categoria" x-cloak
+                                   x-text="erroresEditar.categoria"
+                                   class="mt-1 text-xs text-red-600" role="alert"></p>
                             </div>
 
                             {{-- Estado publicación --}}
@@ -524,6 +539,8 @@
                                 </label>
                                 <textarea id="editar-descripcion"
                                           x-model="formEditar.descripcion_tecnica"
+                                          @input="erroresEditar.descripcion_tecnica = ''"
+                                          :class="erroresEditar.descripcion_tecnica ? 'border-red-400' : 'border-slate-300'"
                                           class="w-full px-4 py-2.5 rounded-lg border
                                                  border-slate-300 text-sm focus:outline-none
                                                  focus:ring-2 focus:ring-slate-300 resize-none"
@@ -531,6 +548,9 @@
                                           :disabled="enviando"
                                           placeholder="Descripción técnica del proyecto...">
                                 </textarea>
+                                <p x-show="erroresEditar.descripcion_tecnica" x-cloak
+                                   x-text="erroresEditar.descripcion_tecnica"
+                                   class="mt-1 text-xs text-red-600" role="alert"></p>
                             </div>
 
                         </div>
@@ -747,6 +767,8 @@ function adminProyectos() {
                 });
                 if (res.ok) {
                     this.proyectos = await res.json();
+                } else if (res.status === 401) {
+                    window.location.href = '/';
                 } else {
                     console.error('Error al cargar proyectos:', res.status);
                 }
@@ -847,6 +869,11 @@ function adminProyectos() {
                     this.proyectos.unshift(data.proyecto);
                     this.enviando = false;
                     this.cerrarModalCrear();
+                    return;
+                }
+
+                if (res.status === 401) {
+                    window.location.href = '/';
                     return;
                 }
 
@@ -1012,6 +1039,11 @@ function adminProyectos() {
                     }
                     this.enviando = false;
                     this.cerrarModalEditar();
+                    return;
+                }
+
+                if (res.status === 401) {
+                    window.location.href = '/';
                     return;
                 }
 

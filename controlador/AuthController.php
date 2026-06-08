@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\EnviarEmailBloqueoJob;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -120,7 +121,19 @@ class AuthController extends Controller
                 // CU 5.7 — Bloquear cuenta por 60 minutos
                 $admin->bloqueado_hasta   = now()->addMinutes(self::BLOQUEO_MINUTOS);
                 $admin->intentos_fallidos = 0;
-                $this->db->guardarAdmin($admin);
+
+                try {
+                    $this->db->guardarAdmin($admin);
+                } catch (QueryException $e) {
+                    Log::error('BD: No se pudo registrar el bloqueo de cuenta', [
+                        'error'       => $e->getMessage(),
+                        'id_admin'    => $admin->id_admin,
+                    ]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Error interno al procesar la autenticación. Intenta nuevamente.',
+                    ], 500);
+                }
 
                 // Disparar job asíncrono para enviar email de bloqueo
                 EnviarEmailBloqueoJob::dispatch($admin->id_admin, now()->toImmutable());
@@ -138,7 +151,18 @@ class AuthController extends Controller
                 ], 423);
             }
 
-            $this->db->guardarAdmin($admin);
+            try {
+                $this->db->guardarAdmin($admin);
+            } catch (QueryException $e) {
+                Log::error('BD: No se pudo actualizar el contador de intentos', [
+                    'error'    => $e->getMessage(),
+                    'id_admin' => $admin->id_admin,
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error interno al procesar la autenticación. Intenta nuevamente.',
+                ], 500);
+            }
 
             $restantes = self::MAX_INTENTOS - $admin->intentos_fallidos;
 
@@ -156,18 +180,41 @@ class AuthController extends Controller
         // Resetear contadores de seguridad
         $admin->intentos_fallidos = 0;
         $admin->bloqueado_hasta   = null;
-        $this->db->guardarAdmin($admin);
+
+        try {
+            $this->db->guardarAdmin($admin);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo resetear los contadores de seguridad', [
+                'error'    => $e->getMessage(),
+                'id_admin' => $admin->id_admin,
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno al procesar la autenticación. Intenta nuevamente.',
+            ], 500);
+        }
 
         // Generar token aleatorio de 64 caracteres
         $token = Str::random(64);
 
         // Persistir sesión con hash del token (nunca guardar el token en claro)
-        $sesion = $this->db->crearSesion([
-            'token_hash'   => Hash::make($token),
-            'fecha_inicio' => now(),
-            'estado'       => 'activa',
-            'id_admin'     => $admin->id_admin,
-        ]);
+        try {
+            $sesion = $this->db->crearSesion([
+                'token_hash'   => Hash::make($token),
+                'fecha_inicio' => now(),
+                'estado'       => 'activa',
+                'id_admin'     => $admin->id_admin,
+            ]);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo crear la sesión', [
+                'error'    => $e->getMessage(),
+                'id_admin' => $admin->id_admin,
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo iniciar sesión. La base de datos no está disponible temporalmente.',
+            ], 500);
+        }
 
         // Construir valor de cookie: "id_sesion|token"
         // El middleware usará el id_sesion para buscar el registro directamente
@@ -230,10 +277,19 @@ class AuthController extends Controller
 
                     if ($sesionActiva && Hash::check($token, $sesionActiva->token_hash)) {
                         // ------------------------------------------------------
-                        // c) Invalidar la sesión
+                        // c) Invalidar la sesión (CU 33.1 Exc 3)
                         // ------------------------------------------------------
                         $sesionActiva->estado = 'cerrada';
-                        $this->db->guardarSesion($sesionActiva);
+
+                        try {
+                            $this->db->guardarSesion($sesionActiva);
+                        } catch (QueryException $e) {
+                            Log::error('BD: No se pudo cerrar la sesión en BD', [
+                                'error'    => $e->getMessage(),
+                                'id_sesion'=> $sesionActiva->id_sesion,
+                            ]);
+                            // La sesión local se cierra igualmente; se registra la inconsistencia.
+                        }
                     }
                 }
             }
