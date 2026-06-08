@@ -17,6 +17,10 @@ Route::get('/', [InstitucionalCtrl::class, 'index'])->name('inicio');
 // Sin autenticacion. Retornan JSON para consumo por Alpine.js.
 // -----------------------------------------------------------------------
 
+// RF12 — Pagina dedicada de proyectos (acceso desde el Menu Lateral)
+Route::get('/proyectos', [ProyectoController::class, 'galeria'])
+    ->name('proyectos.index');
+
 // CU 3.2 / CU 3.3 — Busqueda y filtrado de proyectos (RF20, RF21)
 Route::get('/proyectos/buscar', [ProyectoController::class, 'buscar'])
     ->name('proyectos.buscar');
@@ -33,6 +37,10 @@ Route::get('/proyectos/{id}/detalle', [ProyectoController::class, 'detalle'])
 // CU 4.1 — Visualizar listado de certificaciones
 Route::get('/certificaciones', [ProyectoController::class, 'certificaciones'])
     ->name('certificaciones.index');
+
+// RF12 — Pagina dedicada de colaboradores (acceso desde el Menu Lateral)
+Route::get('/colaboradores', [InstitucionalCtrl::class, 'colaboradores'])
+    ->name('colaboradores.index');
 
 // CU 4.2 — Descargar PDF de un certificado
 Route::get('/certificaciones/{id}/descargar', [ProyectoController::class, 'descargarCertificado'])

@@ -33,6 +33,28 @@ class InstitucionalCtrl extends Controller
             return $cert;
         });
 
-        return view('public.index', compact('certificados'));
+        // RF13/RF14 — La página de inicio consulta también los colaboradores en
+        // el mismo render server-side, de modo que las secciones a las que
+        // apunta la Barra de Navegación Fija se construyen con datos obtenidos
+        // desde la Base de Datos (los proyectos se cargan en la galería).
+        $colaboradores = $this->db->listarColaboradores();
+
+        return view('public.index', compact('certificados', 'colaboradores'));
+    }
+
+    /**
+     * RF12 — Página dedicada de Colaboradores (acceso desde el Menú Lateral).
+     *
+     * Renderiza la PÁGINA COMPLETA de colaboradores. El contenido (logotipos
+     * y nombres comerciales) se obtiene desde la Base de Datos en el mismo
+     * request GET /colaboradores a través del DBRouterController.
+     *
+     * @return View
+     */
+    public function colaboradores(): View
+    {
+        $colaboradores = $this->db->listarColaboradores();
+
+        return view('public.colaboradores-pagina', compact('colaboradores'));
     }
 }
