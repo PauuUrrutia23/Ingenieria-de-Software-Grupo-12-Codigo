@@ -24,8 +24,9 @@
             "App\\": "app/",
             "App\\Http\\Controllers\\": "controlador/",
             "App\\Http\\Middleware\\": "controlador/",
-            "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "App\\Models\\": "base_datos/modelos/",
+            "Database\\Factories\\": "base_datos/factories/",
+            "Database\\Seeders\\": "base_datos/seeders/"
         }
     },
     "autoload-dev": {

@@ -21,5 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::getFinder()->setPaths([base_path('vistas')]);
+
+        $this->loadMigrationsFrom(base_path('base_datos/migrations'));
     }
 }
