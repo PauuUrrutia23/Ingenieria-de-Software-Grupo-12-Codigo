@@ -197,45 +197,7 @@ php artisan serve
 ## Estructura del proyecto
 
 ```
-ingecon-fresh/
-├── app/
-│   ├── Http/
-│   │   ├── Controllers/
-│   │   │   ├── AdminController.php       # CRUD proyectos + colaboradores
-│   │   │   ├── AuthController.php        # Login/logout con bloqueo
-│   │   │   ├── ContactoController.php    # Formulario de contacto publico
-│   │   │   ├── Controller.php            # Base controller
-│   │   │   ├── InstitucionalCtrl.php     # Pagina principal
-│   │   │   └── ProyectoController.php    # Busqueda, detalle, certificaciones
-│   │   └── Middleware/
-│   │       └── AdminAuth.php             # Verifica cookie de sesion admin
-│   ├── Jobs/
-│   │   └── EnviarEmailBloqueoJob.php     # Job asincrono de email de bloqueo
-│   ├── Mail/
-│   │   └── CuentaBloqueadaMail.php       # Mailable de cuenta bloqueada
-│   ├── Models/
-│   │   ├── Administrador.php
-│   │   ├── ArchivoAdjunto.php
-│   │   ├── Certificado.php
-│   │   ├── Colaborador.php
-│   │   ├── Consulta.php
-│   │   ├── ImagenProyecto.php
-│   │   ├── Proyecto.php
-│   │   ├── Sesion.php
-│   │   └── Visitante.php
-│   └── Providers/
-│       └── AppServiceProvider.php
-├── bootstrap/
-│   └── app.php                           # Registro de middleware admin.auth
-├── config/
-│   ├── database.php                      # Conexion pgsql + PDO::ATTR_EMULATE_PREPARES
-│   └── hashing.php                       # Driver argon2id
-├── database/
-│   ├── migrations/                       # 9 migraciones (tablas del sistema)
-│   └── seeders/
-│       ├── AdminSeeder.php               # Admin inicial: admin@ingecon.cl
-│       └── DatabaseSeeder.php
-├── resources/views/
+├── vistas/                               # Blade templates (V de MVC)
 │   ├── layouts/
 │   │   ├── admin.blade.php               # Layout del panel administrativo
 │   │   └── public.blade.php              # Layout publico (navbar + sidebar + login modal)
@@ -261,10 +223,70 @@ ingecon-fresh/
 │           ├── galeria.blade.php         # Galeria con Alpine.js (filtros, busqueda, modal)
 │           ├── certificaciones.blade.php # Listado de certificados para descarga
 │           └── contacto.blade.php        # Formulario de contacto con Alpine.js
+│
+├── controlador/                          # Controllers + Middleware (C de MVC)
+│   ├── AdminController.php               # CRUD proyectos + colaboradores
+│   ├── AuthController.php                # Login/logout con bloqueo
+│   ├── ContactoController.php            # Formulario de contacto publico
+│   ├── Controller.php                    # Base controller
+│   ├── DBRouterController.php            # Intermediario de base de datos
+│   ├── InstitucionalCtrl.php             # Pagina principal
+│   ├── ProyectoController.php            # Busqueda, detalle, certificaciones
+│   └── AdminAuth.php                     # Middleware: verifica cookie de sesion admin
+│
+├── base_datos/                           # Models + Migrations + Seeders (M de MVC)
+│   ├── modelos/                          # 9 modelos Eloquent
+│   │   ├── Administrador.php
+│   │   ├── ArchivoAdjunto.php
+│   │   ├── Certificado.php
+│   │   ├── Colaborador.php
+│   │   ├── Consulta.php
+│   │   ├── ImagenProyecto.php
+│   │   ├── Proyecto.php
+│   │   ├── Sesion.php
+│   │   └── Visitante.php
+│   ├── migrations/                       # 10 migraciones (tablas del sistema)
+│   ├── seeders/                          # AdminSeeder + DatabaseSeeder
+│   └── factories/                        # UserFactory
+│
+├── documentacion/                        # Documentacion del proyecto
+│   ├── 01_setup_laravel_migraciones.md
+│   ├── 02_modelos_eloquent.md
+│   ├── 02b_dbrouter_controller.md
+│   ├── 03_autenticacion.md
+│   ├── 04_formulario_contacto.md
+│   ├── 05_navegacion_publica.md
+│   ├── 06_galeria_proyectos.md
+│   ├── 07_certificaciones_publicas.md
+│   ├── 08_admin_proyectos.md
+│   ├── 09_admin_colaboradores.md
+│   ├── 10_integracion_y_pruebas.md
+│   ├── PRUEBAS.md
+│   └── Ingecon_Como_Funciona.docx
+│
+├── app/                                  # Jobs, Mail, Providers
+│   ├── Jobs/
+│   │   └── EnviarEmailBloqueoJob.php     # Job asincrono de email de bloqueo
+│   ├── Mail/
+│   │   └── CuentaBloqueadaMail.php       # Mailable de cuenta bloqueada
+│   └── Providers/
+│       └── AppServiceProvider.php
+├── bootstrap/
+├── config/
+│   ├── database.php                      # Conexion pgsql + PDO::ATTR_EMULATE_PREPARES
+│   └── hashing.php                       # Driver argon2id
 ├── routes/
 │   └── web.php                           # Todas las rutas
-├── PRUEBAS.md                            # Checklist de verificacion por RF
-└── .env                                  # Variables de entorno
+├── public/
+├── storage/
+├── tests/
+├── .env                                  # Variables de entorno
+├── artisan
+├── composer.json
+├── package.json
+├── INSTALACION.md                        # Guia de instalacion detallada
+├── CHANGELOG.md
+└── README.md
 ```
 
 ---
@@ -296,7 +318,7 @@ ingecon-fresh/
 
 ## Verificacion de funcionamiento
 
-Para probar cada funcionalidad implementada, revisa el archivo [`PRUEBAS.md`](PRUEBAS.md) que contiene flujos de prueba paso a paso para cada requerimiento funcional.
+Para probar cada funcionalidad implementada, revisa el archivo [`PRUEBAS.md`](documentacion/PRUEBAS.md) que contiene flujos de prueba paso a paso para cada requerimiento funcional.
 
 ---
 
