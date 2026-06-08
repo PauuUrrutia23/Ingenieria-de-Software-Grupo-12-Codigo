@@ -12,6 +12,14 @@ use Illuminate\View\View;
 
 class ProyectoController extends Controller
 {
+    /**
+     * Mediador de base de datos (ver 02b_dbrouter_controller.md).
+     * Resuelto automáticamente por el contenedor de Laravel.
+     */
+    public function __construct(
+        private readonly DBRouterController $db
+    ) {}
+
     // =========================================================================
     // CU 3.2 / CU 3.3 — Búsqueda y filtrado (RF20, RF21)
     // =========================================================================
@@ -38,54 +46,13 @@ class ProyectoController extends Controller
         $categoria = $request->query('categoria', '');
 
         // ------------------------------------------------------------------
-        // b) Query base: solo proyectos publicados
+        // b) Delegar TODA la construcción de la query al DBRouterController.
+        //    El router aplica: estado_publicacion='publicado', filtro ILIKE
+        //    de texto (RF20), filtro de categoría (RF21), eager-load de
+        //    imagenesProyecto ordenadas y orden por anio_ejecucion DESC.
+        //    Devuelve una Collection<Proyecto>; aquí solo se arma el JSON.
         // ------------------------------------------------------------------
-        $query = Proyecto::where('estado_publicacion', 'publicado');
-
-        // ------------------------------------------------------------------
-        // c) Filtro por texto libre (RF20 — CU 3.2)
-        //    ILIKE de PostgreSQL: case-insensitive, sin índice full-text.
-        //    Busca coincidencia parcial (%texto%) en dos campos con OR.
-        // ------------------------------------------------------------------
-        if (filled($texto)) {
-            $termino = '%' . $texto . '%';
-            $query->where(function ($q) use ($termino) {
-                $q->whereRaw('nombre_obra ILIKE ?', [$termino])
-                  ->orWhereRaw('ubicacion_geografica ILIKE ?', [$termino]);
-            });
-        }
-
-        // ------------------------------------------------------------------
-        // d) Filtro por categoría exacta (RF21 — CU 3.3)
-        //    Valores válidos: 'Habitacional', 'Industrial', 'Agrícola'
-        // ------------------------------------------------------------------
-        if (filled($categoria)) {
-            $query->where('categoria', $categoria);
-        }
-
-        // ------------------------------------------------------------------
-        // e) Eager load de imágenes para thumbnail
-        //
-        //    ⚠️  IMPORTANTE — Bug conocido de Laravel con limit() en with():
-        //    Usar ->limit(1) dentro de with('imagenes') aplica el LIMIT
-        //    globalmente a la query SQL, no "1 por proyecto". El resultado
-        //    es que TODOS los proyectos comparten la misma única imagen.
-        //
-        //    Solución: cargar TODAS las imágenes de cada proyecto y tomar
-        //    la primera al mapear. El costo de memoria es aceptable para
-        //    el volumen esperado en el incremento 1.
-        //
-        //    Alternativa para escala futura: agregar en el modelo Proyecto
-        //    una relación hasOne llamada imagenPrincipal() con orderBy,
-        //    que Laravel resuelve correctamente con un subquery.
-        // ------------------------------------------------------------------
-        $query->with(['imagenesProyecto' => function ($q) {
-            $q->orderBy('id_imagen', 'asc');  // orden consistente
-        }]);
-
-        // Ordenar por año descendente (más reciente primero)
-        // nullable: proyectos sin año van al final
-        $proyectos = $query->orderByRaw('anio_ejecucion DESC NULLS LAST')->get();
+        $proyectos = $this->db->buscarProyectosPublicados($texto, $categoria);
 
         // ------------------------------------------------------------------
         // f) Mapear colección a JSON serializable
@@ -142,11 +109,9 @@ class ProyectoController extends Controller
     {
         // ------------------------------------------------------------------
         // a) Buscar proyecto con TODAS sus imágenes para el carrusel del modal
-        //    Relación: imagenesProyecto() definida en 02_modelos_eloquent.md
+        //    El router carga la relación imagenesProyecto ordenada.
         // ------------------------------------------------------------------
-        $proyecto = Proyecto::with(['imagenesProyecto' => function ($q) {
-            $q->orderBy('id_imagen', 'asc');
-        }])->find($id);
+        $proyecto = $this->db->buscarProyectoConImagenes($id);
 
         // ------------------------------------------------------------------
         // b) No existe o no está publicado → 404
@@ -206,24 +171,11 @@ class ProyectoController extends Controller
     public function certificaciones(): View
     {
         // ------------------------------------------------------------------
-        // a) Consultar certificados activos con metadatos únicamente
-        //    select() explícito: excluye archivo_pdf (BYTEA) del resultado.
-        //    with('proyecto') previene N+1 al acceder a $cert->proyecto->nombre_obra.
+        // a) Consultar certificados activos con metadatos únicamente.
+        //    El router excluye archivo_pdf (BYTEA) del SELECT y precarga
+        //    el proyecto (id, nombre_obra, region) para evitar N+1.
         // ------------------------------------------------------------------
-        $certificados = Certificado::select([
-                'id_certificado',
-                'codigo_lote',
-                'fecha_emision',
-                'estado',
-                'id_proyecto',
-                // archivo_pdf intencionalmente excluido del listado
-            ])
-            ->where('estado', 'activo')
-            ->with(['proyecto' => function ($query) {
-                $query->select(['id_proyecto', 'nombre_obra', 'region']);
-            }])
-            ->orderBy('fecha_emision', 'desc')
-            ->get();
+        $certificados = $this->db->listarCertificadosActivos();
 
         // ------------------------------------------------------------------
         // b) Formatear fecha_emision a d/m/Y para la vista
@@ -266,18 +218,11 @@ class ProyectoController extends Controller
     public function descargarCertificado(int $id): Response
     {
         // ------------------------------------------------------------------
-        // a) Buscar certificado — esta vez SÍ incluimos archivo_pdf
-        //    No usar find() aquí para poder seleccionar columnas específicas
-        //    y evitar un select * que cargaría otros campos innecesarios.
+        // a) Buscar certificado — esta vez SÍ incluimos archivo_pdf.
+        //    El router selecciona columnas específicas (id, codigo_lote,
+        //    archivo_pdf, estado) en lugar de un select * innecesario.
         // ------------------------------------------------------------------
-        $certificado = Certificado::select([
-                'id_certificado',
-                'codigo_lote',
-                'archivo_pdf',
-                'estado',
-            ])
-            ->where('id_certificado', $id)
-            ->first();
+        $certificado = $this->db->buscarCertificadoParaDescarga($id);
 
         // ------------------------------------------------------------------
         // b) No existe → 404

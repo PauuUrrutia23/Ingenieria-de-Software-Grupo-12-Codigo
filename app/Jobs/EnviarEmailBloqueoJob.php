@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Mail\CuentaBloqueadaMail;
-use App\Models\Administrador;
+use App\Http\Controllers\DBRouterController;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -38,10 +38,12 @@ class EnviarEmailBloqueoJob implements ShouldQueue
 
     /**
      * Ejecutar el job: cargar el admin y enviar el email de notificación.
+     * El DBRouterController se resuelve desde el contenedor en handle()
+     * (no por constructor, para no romper la serialización del job).
      */
-    public function handle(): void
+    public function handle(DBRouterController $db): void
     {
-        $admin = Administrador::find($this->adminId);
+        $admin = $db->buscarAdminPorId($this->adminId);
 
         if (! $admin) {
             Log::error('EnviarEmailBloqueoJob: Administrador no encontrado', [

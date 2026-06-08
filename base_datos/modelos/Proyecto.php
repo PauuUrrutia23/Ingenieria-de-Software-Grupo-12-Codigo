@@ -51,6 +51,14 @@ class Proyecto extends Model
     }
 
     /**
+     * Alias de imagenesProyecto() usado por el panel admin (DBRouterController).
+     */
+    public function imagenes(): HasMany
+    {
+        return $this->hasMany(ImagenProyecto::class, 'id_proyecto', 'id_proyecto');
+    }
+
+    /**
      * Un proyecto puede tener muchos certificados de calidad/lote.
      */
     public function certificados(): HasMany
