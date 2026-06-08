@@ -96,14 +96,8 @@
 
                 {{-- Inicio --}}
                 <li>
-                    <button
-                        type="button"
-                        @click="
-                            abierto = false;
-                            $nextTick(() => {
-                                document.getElementById('inicio').scrollIntoView({ behavior: 'smooth' });
-                            })
-                        "
+                    <a
+                        href="/"
                         class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
                                text-sm font-medium text-slate-700
                                hover:bg-slate-100 hover:text-slate-900
@@ -122,19 +116,13 @@
                                      1.125-1.125V9.75M8.25 21h8.25"/>
                         </svg>
                         Inicio
-                    </button>
+                    </a>
                 </li>
 
                 {{-- Proyectos --}}
                 <li>
-                    <button
-                        type="button"
-                        @click="
-                            abierto = false;
-                            $nextTick(() => {
-                                document.getElementById('proyectos').scrollIntoView({ behavior: 'smooth' });
-                            })
-                        "
+                    <a
+                        href="/proyectos"
                         class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
                                text-sm font-medium text-slate-700
                                hover:bg-slate-100 hover:text-slate-900
@@ -152,19 +140,13 @@
                                      1.125 1.125V21"/>
                         </svg>
                         Proyectos
-                    </button>
+                    </a>
                 </li>
 
                 {{-- Certificaciones --}}
                 <li>
-                    <button
-                        type="button"
-                        @click="
-                            abierto = false;
-                            $nextTick(() => {
-                                document.getElementById('certificaciones').scrollIntoView({ behavior: 'smooth' });
-                            })
-                        "
+                    <a
+                        href="/certificaciones"
                         class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
                                text-sm font-medium text-slate-700
                                hover:bg-slate-100 hover:text-slate-900
@@ -187,19 +169,35 @@
                                      0 011.043 3.296A3.745 3.745 0 0121 12z"/>
                         </svg>
                         Certificaciones
-                    </button>
+                    </a>
+                </li>
+
+                {{-- Colaboradores --}}
+                <li>
+                    <a
+                        href="/colaboradores"
+                        class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
+                               text-sm font-medium text-slate-700
+                               hover:bg-slate-100 hover:text-slate-900
+                               transition-colors text-left"
+                    >
+                        {{-- Ícono empresas/edificios --}}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400 shrink-0"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                             stroke-width="1.75" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5
+                                     3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125
+                                     1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/>
+                        </svg>
+                        Colaboradores
+                    </a>
                 </li>
 
                 {{-- Contacto --}}
                 <li>
-                    <button
-                        type="button"
-                        @click="
-                            abierto = false;
-                            $nextTick(() => {
-                                document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
-                            })
-                        "
+                    <a
+                        href="/#contacto"
                         class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
                                text-sm font-medium text-slate-700
                                hover:bg-slate-100 hover:text-slate-900
@@ -219,7 +217,7 @@
                                      01-1.07-1.916V6.75"/>
                         </svg>
                         Contacto
-                    </button>
+                    </a>
                 </li>
 
             </ul>

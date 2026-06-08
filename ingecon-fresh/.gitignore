@@ -21,3 +21,9 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+.claude/
+base_datos/
+controlador/
+modelo/
+pruebas/
+vista/

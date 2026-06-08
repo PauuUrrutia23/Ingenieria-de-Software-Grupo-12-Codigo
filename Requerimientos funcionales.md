@@ -1,0 +1,81 @@
+1. **Requerimientos funcionales**
+
+La siguiente Tabla 8.7 muestra los requerimientos funcionales del sistema.
+
+*Tabla 8.7 “Requerimientos Funcionales”.*
+
+|  |  |  |
+| --- | --- | --- |
+| ID | Descripción del requerimiento | Categoría |
+| 1. | F**o**rmulario de Contacto: Visitante |  |
+| RF01 | El sistema debe permitir al Visitante enviar una Consulta de contacto, asegurando que la información sea registrada en la Base de Datos para su gestión. | Registro de datos |
+| RF02 | El sistema debe permitir al Visitante ingresar datos en el Formulario de Contacto utilizando exclusivamente los campos definidos: Nombre, Apellido, Email, Mensaje, Fecha y Adjunto.  *Ver Ejemplo en****Anexo 1, Figura 11.2:****“Formulario de contacto”* | Ingreso de datos |
+| RF03 | El sistema debe asegurar que el Visitante únicamente pueda adjuntar un Archivo PDF Estándar a su consulta, previniendo la carga de formatos no compatibles. | Validación de Archivo |
+| RF04 | El sistema debe permitir al Visitante previsualizar el contenido del archivo adjunto PDF mediante una Ventana Modal integrada en el Formulario. La previsualización debe ejecutarse tras una Acción de Usuario sobre el icono del archivo permitiendo la lectura del documento. | Previsualización en Ventana |
+| RF05 | El sistema debe permitir al visitante seleccionar una fecha específica mediante un cuadro de selección interactivo integrado en el campo ‘’Fecha’’ cumpliendo con el estándar Fecha mencionado. | Selección de Fecha en Calendario |
+| RF06 | El sistema debe solicitar al Visitante una confirmación de envío antes de enviar el formulario mediante una Ventana Modal que se despliegue al realizar una Acción de usuario sobre el botón ‘’Enviar’’. | Confirmación de Envío |
+| RF07 | El sistema debe notificar al Visitante mediante un Mensaje del Sistema cuando uno o más de los campos ingresados no cumplan con las validaciones establecidas  *(Ver Ejemplo en****Anexo 1, Figura 11.3:****“Formulario: Campo inválido”* | Notificación de Error |
+| RF08 | El sistema debe enviar automáticamente un correo electrónico de confirmación al Visitante una vez que la consulta haya sido registrada exitosamente, informando que su solicitud fue recibida y será gestionada por el equipo correspondiente. | Envío automático al correo |
+| RF09 | El sistema debe permitir al Visitante vaciar simultáneamente todos los campos del Formulario: Nombre, Apellido, Email, Mensaje, Fecha y Adjunto, mediante el botón “Limpiar”, facilitando la corrección rápida de datos.  *Ver Ejemplo en****Anexo 1, Figura 11.4:****“Formulario: Botón de limpieza”* | Restablecimiento |
+| RF10 | El sistema debe confirmar al Visitante el envío exitoso de su consulta mediante una Ventana Modal.  *Ver Ejemplo en****Anexo 1, Figura 11.5:****“Formulario: Envío exitoso”* | Feedback de Éxito |
+| 2. | Página de Inicio: Visitante |  |
+| RF11 | El sistema debe mostrar en el encabezado de la página de inicio un Enlace visible y seleccionable que, al ser activado mediante una Acción de Usuario, redirija al Visitante hacia una URL válida correspondiente a la documentación técnica de Conectores Metálicos. | Redirección de Banner |
+| RF12 | El sistema debe mostrar un icono de menú en la interfaz de la página de inicio que, al ser activado mediante una Acción de Usuario, despliegue el Menú Lateral con Enlaces que redirijan a las secciones disponibles del sitio.  *Ver Ejemplo en****Anexo 1, Figura 11.6:****“Menú lateral”)* | Navegación Lateral |
+| RF13 | El sistema debe mantener visible la Barra de Navegación Fija durante el desplazamiento vertical y, al seleccionar una opción, desplazar la vista hacia la sección correspondiente dentro de la misma página.  *Ver Ejemplo en****Anexo 1, Figura 11.7****: “Barra de acceso rápido”* | Navegación Interna |
+| RF14 | El sistema debe permitir al Visitante interactuar con un carrusel de desplazamiento horizontal para explorar dinámicamente los Logotipos y Nombre Comercial de las empresas de la sección Colaboradores. | Despliegue Dinámico |
+| 3. | Preguntas Frecuentes: Visitante |  |
+| RF15 | El sistema debe mostrar una sección de preguntas frecuentes y desplegar dinámicamente la respuesta asociada cuando el Visitante seleccione una pregunta mediante una Acción de Usuario.  *Ver Ejemplo en****Anexo 1, Figura 11.8:****“Preguntas frecuentes”* | Interactividad de Interfaz |
+| RF16 | El sistema debe permitir al Visitante visualizar los testimonios de clientes en la página de inicio, recuperando las opiniones almacenadas en la Base de Datos. | Renderizado de Datos |
+| RF17 | El sistema debe mostrar una sección estructurada mediante un Menú de Pestañas que incluya las etapas Descortezado, Impregnación Vacío-Presión y Ensamblado, permitiendo al Visitante seleccionar una etapa mediante una Acción de Usuario.  *Ver Ejemplo en****Anexo 1, Figura 11.9:****“Barra Proceso Industrial”* | Navegación de Pestañas |
+| RF18 | El sistema debe permitir al Visitante reproducir un registro audiovisual demostrativo mediante una Ventana Modal en cada una de las fases industriales, tales como Descortezado, Impregnación Vacío-Presión y Ensamblado.  *Ver Ejemplo en****Anexo 1, Figura 11.22,****“Acceso al video de las fases industriales”)* | Video de las fases industriales |
+| 4. | Búsqueda y filtrado de proyectos |  |
+| RF19 | El sistema debe permitir al Visitante en una sección de proyectos desde un menú desplegable seleccionar una Ubicación Geográfica desde una lista de opciones predefinidas, al activar el botón “Aplicar Filtros” mediante una Acción de Usuario, procesar la consulta y actualizar la vista mostrando exclusivamente los proyectos que coincidan con dicho criterio  *Ver Ejemplo en****Anexo 1, Figura 11.10:****“Proyectos: Filtros De Búsqueda”* | Filtro Geográfico |
+| RF20 | El sistema debe permitir al Visitante en una sección de proyectos ingresar una cadena de texto en el menú desplegable y procesarla para filtrar proyectos comparando los campos Nombre de la Obra y Ubicación Geográfica, mostrando únicamente coincidencias parciales o totales. | Búsqueda por Texto |
+| RF21 | El sistema debe permitir al Visitante filtrar proyectos por tipo Habitacional, Industrial o Agrícola, mostrando exclusivamente aquellos que coincidan con la categoría seleccionada. | Filtro Categórico |
+| RF22 | El sistema debe permitir al visitante aplicar múltiples filtros de forma simultánea, actualizando dinámicamente los resultados mostrados.  *Ver Ejemplo en****Anexo 1, Figura 11.11:****“Proyectos: Filtros sin Resultado* | Filtros Combinados |
+| 5. | Visualización de proyectos |  |
+| RF23 | El sistema debe permitir al Visitante explorar la ubicación geográfica de los proyectos para visualizarlos en un Mapa Interactivo, Después de ejecutar una acción de filtrado de proyectos.    *Ver Ejemplo en****Anexo 1, Figura 11.12:****“Proyectos: Mapa interactivo”* | Geolocalización |
+| RF24 | El sistema debe mostrar una Ventana Modal con las especificaciones técnicas de un proyecto al detectar una Acción de Usuario sobre su imagen, incluyendo Nombre de la Obra, Descripción Técnica y Ubicación Geográfica.  *Ver Ejemplo en****Anexo 1, Figura 11.13:****“Proyectos: Detalles técnicos”* | Visualización de Detalles |
+| 6. | Certificaciones |  |
+| RF25 | El sistema debe permitir al Usuario acceder a la sección “Certificaciones” y visualizar documentos en formato Archivo PDF Estándar almacenados en la Base de Datos.  *Ver Ejemplo en****Anexo 1, Figura 11.14:****“Certificados”* | Acceso a Documentos |
+| RF26 | El sistema debe permitir descargar los certificados en formato Archivo PDF Estándar mediante una Acción de Usuario. | Descarga de Archivos |
+| RF27 | El sistema debe permitir al Visitante ingresar un código o número de lote y retornar el documento PDF correspondiente únicamente cuando exista coincidencia exacta en la Base de Datos. | Búsqueda Específica |
+| 7. | Autenticación |  |
+| RF28 | El sistema debe permitir al Personal de Administración autenticar su identidad ingresando sus Credenciales de acceso en una Ventana Modal para acceder al Panel de Gestión.  *Ver Ejemplo en****Anexo 1, Figura 11.15:****“Administrador: Inicio De Sesión”* | Control de Acceso |
+| RF29 | El sistema debe garantizar al Personal de Administración la protección de su contraseña procesándola mediante un Hash Criptográfico de forma invisible durante la autenticación | Seguridad Criptográfica |
+| 8. | Recuperación de contraseña |  |
+| RF30 | El sistema debe permitir al Personal de Administración iniciar el proceso de recuperación desplegando el Formulario de Recuperación de contraseña dentro de una Ventana Modal tras seleccionar mediante una Acción de usuario el botón “Olvide mi contraseña”. | Solicitud de Recuperación |
+| RF31 | El sistema debe proveer al Personal de Administración luego de una solicitud de recuperación enviada desde el Formulario de recuperación de contraseña un Enlace seguro de recuperación directo a su correo institucional para que pueda continuar el proceso de recuperación de su cuenta. | Generación de Token |
+| RF32 | El sistema debe desplegar un Formulario de restablecimiento al acceder desde el Enlace seguro enviado al Correo institucional luego de completar el Formulario de recuperación de contraseña, permitiendo al Personal de Administración actualizar su Contraseña de acceso previa validación del Token de Sesión y aplicando un Hash al guardarla. | Restablecimiento de Clave |
+| 9. | Gestión de sesión y seguridad |  |
+| RF33 | El sistema debe permitir al Personal de Administración cerrar sesión, invalidando el Token de Sesión y redirigiendo a la página de inicio | Cierre de Sesión |
+| RF34 | El sistema debe proteger la cuenta del Personal de Administración bloqueando temporalmente su acceso por 60 minutos y notificándole a su correo tras 5 intentos fallidos de inicio de sesión. | Bloqueo de Seguridad |
+| 10. | Acceso y navegación administrativa |  |
+| RF35 | El sistema debe mostrar en el Menú Lateral, exclusivamente para el Personal de Administración las opciones de Modulo comercial, Gestión de proyectos, Colaboradores, Panel de gestión y Carga de certificados permitiendo el acceso a cada módulo mediante Enlaces.  *Ver Ejemplo en****Anexo 1, Figura 11.16:****“Administrador: Menú Lateral”* | Navegación Privada |
+| 11. | Notificación de consultas |  |
+| RF36 | El sistema debe alertar de inmediato al Personal de Administración mediante un correo electrónico cada vez que reciba una nueva Consulta. | Alerta de Sistema |
+| 12. | Gestión de consultas |  |
+| RF37 | El sistema debe permitir al Personal de Administración navegar por el historial de Consultas en el Módulo comercial utilizando un sistema de Paginación en bloques de 10 registros.  *Ver Ejemplo en****Anexo 1, Figura 11.17:****“Administrador: Vista De Consultas”* | Listado y Paginación |
+| RF38 | El sistema debe permitir al Personal de Administración ordenar las Consultas en el Módulo comercial según la Fecha ingresada, mediante una Acción de Usuario sobre el control de ordenamiento. | Ordenamiento de Datos |
+| RF39 | El sistema debe permitir al Personal de Administración buscar Consultas en el Módulo comercial ingresando texto libre en la Barra de Búsqueda, al realizar una acción de usuario sobre el icono de búsqueda, muestra una lista de coincidencias parciales o totales contenidas en el campo Mensaje.  *Ver Ejemplo en****Anexo 1, Figura 11.17:****“Administrador: Vista De Consultas”* | Búsqueda Interna |
+| RF40 | El sistema debe permitir al Personal de Administración leer el contenido y descargar los archivos adjuntos de una Consulta específica desplegándola en una Ventana Modal. | Vista de Detalles |
+| 13. | Gestión de estado y prioridad |  |
+| RF41 | El sistema debe permitir al Personal de Administración asignar un nivel de prioridad (Baja, Media, Alta) a cada Consulta mediante una Ventana Modal. | Asignación de Prioridad |
+| RF42 | El sistema debe permitir al Personal de Administración actualizar el estado de una Consulta a “Pendiente”, “En Proceso” o “Finalizada” mediante una Ventana Modal. | Actualización de Estado |
+| 14. | Exportación de datos |  |
+| RF43 | El sistema debe permitir al Personal de Administración exportar el listado de Consultas en formatos CSV y Excel, generando un archivo descargable. | Exportación de Datos |
+| 15. | Gestión de contenido general |  |
+| RF44 | El sistema debe permitir al Personal de Administración añadir y actualizar archivos multimedia como imágenes, videos y textos descriptivos en las secciones de FAQ, Opiniones, Banner de Inicio y Fases Industriales mediante el Panel de Gestión.  *Ver Ejemplo en****Anexo 1, Figura 11.18:****“Administrador: Edición de Contenido”* | Añadir Contenido |
+| RF45 | El sistema debe permitir al Personal de Administración eliminar registros de imagen, video y descripciones de las secciones informativas del sitio desde el Panel de Gestión, previa confirmación de la Acción. | Eliminar Contenido |
+| 16. | Gestión de colaboradores |  |
+| RF46 | El sistema debe permitir al Personal de Administración registrar un nuevo Colaborador desde el Módulo de Colaboradores al realizar una Acción de usuario sobre el botón “Agregar Colaborador”, desplegando un Formulario de Colaborador dentro de una Ventana Modal para ingresar los campos Nombre Comercial y Logotipo, validando que cumple los formatos correctos.  *Ver Ejemplo en****Anexo 1, Figura 11.20:****“Administrador: Edición De Colaboradores”* | Gestión de colaboradores |
+| RF47 | El sistema debe permitir al Personal de Administración editar un Colaborador existente desde el Módulo de Colaboradores, realizando una Acción de usuario sobre el botón “Editar”, el sistema despliega el Formulario de Colaborador dentro de una Ventana Modal precargando los campos Nombre de Colaborador y Logotipo actuales para su modificación, validando que cumple los formatos correctos. | Gestión de colaboradores |
+| RF48 | El sistema debe permitir el Personal de Administración eliminar un registro de Colaborador desde el Módulo de Colaboradores al realizar una Acción de usuario sobre el icono “Eliminar”, el sistema elimina el registro de la Base de datos y su vista en el Módulo de Colaboradores. | Eliminando Colaboradores |
+| 17. | Gestión de proyectos |  |
+| RF49 | El sistema debe permitir al Personal de Administración registrar un nuevo Proyecto desde el Módulo de Proyectos. Al realizar una Acción de Usuario sobre el botón "Nuevo Proyecto", el sistema debe desplegar el Formulario de Proyecto en una Ventana Modal para ingresar los campos Nombre de Proyecto y Fotografías para luego guardarlos en la Base de Datos.  *Ver Ejemplo en****Anexo 1, Figura 11.21:****“Administrador: Módulo de Proyectos”* | Registrando Proyectos |
+| RF50 | El sistema debe permitir al Personal de Administración modificar los detalles de un Proyecto existente. Al interactuar con el botón "Editar Información" en la tarjeta del proyecto, el sistema debe desplegar el Formulario de Proyecto en una Ventana Modal con los datos actuales precargados para su actualización en la Base de Datos. | Editando Información del Proyecto |
+| RF51 | El sistema debe permitir al Personal de Administración gestionar la visibilidad de un Proyecto cambiando su estado mediante un menú desplegable en su tarjeta. El sistema debe restringir la visibilidad en la interfaz pública a aquellos proyectos en estado "Borrador" y hacer visibles únicamente en los estados "Publicado". | Editando Visibilidad del Proyecto |
+| RF52 | El sistema debe permitir al Personal de Administración eliminar un Proyecto. Al realizar una Acción de Usuario sobre el ícono de "Papelera", el sistema borra permanentemente el registro y sus imágenes asociadas de la Base de Datos y remueve la tarjeta de la vista. | Eliminando Proyecto |
+| 18. | Administrador jefe |  |
+| RF53 | El sistema debe permitir al Administrador jefe crear nuevas cuentas de Administrador mediante el ingreso de datos en el formulario de creación dentro del Módulo de Administración. | Creación de cuenta de Administrador |
+| RF54 | El sistema debe permitir al Administrador jefe eliminar cuentas de Administrador desde el Módulo de Administración. | Eliminación de cuenta de Administrador |
