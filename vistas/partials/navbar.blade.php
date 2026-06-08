@@ -81,7 +81,7 @@
 
                 <li>
                     <a
-                        href="{{ route('inicio') }}#proyectos"
+                        href="{{ route('proyectos.index') }}"
                         class="px-3 py-1.5 text-sm font-medium text-slate-600
                                hover:text-slate-900 hover:bg-slate-100
                                rounded-lg transition-colors no-underline"
@@ -98,6 +98,17 @@
                                rounded-lg transition-colors no-underline"
                     >
                         Certificaciones
+                    </a>
+                </li>
+
+                <li>
+                    <a
+                        href="{{ route('colaboradores.index') }}"
+                        class="px-3 py-1.5 text-sm font-medium text-slate-600
+                               hover:text-slate-900 hover:bg-slate-100
+                               rounded-lg transition-colors no-underline"
+                    >
+                        Colaboradores
                     </a>
                 </li>
 

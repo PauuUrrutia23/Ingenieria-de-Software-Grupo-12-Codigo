@@ -375,6 +375,25 @@ class DBRouterController
     }
 
     /**
+     * Lista TODOS los colaboradores (vista pública) con su logotipo (BYTEA)
+     * y tipo_mime, ordenados por nombre comercial. Consumido por la página
+     * pública de Colaboradores y por la sección de la página de inicio (RF14).
+     *
+     * @return Collection<int,Colaborador>
+     */
+    public function listarColaboradores(): Collection
+    {
+        return Colaborador::select([
+                'id_colaborador',
+                'nombre_comercial',
+                'logotipo',
+                'tipo_mime',
+            ])
+            ->orderBy('nombre_comercial', 'asc')
+            ->get();
+    }
+
+    /**
      * Crea un colaborador con su logotipo en BYTEA.
      * Reemplaza: Colaborador::create([...])
      */

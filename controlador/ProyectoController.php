@@ -155,6 +155,58 @@ class ProyectoController extends Controller
     }
 
     // =========================================================================
+    // RF12 — Página dedicada de Proyectos (acceso desde el Menú Lateral)
+    // =========================================================================
+
+    /**
+     * Renderiza la PÁGINA COMPLETA de proyectos publicados.
+     *
+     * A diferencia de la galería one-page (que carga vía Alpine.js/AJAX a
+     * buscar()), esta es una página independiente accesible desde el Menú
+     * Lateral (RF12). El contenido se obtiene desde la Base de Datos en el
+     * mismo request GET /proyectos a través del DBRouterController, por lo
+     * que el renderizado server-side ya consulta las entidades reales.
+     *
+     * @return View
+     */
+    public function galeria(): View
+    {
+        // Sin filtros: lista todos los proyectos publicados (RF20/RF21 viven
+        // en la galería interactiva; aquí es el listado completo de la sección).
+        $proyectos = $this->db->buscarProyectosPublicados('', '');
+
+        // Serializar la imagen de portada (BYTEA → Data URI) para render directo.
+        $listado = $proyectos->map(function (Proyecto $proyecto) {
+            $thumbnail = null;
+            /** @var ImagenProyecto|null $imagen */
+            $imagen = $proyecto->imagenesProyecto->first();
+
+            if ($imagen) {
+                $raw    = $imagen->getRawOriginal('imagen');
+                $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
+
+                if ($binary) {
+                    $mime      = $imagen->tipo_mime ?: 'image/jpeg';
+                    $thumbnail = "data:{$mime};base64," . base64_encode($binary);
+                }
+            }
+
+            return (object) [
+                'id_proyecto'          => $proyecto->id_proyecto,
+                'nombre_obra'          => $proyecto->nombre_obra,
+                'descripcion_tecnica'  => $proyecto->descripcion_tecnica,
+                'region'               => $proyecto->region,
+                'ubicacion_geografica' => $proyecto->ubicacion_geografica,
+                'anio_ejecucion'       => $proyecto->anio_ejecucion,
+                'categoria'            => $proyecto->categoria,
+                'imagen_thumbnail'     => $thumbnail,
+            ];
+        });
+
+        return view('public.proyectos-pagina', ['proyectos' => $listado]);
+    }
+
+    // =========================================================================
     // CU 4.1 — Visualizando Certificaciones (RF25)
     // =========================================================================
 
