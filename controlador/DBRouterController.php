@@ -305,6 +305,16 @@ class DBRouterController
     }
 
     /**
+     * Elimina un proyecto. Las imágenes se borran en cascada
+     * por la FK de la tabla imagen_proyecto.
+     * Reemplaza: $proyecto->delete()
+     */
+    public function eliminarProyecto(Proyecto $proyecto): bool
+    {
+        return $proyecto->delete();
+    }
+
+    /**
      * Crea una imagen (BYTEA) asociada a un proyecto.
      * Reemplaza: ImagenProyecto::create([...])
      */

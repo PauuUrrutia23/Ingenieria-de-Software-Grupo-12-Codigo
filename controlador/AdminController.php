@@ -108,12 +108,11 @@ class AdminController extends Controller
         try {
             $validated = $request->validate([
                 'nombre_obra'    => ['required', 'string', 'max:150'],
-                'fotografias'    => ['required', 'array', 'max:' . self::MAX_IMAGENES],
-                'fotografias.*'  => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+                'fotografias'    => ['nullable', 'array', 'max:' . self::MAX_IMAGENES],
+                'fotografias.*'  => ['file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             ], [
                 'nombre_obra.required'   => 'El nombre de la obra es obligatorio.',
                 'nombre_obra.max'        => 'El nombre no puede superar los 150 caracteres.',
-                'fotografias.required'   => 'Debes subir al menos una fotografía.',
                 'fotografias.max'        => 'No puedes subir más de 15 fotografías.',
                 'fotografias.*.mimes'    => 'Solo se permiten imágenes JPG, PNG o WebP.',
                 'fotografias.*.max'      => 'Cada imagen no puede superar los 5 MB.',
@@ -155,50 +154,66 @@ class AdminController extends Controller
 
         // ------------------------------------------------------------------
         // b) Persistir cada fotografía como BYTEA (CU 49.2 Exc 4)
+        //    Si no se suben imágenes, el proyecto se crea igual (quedará
+        //    como borrador y no podrá publicarse hasta tener al menos una).
         // ------------------------------------------------------------------
         $thumbnail = null;
+        $imagenesGuardadas = 0;
 
-        foreach ($request->file('fotografias') as $index => $foto) {
-            if (! $foto->isValid()) {
-                Log::warning('Fotografía inválida omitida', [
-                    'nombre'      => $foto->getClientOriginalName(),
-                    'id_proyecto' => $proyecto->id_proyecto,
-                ]);
-                continue;
+        $archivos = $request->file('fotografias');
+
+        if (! empty($archivos)) {
+            foreach ($archivos as $index => $foto) {
+                if (! $foto->isValid()) {
+                    Log::warning('Fotografía inválida omitida', [
+                        'nombre'      => $foto->getClientOriginalName(),
+                        'id_proyecto' => $proyecto->id_proyecto,
+                    ]);
+                    continue;
+                }
+
+                $binary = file_get_contents($foto->getRealPath());
+
+                if ($binary === false) {
+                    Log::error('No se pudo leer la fotografía', [
+                        'nombre' => $foto->getClientOriginalName(),
+                    ]);
+                    continue;
+                }
+
+                try {
+                    $this->db->crearImagenProyecto([
+                        'imagen'         => $binary,
+                        'nombre_archivo' => $foto->getClientOriginalName(),
+                        'tipo_mime'      => $foto->getMimeType(),
+                        'id_proyecto'    => $proyecto->id_proyecto,
+                    ]);
+                    $imagenesGuardadas++;
+                } catch (QueryException $e) {
+                    Log::error('BD: No se pudo almacenar la imagen del proyecto', [
+                        'error'       => $e->getMessage(),
+                        'id_proyecto' => $proyecto->id_proyecto,
+                        'archivo'     => $foto->getClientOriginalName(),
+                    ]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No se pudo almacenar una de las imágenes. La base de datos no está disponible temporalmente.',
+                    ], 500);
+                }
+
+                // Guardar thumbnail de la primera imagen válida
+                if ($index === 0 && $thumbnail === null) {
+                    $mime      = $foto->getMimeType();
+                    $thumbnail = "data:{$mime};base64," . base64_encode($binary);
+                }
             }
 
-            $binary = file_get_contents($foto->getRealPath());
-
-            if ($binary === false) {
-                Log::error('No se pudo leer la fotografía', [
-                    'nombre' => $foto->getClientOriginalName(),
-                ]);
-                continue;
-            }
-
-            try {
-                $this->db->crearImagenProyecto([
-                    'imagen'         => $binary,
-                    'nombre_archivo' => $foto->getClientOriginalName(),
-                    'tipo_mime'      => $foto->getMimeType(),
-                    'id_proyecto'    => $proyecto->id_proyecto,
-                ]);
-            } catch (QueryException $e) {
-                Log::error('BD: No se pudo almacenar la imagen del proyecto', [
-                    'error'       => $e->getMessage(),
-                    'id_proyecto' => $proyecto->id_proyecto,
-                    'archivo'     => $foto->getClientOriginalName(),
-                ]);
+            if ($imagenesGuardadas === 0) {
+                $this->db->eliminarProyecto($proyecto);
                 return response()->json([
                     'success' => false,
-                    'message' => 'No se pudo almacenar una de las imágenes. La base de datos no está disponible temporalmente.',
-                ], 500);
-            }
-
-            // Guardar thumbnail de la primera imagen válida
-            if ($index === 0 && $thumbnail === null) {
-                $mime      = $foto->getMimeType();
-                $thumbnail = "data:{$mime};base64," . base64_encode($binary);
+                    'errors'  => ['fotografias' => ['Ninguna de las imágenes seleccionadas pudo ser procesada. Intenta con otros archivos.']],
+                ], 422);
             }
         }
 

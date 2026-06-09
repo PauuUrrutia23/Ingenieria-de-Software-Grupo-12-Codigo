@@ -256,8 +256,8 @@
                 <div>
                     <label for="crear-fotos"
                            class="block text-sm font-semibold text-slate-700 mb-1.5">
-                        Fotografías <span class="text-red-500">*</span>
-                        <span class="font-normal text-slate-400">(máx. 15, hasta 5 MB c/u)</span>
+                        Fotografías
+                        <span class="font-normal text-slate-400">(opcional, máx. 15, hasta 5 MB c/u)</span>
                     </label>
 
                     <label for="crear-fotos"
@@ -835,11 +835,6 @@ function adminProyectos() {
                 valido = false;
             } else if (this.formCrear.nombre_obra.trim().length > 150) {
                 this.erroresCrear.nombre_obra = 'El nombre no puede superar los 150 caracteres.';
-                valido = false;
-            }
-
-            if (this.formCrear.archivos.length === 0) {
-                this.erroresCrear.fotografias = 'Debes subir al menos una fotografía.';
                 valido = false;
             }
 
