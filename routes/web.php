@@ -42,6 +42,11 @@ Route::get('/certificaciones', [ProyectoController::class, 'certificaciones'])
 Route::get('/colaboradores', [InstitucionalCtrl::class, 'colaboradores'])
     ->name('colaboradores.index');
 
+// CU 4.1 — Visualizar PDF de un certificado en el navegador (RF25)
+Route::get('/certificaciones/{id}/ver', [ProyectoController::class, 'verCertificado'])
+    ->name('certificaciones.ver')
+    ->where('id', '[0-9]+');
+
 // CU 4.2 — Descargar PDF de un certificado
 Route::get('/certificaciones/{id}/descargar', [ProyectoController::class, 'descargarCertificado'])
     ->name('certificaciones.descargar')

@@ -294,6 +294,56 @@ class ProyectoController extends Controller
     }
 
     // =========================================================================
+    // CU 4.1 — Visualizando Certificado PDF en el navegador (RF25)
+    // =========================================================================
+
+    /**
+     * Muestra el archivo PDF de un certificado en el navegador (inline),
+     * sin forzar la descarga. Útil para previsualizar antes de descargar.
+     *
+     * @param  int  $id  id_certificado
+     * @return Response
+     */
+    public function verCertificado(int $id): Response
+    {
+        try {
+            $certificado = $this->db->buscarCertificadoParaDescarga($id);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo recuperar el certificado para visualización', [
+                'error'          => $e->getMessage(),
+                'id_certificado' => $id,
+            ]);
+            abort(500, 'La visualización no está disponible temporalmente.');
+        }
+
+        if (! $certificado) {
+            abort(404, 'El certificado solicitado no existe.');
+        }
+
+        $rawPdf = $certificado->getRawOriginal('archivo_pdf');
+
+        if ($rawPdf === null) {
+            abort(404, 'El archivo PDF de este certificado no está disponible.');
+        }
+
+        $binary = is_resource($rawPdf) ? stream_get_contents($rawPdf) : $rawPdf;
+
+        if (! $binary || strlen($binary) === 0) {
+            abort(404, 'El archivo PDF de este certificado no está disponible.');
+        }
+
+        $nombreArchivo = preg_replace('/[^a-zA-Z0-9\-_]/', '_', $certificado->codigo_lote)
+            . '.pdf';
+
+        return response($binary)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="' . $nombreArchivo . '"')
+            ->header('Content-Length', (string) strlen($binary))
+            ->header('Cache-Control', 'private, no-store, no-cache, must-revalidate')
+            ->header('Pragma', 'no-cache');
+    }
+
+    // =========================================================================
     // CU 4.2 — Descargando Certificados (RF26)
     // =========================================================================
 

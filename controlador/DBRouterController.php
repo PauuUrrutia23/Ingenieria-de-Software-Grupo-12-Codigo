@@ -232,7 +232,7 @@ class DBRouterController
                 'id_proyecto',
                 // archivo_pdf intencionalmente excluido del listado
             ])
-            ->where('estado', 'activo')
+            ->where('estado', 'Vigente')
             ->with(['proyecto' => function ($query) {
                 $query->select(['id_proyecto', 'nombre_obra', 'region']);
             }])

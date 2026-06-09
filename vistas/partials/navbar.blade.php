@@ -81,7 +81,7 @@
 
                 <li>
                     <a
-                        href="{{ route('proyectos.index') }}"
+                        href="{{ route('inicio') }}#proyectos"
                         class="px-3 py-1.5 text-sm font-medium text-slate-600
                                hover:text-slate-900 hover:bg-slate-100
                                rounded-lg transition-colors no-underline"
@@ -92,7 +92,7 @@
 
                 <li>
                     <a
-                        href="{{ route('certificaciones.index') }}"
+                        href="{{ route('inicio') }}#certificaciones"
                         class="px-3 py-1.5 text-sm font-medium text-slate-600
                                hover:text-slate-900 hover:bg-slate-100
                                rounded-lg transition-colors no-underline"
@@ -103,7 +103,7 @@
 
                 <li>
                     <a
-                        href="{{ route('colaboradores.index') }}"
+                        href="{{ route('inicio') }}#colaboradores"
                         class="px-3 py-1.5 text-sm font-medium text-slate-600
                                hover:text-slate-900 hover:bg-slate-100
                                rounded-lg transition-colors no-underline"
