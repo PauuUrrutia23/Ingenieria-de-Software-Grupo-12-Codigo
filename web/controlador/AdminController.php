@@ -90,6 +90,75 @@ class AdminController extends Controller
     }
 
     // =========================================================================
+    // Obtener un proyecto del admin con sus imágenes (cualquier estado)
+    // =========================================================================
+
+    /**
+     * Retorna un proyecto del administrador en sesión con TODAS sus imágenes,
+     * sin importar su estado de publicación. Lo consume el modal de edición.
+     *
+     * Se agrega porque el endpoint público /proyectos/{id}/detalle solo sirve
+     * proyectos en estado "publicado": al editar un borrador no devolvía las
+     * imágenes (se contaban pero no se mostraban para eliminar).
+     *
+     * @param  Request  $request
+     * @param  int      $id
+     * @return JsonResponse
+     */
+    public function showProyecto(Request $request, int $id): JsonResponse
+    {
+        /** @var \App\Models\Administrador $admin */
+        $admin = $request->attributes->get('admin');
+
+        try {
+            $proyecto = $this->db->buscarProyectoConImagenes($id);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo obtener el proyecto para edición', [
+                'error'       => $e->getMessage(),
+                'id_proyecto' => $id,
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'El proyecto no está disponible temporalmente.',
+            ], 500);
+        }
+
+        // No existe o no pertenece al admin en sesión → 404
+        if (! $proyecto || (int) $proyecto->id_admin !== (int) $admin->id_admin) {
+            return response()->json(['error' => 'No encontrado'], 404);
+        }
+
+        $imagenes = $proyecto->imagenesProyecto->map(function (ImagenProyecto $imagen) {
+            $raw    = $imagen->getRawOriginal('imagen');
+            $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
+
+            if (! $binary) {
+                return null;
+            }
+
+            $mime = $imagen->tipo_mime ?: 'image/jpeg';
+
+            return [
+                'id_imagen'      => $imagen->id_imagen,
+                'nombre_archivo' => $imagen->nombre_archivo,
+                'src'            => "data:{$mime};base64," . base64_encode($binary),
+            ];
+        })->filter()->values();
+
+        return response()->json([
+            'id_proyecto'          => $proyecto->id_proyecto,
+            'nombre_obra'          => $proyecto->nombre_obra,
+            'descripcion_tecnica'  => $proyecto->descripcion_tecnica,
+            'region'               => $proyecto->region,
+            'ubicacion_geografica' => $proyecto->ubicacion_geografica,
+            'anio_ejecucion'       => $proyecto->anio_ejecucion,
+            'categoria'            => $proyecto->categoria,
+            'estado_publicacion'   => $proyecto->estado_publicacion,
+            'imagenes'             => $imagenes,
+        ]);
+    }
+
+    // =========================================================================
     // CU 7.6 — Registrar nuevo proyecto (RF49)
     // =========================================================================
 

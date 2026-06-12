@@ -96,6 +96,11 @@ Route::prefix('admin')
         Route::post('/proyectos', [AdminController::class, 'storeProyecto'])
             ->name('proyectos.store');
 
+        // Obtener un proyecto con sus imagenes (cualquier estado) para edicion
+        Route::get('/proyectos/{id}', [AdminController::class, 'showProyecto'])
+            ->name('proyectos.show')
+            ->where('id', '[0-9]+');
+
         // CU 7.7 — Actualizar proyecto existente (RF50)
         Route::put('/proyectos/{id}', [AdminController::class, 'updateProyecto'])
             ->name('proyectos.update')

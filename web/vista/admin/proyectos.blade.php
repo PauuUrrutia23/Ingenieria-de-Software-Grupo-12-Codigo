@@ -938,7 +938,7 @@ function adminProyectos() {
             this.modalEditar        = true;
 
             try {
-                const res = await fetch(`/proyectos/${proyecto.id_proyecto}/detalle`, {
+                const res = await fetch(`/admin/proyectos/${proyecto.id_proyecto}`, {
                     headers: {
                         'Accept':       'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
