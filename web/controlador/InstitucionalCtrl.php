@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Certificado;
+use App\Models\Colaborador;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -26,8 +27,6 @@ class InstitucionalCtrl extends Controller
      */
     public function index(): View
     {
-        // Mismo origen de datos que ProyectoController@certificaciones:
-        // el router centraliza la query (resuelve la duplicación DRY).
         try {
             $certificados = $this->db->listarCertificadosActivos();
         } catch (QueryException $e) {
@@ -42,10 +41,6 @@ class InstitucionalCtrl extends Controller
             return $cert;
         });
 
-        // RF13/RF14 — La página de inicio consulta también los colaboradores en
-        // el mismo render server-side, de modo que las secciones a las que
-        // apunta la Barra de Navegación Fija se construyen con datos obtenidos
-        // desde la Base de Datos (los proyectos se cargan en la galería).
         try {
             $colaboradores = $this->db->listarColaboradores();
         } catch (QueryException $e) {
@@ -54,6 +49,8 @@ class InstitucionalCtrl extends Controller
             ]);
             $colaboradores = collect();
         }
+
+        $this->procesarLogotipos($colaboradores);
 
         return view('public.index', compact('certificados', 'colaboradores'));
     }
@@ -78,6 +75,29 @@ class InstitucionalCtrl extends Controller
             $colaboradores = collect();
         }
 
+        $this->procesarLogotipos($colaboradores);
+
         return view('public.colaboradores-pagina', compact('colaboradores'));
+    }
+
+    private function procesarLogotipos($colaboradores): void
+    {
+        $colaboradores->transform(function (Colaborador $c) {
+            $raw = $c->getRawOriginal('logotipo');
+            $b64 = null;
+
+            if ($raw !== null) {
+                $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
+
+                if ($binary && strlen($binary) > 0) {
+                    $mime = $c->getRawOriginal('tipo_mime') ?: 'image/png';
+                    $b64 = "data:{$mime};base64," . base64_encode($binary);
+                }
+            }
+
+            $c->setAttribute('logo_b64', $b64);
+
+            return $c;
+        });
     }
 }

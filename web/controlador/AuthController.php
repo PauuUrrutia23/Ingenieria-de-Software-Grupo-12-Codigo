@@ -136,7 +136,7 @@ class AuthController extends Controller
                 }
 
                 // Disparar job asíncrono para enviar email de bloqueo
-                EnviarEmailBloqueoJob::dispatch($admin->id_admin, now()->toImmutable());
+                EnviarEmailBloqueoJob::dispatch($admin->id_admin, now());
 
                 Log::warning('Cuenta bloqueada por intentos fallidos', [
                     'id_admin'        => $admin->id_admin,

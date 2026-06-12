@@ -2,8 +2,9 @@
     Sección reutilizable de Colaboradores — Ingecon (RF14)
     Renderiza los logotipos y nombres comerciales desde la Base de Datos.
 
-    Variable recibida:
-      $colaboradores  Collection<Colaborador>  (con accessor logotipo_base64)
+    Variables recibidas:
+      $colaboradores  Collection<Colaborador>  (con atributo logo_b64 pre-calculado
+                       por InstitucionalCtrl, mismo patrón que AdminController)
 --}}
 
 @if ($colaboradores->isNotEmpty())
@@ -12,8 +13,8 @@
             <div class="flex flex-col items-center justify-center bg-white rounded-xl
                         border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow">
                 <div class="h-16 flex items-center justify-center mb-3">
-                    @if ($colaborador->logotipo_base64)
-                        <img src="{{ $colaborador->logotipo_base64 }}"
+                    @if ($colaborador->logo_b64)
+                        <img src="{{ $colaborador->logo_b64 }}"
                              alt="Logotipo de {{ $colaborador->nombre_comercial }}"
                              class="max-h-16 max-w-full object-contain" loading="lazy">
                     @else

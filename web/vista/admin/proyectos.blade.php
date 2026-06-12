@@ -33,6 +33,24 @@
     </div>
 
     {{-- ====================================================================
+         MENSAJE DE ÉXITO
+         ==================================================================== --}}
+    <div x-show="mensajeExito" x-cloak
+         x-transition.opacity
+         @click="mensajeExito = ''; clearTimeout(temporizadorExito)"
+         class="mb-6 flex items-center gap-3 bg-emerald-50 border border-emerald-200
+                text-emerald-800 text-sm font-medium px-5 py-3 rounded-xl cursor-pointer"
+         role="alert"
+    >
+        <svg class="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span x-text="mensajeExito"></span>
+    </div>
+
+    {{-- ====================================================================
          SPINNER DE CARGA INICIAL
          ==================================================================== --}}
     <div x-show="cargandoLista" x-cloak
@@ -720,6 +738,8 @@ function adminProyectos() {
         proyectos:        [],
         cargandoLista:    true,
         enviando:         false,
+        mensajeExito:     '',
+        temporizadorExito: null,
 
         // Modal crear
         modalCrear:    false,
@@ -864,6 +884,11 @@ function adminProyectos() {
                     this.proyectos.unshift(data.proyecto);
                     this.enviando = false;
                     this.cerrarModalCrear();
+                    clearTimeout(this.temporizadorExito);
+                    this.mensajeExito = 'Proyecto creado exitosamente.';
+                    this.temporizadorExito = setTimeout(() => {
+                        this.mensajeExito = '';
+                    }, 3000);
                     return;
                 }
 

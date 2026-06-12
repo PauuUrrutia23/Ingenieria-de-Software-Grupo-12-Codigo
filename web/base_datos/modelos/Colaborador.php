@@ -67,19 +67,21 @@ class Colaborador extends Model
     {
         return Attribute::make(
             get: function () {
-                $raw = $this->attributes['logotipo'] ?? null;
+                $raw = $this->getRawOriginal('logotipo');
 
                 if ($raw === null) {
                     return null;
                 }
 
                 $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
+
+                if (! $binary || strlen($binary) === 0) {
+                    return null;
+                }
+
                 $base64 = base64_encode($binary);
 
-                // Usar el tipo MIME almacenado en la columna tipo_mime.
-                // La columna fue agregada en la migración para soportar PNG, JPG, SVG y WebP.
-                // Por defecto es 'image/png' si no se especificó al guardar.
-                $mime = $this->attributes['tipo_mime'] ?? 'image/png';
+                $mime = $this->getRawOriginal('tipo_mime') ?: 'image/png';
 
                 return "data:{$mime};base64,{$base64}";
             }
