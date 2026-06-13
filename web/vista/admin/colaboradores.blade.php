@@ -58,10 +58,29 @@
 
         <template x-for="c in colaboradores" :key="c.id_colaborador">
             <article
-                class="bg-white rounded-xl p-5 shadow-sm border border-slate-100
+                class="relative group bg-white rounded-xl p-5 shadow-sm border border-slate-100
                        text-center hover:shadow-md transition-shadow"
                 role="listitem"
             >
+                {{-- Botón eliminar (RF48 — CU 48.1) --}}
+                <button
+                    type="button"
+                    @click="confirmarEliminar(c)"
+                    class="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90
+                           text-slate-400 hover:text-red-600 hover:bg-red-50
+                           border border-slate-200 flex items-center justify-center
+                           opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all"
+                    :aria-label="`Eliminar ${c.nombre_comercial}`"
+                >
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                         aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-7 0v12a1
+                                 1 0 001 1h6a1 1 0 001-1V7M10 11v6M14 11v6"/>
+                    </svg>
+                </button>
+
                 {{-- Logotipo --}}
                 <div class="w-24 h-24 mx-auto mb-3 flex items-center justify-center
                             rounded-lg bg-slate-50 overflow-hidden">
@@ -386,6 +405,73 @@
 
     </div>
 
+    {{-- ====================================================================
+         MODAL CONFIRMAR ELIMINACIÓN (RF48 — CU 48.1)
+         ==================================================================== --}}
+    <div
+        x-show="modalEliminar"
+        x-cloak
+        @keydown.escape.window="cerrarModalEliminar()"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Confirmar eliminación de colaborador"
+    >
+        <div @click="cerrarModalEliminar()"
+             class="absolute inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true"></div>
+
+        <div @click.stop
+             class="relative z-10 bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+
+            <div class="flex items-start gap-3 mb-4">
+                <div class="shrink-0 w-10 h-10 rounded-full bg-red-50 flex items-center justify-center"
+                     aria-hidden="true">
+                    <svg class="w-5 h-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="font-bold text-slate-900 text-base">Eliminar colaborador</h2>
+                    <p class="text-slate-500 text-sm mt-0.5">
+                        ¿Seguro que deseas eliminar
+                        <span class="font-semibold text-slate-700"
+                              x-text="colaboradorAEliminar?.nombre_comercial"></span>?
+                        Esta acción no se puede deshacer.
+                    </p>
+                </div>
+            </div>
+
+            {{-- Error general --}}
+            <div x-show="errorEliminar" x-cloak
+                 class="mb-3 bg-red-50 border border-red-200 rounded-lg px-3 py-2
+                        text-red-700 text-sm" role="alert" x-text="errorEliminar"></div>
+
+            <div class="flex justify-end gap-3">
+                <button type="button" @click="cerrarModalEliminar()" :disabled="eliminando"
+                        class="px-4 py-2 text-sm font-medium text-slate-600 border
+                               border-slate-200 rounded-lg hover:bg-slate-50
+                               transition-colors disabled:opacity-50">
+                    Cancelar
+                </button>
+                <button type="button" @click="eliminarColaborador()" :disabled="eliminando"
+                        class="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700
+                               disabled:bg-red-400 text-white text-sm font-semibold
+                               rounded-lg transition-colors">
+                    <svg x-show="eliminando" x-cloak class="animate-spin w-4 h-4"
+                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                    <span x-text="eliminando ? 'Eliminando...' : 'Eliminar'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>{{-- /x-data --}}
 
 @endsection
@@ -405,6 +491,12 @@ function adminColaboradores() {
         logotipoPreview: null,
         archivoLogotipo: null,
         errorLogotipo:  '',
+
+        // Eliminación (RF48 — CU 48.1)
+        modalEliminar:        false,
+        colaboradorAEliminar: null,
+        eliminando:           false,
+        errorEliminar:        '',
 
         form: {
             nombre_comercial: '',
@@ -586,6 +678,70 @@ function adminColaboradores() {
                 console.error('Error en submitAgregar:', err);
             } finally {
                 this.enviando = false;
+            }
+        },
+
+        // -----------------------------------------------------------------
+        // RF48 — Eliminar colaborador (CU 48.1)
+        // -----------------------------------------------------------------
+
+        /** Abre el modal de confirmación para el colaborador seleccionado. */
+        confirmarEliminar(colaborador) {
+            this.colaboradorAEliminar = colaborador;
+            this.errorEliminar        = '';
+            this.modalEliminar        = true;
+        },
+
+        /** Cierra el modal de confirmación (si no hay borrado en curso). */
+        cerrarModalEliminar() {
+            if (this.eliminando) return;
+            this.modalEliminar        = false;
+            this.colaboradorAEliminar = null;
+            this.errorEliminar        = '';
+        },
+
+        /** Envía DELETE y quita la tarjeta de la lista al confirmar el servidor. */
+        async eliminarColaborador() {
+            if (this.eliminando || !this.colaboradorAEliminar) return;
+
+            this.eliminando    = true;
+            this.errorEliminar = '';
+            const id = this.colaboradorAEliminar.id_colaborador;
+
+            try {
+                const res = await fetch(`/admin/colaboradores/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept':       'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                });
+
+                if (res.status === 401) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                const data = await res.json();
+
+                if (data.success) {
+                    // Quitar el colaborador de la lista reactivamente
+                    this.colaboradores = this.colaboradores.filter(
+                        c => c.id_colaborador !== id
+                    );
+                    this.eliminando = false;
+                    this.cerrarModalEliminar();
+                    return;
+                }
+
+                this.errorEliminar = data.message
+                    ?? 'No se pudo eliminar el colaborador.';
+
+            } catch (err) {
+                this.errorEliminar = 'Error de conexión. Intenta nuevamente.';
+                console.error('Error al eliminar colaborador:', err);
+            } finally {
+                this.eliminando = false;
             }
         },
 

@@ -667,4 +667,62 @@ class AdminController extends Controller
             ],
         ], 201);
     }
+
+    // =========================================================================
+    // CU 48.1 — Eliminar un Colaborador (RF48)
+    // =========================================================================
+
+    /**
+     * Elimina un Colaborador del Módulo del administrador autenticado.
+     * Consumido por Alpine.js via fetch DELETE /admin/colaboradores/{id}.
+     *
+     * @param  Request  $request
+     * @param  int      $id
+     * @return JsonResponse
+     */
+    public function destroyColaborador(Request $request, int $id): JsonResponse
+    {
+        /** @var \App\Models\Administrador $admin */
+        $admin = $request->attributes->get('admin');
+
+        try {
+            $colaborador = $this->db->buscarColaborador($id);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo recuperar el colaborador a eliminar', [
+                'error'          => $e->getMessage(),
+                'id_colaborador' => $id,
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo eliminar el colaborador. La base de datos no está disponible temporalmente.',
+            ], 500);
+        }
+
+        // No existe o no pertenece al admin en sesión → 404 (CU 48.1 Exc 1)
+        if (! $colaborador || (int) $colaborador->id_admin !== (int) $admin->id_admin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El colaborador no existe o ya fue eliminado.',
+            ], 404);
+        }
+
+        // Eliminar de la Base de Datos (CU 48.1 Exc 2)
+        try {
+            $this->db->eliminarColaborador($colaborador);
+        } catch (QueryException $e) {
+            Log::error('BD: No se pudo eliminar el colaborador', [
+                'error'          => $e->getMessage(),
+                'id_colaborador' => $id,
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo eliminar el colaborador. Intenta nuevamente.',
+            ], 500);
+        }
+
+        return response()->json([
+            'success'        => true,
+            'id_colaborador' => $id,
+        ]);
+    }
 }

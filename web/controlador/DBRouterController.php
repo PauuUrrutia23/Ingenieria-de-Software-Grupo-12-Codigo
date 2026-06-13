@@ -411,4 +411,20 @@ class DBRouterController
     {
         return Colaborador::create($datos);
     }
+
+    /**
+     * Busca un colaborador por su ID (o null si no existe).
+     */
+    public function buscarColaborador(int $id): ?Colaborador
+    {
+        return Colaborador::find($id);
+    }
+
+    /**
+     * Elimina un colaborador de la Base de Datos (RF48).
+     */
+    public function eliminarColaborador(Colaborador $colaborador): void
+    {
+        $colaborador->delete();
+    }
 }

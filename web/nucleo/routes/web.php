@@ -123,6 +123,11 @@ Route::prefix('admin')
         Route::post('/colaboradores', [AdminController::class, 'storeColaborador'])
             ->name('colaboradores.store');
 
+        // RF48 — Eliminar colaborador
+        Route::delete('/colaboradores/{id}', [AdminController::class, 'destroyColaborador'])
+            ->name('colaboradores.destroy')
+            ->where('id', '[0-9]+');
+
         // Vista HTML del modulo de colaboradores
         Route::get('/colaboradores/panel', function () {
             return view('admin.colaboradores');
