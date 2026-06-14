@@ -24,24 +24,13 @@ class Certificado extends Model
     ];
 
     protected $casts = [
-        'fecha_emision' => 'date',   // Carbon instance sin componente horario
+        'fecha_emision' => 'date',
     ];
 
-    // -------------------------------------------------------------------------
-    // Relaciones
-    // -------------------------------------------------------------------------
-
-    /**
-     * Un certificado pertenece a un proyecto.
-     */
     public function proyecto(): BelongsTo
     {
         return $this->belongsTo(Proyecto::class, 'id_proyecto', 'id_proyecto');
     }
-
-    // -------------------------------------------------------------------------
-    // Mutators / Accessors
-    // -------------------------------------------------------------------------
 
     protected function archivoPdf(): Attribute
     {
@@ -53,13 +42,8 @@ class Certificado extends Model
     }
 
     /**
-     * Retorna el PDF del certificado como cadena base64.
-     *
-     * Uso en Blade (descarga directa):
-     *   <a href="data:application/pdf;base64,{{ $cert->archivo_pdf_base64 }}"
-     *      download="certificado-{{ $cert->codigo_lote }}.pdf">Descargar PDF</a>
-     *
-     * Nota: PDO con pgsql devuelve BYTEA como resource stream.
+     * PDF del certificado como cadena base64, o null si no hay archivo.
+     * PDO con pgsql devuelve el BYTEA como resource stream.
      */
     protected function archivoPdfBase64(): Attribute
     {

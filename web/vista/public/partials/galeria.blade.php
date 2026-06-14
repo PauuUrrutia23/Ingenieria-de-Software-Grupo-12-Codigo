@@ -1,8 +1,7 @@
 {{--
-    Galería de Proyectos Pública — Ingecon (RF20, RF21, RF24)
-    CU 3.2: Filtrado por texto (ILIKE en nombre_obra y ubicacion_geografica)
-    CU 3.3: Filtrado por categoría
-    CU 3.6: Modal de detalle con carrusel de imágenes
+    Galería de Proyectos pública.
+    Filtrado por texto (ILIKE en nombre_obra y ubicacion_geografica),
+    filtrado por categoría y modal de detalle con carrusel de imágenes.
 --}}
 
 <div
@@ -26,11 +25,11 @@
     </div>
 
     {{-- ================================================================
-         BARRA DE FILTROS (RF20, RF21)
+         BARRA DE FILTROS
          ================================================================ --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-8 items-center">
 
-        {{-- Input búsqueda por texto (CU 3.2) --}}
+        {{-- Input búsqueda por texto --}}
         <div class="relative flex-1 w-full">
             {{-- Ícono lupa --}}
             <svg
@@ -54,7 +53,7 @@
             >
         </div>
 
-        {{-- Select categoría (CU 3.3) --}}
+        {{-- Select categoría --}}
         <div class="relative w-full sm:w-52">
             <select
                 x-model="categoria"
@@ -268,7 +267,7 @@
     </div>
 
     {{-- ================================================================
-         MODAL DE DETALLE (RF24 — CU 3.6)
+         MODAL DE DETALLE
          ================================================================ --}}
     <div
         x-show="modalAbierto"
@@ -430,7 +429,7 @@
                     </div>{{-- /carrusel --}}
 
                     {{-- ================================================
-                         INFORMACIÓN DEL PROYECTO (RF24)
+                         INFORMACIÓN DEL PROYECTO
                          ================================================ --}}
                     <div class="p-6 sm:p-8">
 
@@ -549,9 +548,7 @@
             modalAbierto:        false,
             _abortController:    null,   // para cancelar fetch previo en debounce
 
-            // -----------------------------------------------------------------
-            // CU 3.2 / CU 3.3 — Cargar proyectos con filtros (RF20, RF21)
-            // -----------------------------------------------------------------
+            // Cargar proyectos con filtros aplicados.
 
             /**
              * Consulta GET /proyectos/buscar con los parámetros actuales.
@@ -604,9 +601,7 @@
                 }
             },
 
-            // -----------------------------------------------------------------
-            // CU 3.6 — Abrir modal de detalle (RF24)
-            // -----------------------------------------------------------------
+            // Abrir modal de detalle.
 
             /**
              * Obtiene los datos completos del proyecto (incluidas todas sus

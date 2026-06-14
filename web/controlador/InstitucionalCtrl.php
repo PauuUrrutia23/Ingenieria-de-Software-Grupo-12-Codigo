@@ -10,20 +10,13 @@ use Illuminate\View\View;
 
 class InstitucionalCtrl extends Controller
 {
-    /**
-     * Mediador de base de datos (ver 02b_dbrouter_controller.md).
-     * Resuelto automáticamente por el contenedor de Laravel.
-     */
     public function __construct(
         private readonly DBRouterController $db
     ) {}
 
     /**
-     * Renderiza la página principal pública de Ingecon.
-     * Precarga certificados activos para la sección #certificaciones.
-     * Los proyectos se cargan vía Alpine.js (06_galeria_proyectos.md).
-     *
-     * @return View
+     * Página principal pública. Precarga certificados activos y colaboradores;
+     * los proyectos se cargan aparte vía Alpine.js.
      */
     public function index(): View
     {
@@ -56,13 +49,8 @@ class InstitucionalCtrl extends Controller
     }
 
     /**
-     * RF12 — Página dedicada de Colaboradores (acceso desde el Menú Lateral).
-     *
-     * Renderiza la PÁGINA COMPLETA de colaboradores. El contenido (logotipos
-     * y nombres comerciales) se obtiene desde la Base de Datos en el mismo
-     * request GET /colaboradores a través del DBRouterController.
-     *
-     * @return View
+     * Página dedicada de colaboradores, accesible desde el menú lateral.
+     * Renderiza logotipos y nombres comerciales server-side.
      */
     public function colaboradores(): View
     {

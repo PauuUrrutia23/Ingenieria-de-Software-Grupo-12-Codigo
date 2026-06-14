@@ -24,37 +24,23 @@ class Consulta extends Model
     ];
 
     protected $casts = [
-        'fecha_consulta' => 'datetime',   // Carbon instance
+        'fecha_consulta' => 'datetime',
     ];
 
-    // -------------------------------------------------------------------------
-    // Relaciones
-    // -------------------------------------------------------------------------
-
-    /**
-     * Una consulta fue enviada por un visitante.
-     */
     public function visitante(): BelongsTo
     {
         return $this->belongsTo(Visitante::class, 'id_visitante', 'id_visitante');
     }
 
-    /**
-     * Una consulta tiene un administrador responsable de atenderla.
-     * El segundo argumento es la FK local; el tercero es la PK del modelo padre.
-     */
     public function administrador(): BelongsTo
     {
         return $this->belongsTo(
             Administrador::class,
-            'id_admin_responsable',  // FK en tabla consulta
-            'id_admin'               // PK en tabla administrador
+            'id_admin_responsable',
+            'id_admin'
         );
     }
 
-    /**
-     * Una consulta puede tener un único archivo adjunto (PDF).
-     */
     public function archivoAdjunto(): HasOne
     {
         return $this->hasOne(ArchivoAdjunto::class, 'id_consulta', 'id_consulta');

@@ -20,24 +20,15 @@ class Sesion extends Model
         'id_admin',
     ];
 
-    /**
-     * token_hash nunca debe exponerse en respuestas JSON o arrays.
-     */
+    // token_hash nunca debe exponerse en respuestas JSON o arrays.
     protected $hidden = [
         'token_hash',
     ];
 
     protected $casts = [
-        'fecha_inicio' => 'datetime',   // Carbon instance
+        'fecha_inicio' => 'datetime',
     ];
 
-    // -------------------------------------------------------------------------
-    // Relaciones
-    // -------------------------------------------------------------------------
-
-    /**
-     * Una sesión pertenece a un administrador.
-     */
     public function administrador(): BelongsTo
     {
         return $this->belongsTo(Administrador::class, 'id_admin', 'id_admin');

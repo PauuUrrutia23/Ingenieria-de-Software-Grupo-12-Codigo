@@ -22,21 +22,10 @@ class ArchivoAdjunto extends Model
         'id_consulta',
     ];
 
-    // -------------------------------------------------------------------------
-    // Relaciones
-    // -------------------------------------------------------------------------
-
-    /**
-     * Un archivo adjunto pertenece a una consulta.
-     */
     public function consulta(): BelongsTo
     {
         return $this->belongsTo(Consulta::class, 'id_consulta', 'id_consulta');
     }
-
-    // -------------------------------------------------------------------------
-    // Mutators / Accessors
-    // -------------------------------------------------------------------------
 
     protected function archivoPdf(): Attribute
     {
@@ -48,15 +37,8 @@ class ArchivoAdjunto extends Model
     }
 
     /**
-     * Retorna el PDF almacenado en BYTEA como cadena base64 lista para embeber
-     * en una etiqueta <a> o respuesta de descarga.
-     *
-     * Uso en Blade:
-     *   <a href="data:{{ $archivo->tipo_mime }};base64,{{ $archivo->archivo_pdf_base64 }}"
-     *      download="{{ $archivo->nombre_archivo }}">Descargar</a>
-     *
-     * Nota: PostgreSQL devuelve BYTEA como un resource stream en PHP.
-     *       stream_get_contents() convierte el stream a string antes de base64.
+     * PDF almacenado en BYTEA como cadena base64, o null si no hay archivo.
+     * PostgreSQL devuelve el BYTEA como resource stream en PHP.
      */
     protected function archivoPdfBase64(): Attribute
     {
@@ -68,7 +50,6 @@ class ArchivoAdjunto extends Model
                     return null;
                 }
 
-                // PDO con pgsql devuelve BYTEA como resource stream
                 $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
 
                 return base64_encode($binary);

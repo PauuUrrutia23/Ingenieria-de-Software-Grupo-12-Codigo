@@ -1,6 +1,6 @@
 {{--
     Página completa de Certificaciones — ruta GET /certificaciones
-    Retornada por ProyectoController@certificaciones (RF25, RF26)
+    Retornada por ProyectoController@certificaciones.
 
     Diferencia con public/index.blade.php:
     - index.blade.php: página principal con TODAS las secciones (scroll one-page)

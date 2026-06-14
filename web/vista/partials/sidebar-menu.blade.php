@@ -1,5 +1,5 @@
 {{--
-    Menú Lateral Deslizante — Ingecon (RF12 / CU 2.2)
+    Menú Lateral Deslizante.
     Se abre disparando el evento Alpine global 'abrir-sidebar'.
     Se cierra: botón X, click en overlay, o al seleccionar una sección.
 --}}
@@ -88,7 +88,7 @@
         </p>
 
         {{-- ============================================================
-             Links de navegación (RF12 — CU 2.2)
+             Links de navegación
              Cada link: cierra el panel + scroll suave a la sección
              ============================================================ --}}
         <nav aria-label="Menú lateral de secciones">

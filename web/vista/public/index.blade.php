@@ -71,7 +71,6 @@
 
     {{-- ================================================================
          SECCIÓN: Contacto (#contacto)
-         Partial completo especificado en 04_formulario_contacto.md
          ================================================================ --}}
     <section
         id="contacto"

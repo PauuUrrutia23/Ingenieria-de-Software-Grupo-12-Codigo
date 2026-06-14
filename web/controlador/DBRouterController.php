@@ -14,60 +14,34 @@ use App\Models\Visitante;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * DBRouterController — Intermediario de Base de Datos (C_DBRouter).
+ * Intermediario de acceso a datos.
  *
- * ÚNICA clase del sistema autorizada para invocar el ORM Eloquent.
- * Todos los controladores de dominio, el middleware AdminAuth y el job
- * EnviarEmailBloqueoJob reciben una instancia de esta clase por inyección
- * de dependencias y delegan en ella toda lectura/escritura de la BD.
- *
- * ⚠️  NO es un controlador enrutable: no se registra en routes/web.php,
- *     no recibe Request y no devuelve respuestas HTTP. El nombre se conserva
- *     por fidelidad al diagrama de clases (estereotipo «Control»).
- *
- * Convenciones:
- *  - Devuelve modelos Eloquent o Collections; nunca arreglos JSON ni base64.
- *  - Cada método es una operación de negocio simple y atómica.
- *  - La conversión BYTEA→base64 y el formateo se hacen en los controladores.
+ * Única clase autorizada a invocar Eloquent. Los controladores, el middleware
+ * AdminAuth y los jobs reciben una instancia por inyección de dependencias y
+ * delegan aquí toda lectura/escritura. No es enrutable: no recibe Request ni
+ * devuelve respuestas HTTP. Devuelve modelos o Collections; la conversión
+ * BYTEA→base64 y el formateo quedan en los controladores.
  */
 class DBRouterController
 {
-    // =========================================================================
-    // ADMINISTRADOR · SESIÓN  (consumidos por AuthController, AdminAuth, Job)
-    // =========================================================================
+    // Administrador y sesión
 
-    /**
-     * Busca un administrador por su correo electrónico.
-     * Reemplaza: Administrador::where('correo', $correo)->first()
-     */
     public function buscarAdminPorCorreo(string $correo): ?Administrador
     {
         return Administrador::where('correo', $correo)->first();
     }
 
-    /**
-     * Busca un administrador por su id.
-     * Reemplaza: Administrador::find($idAdmin)
-     */
     public function buscarAdminPorId(int $idAdmin): ?Administrador
     {
         return Administrador::find($idAdmin);
     }
 
-    /**
-     * Persiste los cambios de un administrador ya cargado en memoria
-     * (intentos_fallidos, bloqueado_hasta, reset de contadores, etc.).
-     * Reemplaza: $admin->save()
-     */
     public function guardarAdmin(Administrador $admin): bool
     {
         return $admin->save();
     }
 
     /**
-     * Crea un nuevo registro de sesión.
-     * Reemplaza: Sesion::create([...])
-     *
      * @param array{token_hash:string,fecha_inicio:mixed,estado:string,id_admin:int} $datos
      */
     public function crearSesion(array $datos): Sesion
@@ -75,11 +49,6 @@ class DBRouterController
         return Sesion::create($datos);
     }
 
-    /**
-     * Busca una sesión activa por su id (sin filtrar por admin).
-     * Usado por el middleware AdminAuth.
-     * Reemplaza: Sesion::where('id_sesion', $id)->where('estado','activa')->first()
-     */
     public function buscarSesionActivaPorId(int $idSesion): ?Sesion
     {
         return Sesion::where('id_sesion', $idSesion)
@@ -87,11 +56,6 @@ class DBRouterController
             ->first();
     }
 
-    /**
-     * Busca la sesión activa de un administrador concreto.
-     * Usado por AuthController@logout.
-     * Reemplaza: Sesion::where('id_sesion',$id)->where('id_admin',$a)->where('estado','activa')->first()
-     */
     public function buscarSesionActivaDeAdmin(int $idSesion, int $idAdmin): ?Sesion
     {
         return Sesion::where('id_sesion', $idSesion)
@@ -100,22 +64,15 @@ class DBRouterController
             ->first();
     }
 
-    /**
-     * Persiste los cambios de una sesión (p. ej. estado='cerrada').
-     * Reemplaza: $sesion->save()
-     */
     public function guardarSesion(Sesion $sesion): bool
     {
         return $sesion->save();
     }
 
-    // =========================================================================
-    // VISITANTE · CONSULTA · ARCHIVO_ADJUNTO  (consumidos por ContactoController)
-    // =========================================================================
+    // Visitante, consulta y archivo adjunto
 
     /**
      * Devuelve el visitante con ese email o lo crea si no existe.
-     * Reemplaza: Visitante::firstOrCreate(['email'=>$email], $datos)
      *
      * @param array{nombre:string,apellido:string} $datos
      */
@@ -124,46 +81,29 @@ class DBRouterController
         return Visitante::firstOrCreate(['email' => $email], $datos);
     }
 
-    /**
-     * Crea una consulta de contacto.
-     * Reemplaza: Consulta::create([...])
-     */
     public function crearConsulta(array $datos): Consulta
     {
         return Consulta::create($datos);
     }
 
-    /**
-     * Elimina una consulta (compensación si el adjunto resulta inválido).
-     * Reemplaza: $consulta->delete()
-     */
     public function eliminarConsulta(Consulta $consulta): void
     {
         $consulta->delete();
     }
 
-    /**
-     * Crea el registro del archivo adjunto (PDF en BYTEA) de una consulta.
-     * Reemplaza: ArchivoAdjunto::create([...])
-     */
     public function crearArchivoAdjunto(array $datos): ArchivoAdjunto
     {
         return ArchivoAdjunto::create($datos);
     }
 
-    // =========================================================================
-    // PROYECTOS — GALERÍA PÚBLICA  (consumidos por ProyectoController)
-    // =========================================================================
+    // Galería pública de proyectos
 
     /**
-     * Devuelve los proyectos PUBLICADOS aplicando filtros opcionales de
-     * texto libre (nombre_obra / ubicacion_geografica con ILIKE) y categoría
-     * exacta. Eager-load de imágenes (relación imagenesProyecto) ordenadas.
+     * Proyectos publicados con filtros opcionales de texto libre
+     * (nombre_obra / ubicacion_geografica vía ILIKE) y categoría exacta.
+     * Incluye las imágenes ordenadas; el controlador toma la primera.
      *
-     * Encapsula toda la construcción de query de ProyectoController@buscar.
-     * Devuelve la colección de modelos; el controlador arma el JSON.
-     *
-     * @param  string|null $texto      término de búsqueda libre ('' o null = sin filtro)
+     * @param  string|null $texto      término libre ('' o null = sin filtro)
      * @param  string|null $categoria  'Habitacional'|'Industrial'|'Agrícola' ('' = sin filtro)
      * @return Collection<int,Proyecto>
      */
@@ -171,7 +111,6 @@ class DBRouterController
     {
         $query = Proyecto::where('estado_publicacion', 'publicado');
 
-        // Filtro por texto libre (RF20) — ILIKE case-insensitive en dos campos.
         if (filled($texto)) {
             $termino = '%' . $texto . '%';
             $query->where(function ($q) use ($termino) {
@@ -180,13 +119,10 @@ class DBRouterController
             });
         }
 
-        // Filtro por categoría exacta (RF21).
         if (filled($categoria)) {
             $query->where('categoria', $categoria);
         }
 
-        // Eager-load de todas las imágenes (ver nota sobre el bug de limit()
-        // en with() en 06_galeria_proyectos.md). El controlador toma la primera.
         $query->with(['imagenesProyecto' => function ($q) {
             $q->orderBy('id_imagen', 'asc');
         }]);
@@ -195,11 +131,8 @@ class DBRouterController
     }
 
     /**
-     * Busca un proyecto por id con TODAS sus imágenes (relación imagenesProyecto)
-     * para el modal de detalle. NO filtra por estado: el controlador valida que
-     * esté 'publicado' antes de exponerlo.
-     *
-     * Reemplaza: Proyecto::with(['imagenesProyecto'=>...])->find($id)
+     * Proyecto con todas sus imágenes. No filtra por estado: el controlador
+     * valida que esté 'publicado' antes de exponerlo.
      */
     public function buscarProyectoConImagenes(int $id): ?Proyecto
     {
@@ -208,17 +141,11 @@ class DBRouterController
         }])->find($id);
     }
 
-    // =========================================================================
-    // CERTIFICADOS  (consumidos por ProyectoController e InstitucionalCtrl)
-    // =========================================================================
+    // Certificados
 
     /**
-     * Lista los certificados ACTIVOS con metadatos, SIN el BYTEA archivo_pdf
-     * (crítico para performance) y con su proyecto (id, nombre_obra, region).
-     *
-     * Centraliza la query duplicada entre InstitucionalCtrl@index y
-     * ProyectoController@certificaciones (resuelve la nota DRY de 07).
-     * El formateo d/m/Y de fecha_emision lo aplica cada controlador.
+     * Certificados vigentes con metadatos, sin el BYTEA archivo_pdf
+     * (rendimiento) y con su proyecto (id, nombre_obra, region).
      *
      * @return Collection<int,Certificado>
      */
@@ -230,7 +157,6 @@ class DBRouterController
                 'fecha_emision',
                 'estado',
                 'id_proyecto',
-                // archivo_pdf intencionalmente excluido del listado
             ])
             ->where('estado', 'Vigente')
             ->with(['proyecto' => function ($query) {
@@ -241,8 +167,7 @@ class DBRouterController
     }
 
     /**
-     * Recupera un certificado con su BYTEA archivo_pdf para descarga/preview.
-     * Reemplaza: Certificado::select([...,'archivo_pdf'])->where('id_certificado',$id)->first()
+     * Certificado con su BYTEA archivo_pdf para descarga o preview.
      */
     public function buscarCertificadoParaDescarga(int $id): ?Certificado
     {
@@ -256,15 +181,11 @@ class DBRouterController
             ->first();
     }
 
-    // =========================================================================
-    // PROYECTOS — PANEL ADMIN  (consumidos por AdminController)
-    // =========================================================================
+    // Proyectos del panel de administración
 
     /**
-     * Lista los proyectos de un administrador con la primera imagen
-     * (relación imagenes) y el conteo de imágenes (imagenes_count).
-     *
-     * Reemplaza: Proyecto::where('id_admin',$id)->with(['imagenes'=>...])->withCount('imagenes')->orderBy(...)->get()
+     * Proyectos de un administrador con la primera imagen y el conteo
+     * de imágenes (imagenes_count).
      *
      * @return Collection<int,Proyecto>
      */
@@ -277,76 +198,49 @@ class DBRouterController
             ->get();
     }
 
-    /**
-     * Crea un proyecto.
-     * Reemplaza: Proyecto::create([...])
-     */
     public function crearProyecto(array $datos): Proyecto
     {
         return Proyecto::create($datos);
     }
 
-    /**
-     * Busca un proyecto por id (sin eager-load), para edición.
-     * Reemplaza: Proyecto::find($id)
-     */
     public function buscarProyectoPorId(int $id): ?Proyecto
     {
         return Proyecto::find($id);
     }
 
-    /**
-     * Persiste los cambios de un proyecto ya cargado.
-     * Reemplaza: $proyecto->save()
-     */
     public function guardarProyecto(Proyecto $proyecto): bool
     {
         return $proyecto->save();
     }
 
     /**
-     * Elimina un proyecto. Las imágenes se borran en cascada
-     * por la FK de la tabla imagen_proyecto.
-     * Reemplaza: $proyecto->delete()
+     * Elimina un proyecto. Sus imágenes se borran en cascada por la FK.
      */
     public function eliminarProyecto(Proyecto $proyecto): bool
     {
         return $proyecto->delete();
     }
 
-    /**
-     * Crea una imagen (BYTEA) asociada a un proyecto.
-     * Reemplaza: ImagenProyecto::create([...])
-     */
     public function crearImagenProyecto(array $datos): ImagenProyecto
     {
         return ImagenProyecto::create($datos);
     }
 
-    /**
-     * Cuenta las imágenes de un proyecto.
-     * Reemplaza: $proyecto->imagenes()->count()
-     */
     public function contarImagenesDeProyecto(Proyecto $proyecto): int
     {
         return $proyecto->imagenes()->count();
     }
 
-    /**
-     * Devuelve la primera imagen de un proyecto (para regenerar thumbnail).
-     * Reemplaza: $proyecto->imagenes()->orderBy('id_imagen')->first()
-     */
     public function primeraImagenDeProyecto(Proyecto $proyecto): ?ImagenProyecto
     {
         return $proyecto->imagenes()->orderBy('id_imagen')->first();
     }
 
     /**
-     * Elimina las imágenes indicadas que pertenezcan a un proyecto concreto.
-     * Reemplaza: ImagenProyecto::whereIn('id_imagen',$ids)->where('id_proyecto',$p)->delete()
+     * Elimina las imágenes indicadas que pertenezcan a un proyecto.
      *
      * @param int[] $idsImagenes
-     * @return int  número de filas eliminadas
+     * @return int  filas eliminadas
      */
     public function eliminarImagenesDeProyecto(array $idsImagenes, int $idProyecto): int
     {
@@ -359,15 +253,11 @@ class DBRouterController
             ->delete();
     }
 
-    // =========================================================================
-    // COLABORADORES — PANEL ADMIN  (consumidos por AdminController)
-    // =========================================================================
+    // Colaboradores del panel de administración
 
     /**
-     * Lista los colaboradores de un administrador con su logotipo (BYTEA)
-     * y tipo_mime. El controlador convierte el BYTEA a Data URI.
-     *
-     * Reemplaza: Colaborador::where('id_admin',$id)->select([...])->orderBy(...)->get()
+     * Colaboradores de un administrador con su logotipo (BYTEA) y tipo_mime.
+     * El controlador convierte el BYTEA a Data URI.
      *
      * @return Collection<int,Colaborador>
      */
@@ -385,9 +275,7 @@ class DBRouterController
     }
 
     /**
-     * Lista TODOS los colaboradores (vista pública) con su logotipo (BYTEA)
-     * y tipo_mime, ordenados por nombre comercial. Consumido por la página
-     * pública de Colaboradores y por la sección de la página de inicio (RF14).
+     * Todos los colaboradores (vista pública) con logotipo y tipo_mime.
      *
      * @return Collection<int,Colaborador>
      */
@@ -403,26 +291,16 @@ class DBRouterController
             ->get();
     }
 
-    /**
-     * Crea un colaborador con su logotipo en BYTEA.
-     * Reemplaza: Colaborador::create([...])
-     */
     public function crearColaborador(array $datos): Colaborador
     {
         return Colaborador::create($datos);
     }
 
-    /**
-     * Busca un colaborador por su ID (o null si no existe).
-     */
     public function buscarColaborador(int $id): ?Colaborador
     {
         return Colaborador::find($id);
     }
 
-    /**
-     * Elimina un colaborador de la Base de Datos (RF48).
-     */
     public function eliminarColaborador(Colaborador $colaborador): void
     {
         $colaborador->delete();

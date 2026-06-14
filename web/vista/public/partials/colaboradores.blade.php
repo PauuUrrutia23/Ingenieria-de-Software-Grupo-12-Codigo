@@ -1,5 +1,5 @@
 {{--
-    Sección reutilizable de Colaboradores — Ingecon (RF14)
+    Sección reutilizable de Colaboradores.
     Renderiza los logotipos y nombres comerciales desde la Base de Datos.
 
     Variables recibidas:

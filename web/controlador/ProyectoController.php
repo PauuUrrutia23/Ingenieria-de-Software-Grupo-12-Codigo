@@ -14,46 +14,21 @@ use Illuminate\View\View;
 
 class ProyectoController extends Controller
 {
-    /**
-     * Mediador de base de datos (ver 02b_dbrouter_controller.md).
-     * Resuelto automáticamente por el contenedor de Laravel.
-     */
     public function __construct(
         private readonly DBRouterController $db
     ) {}
 
-    // =========================================================================
-    // CU 3.2 / CU 3.3 — Búsqueda y filtrado (RF20, RF21)
-    // =========================================================================
-
     /**
-     * Retorna proyectos publicados filtrados opcionalmente por texto libre
-     * (nombre_obra, ubicacion_geografica con ILIKE) y/o categoría exacta.
+     * Proyectos publicados filtrados opcionalmente por texto libre
+     * (nombre_obra, ubicacion_geografica) y/o categoría exacta. Retorna JSON.
      *
-     * Siempre retorna JSON. Consumido por Alpine.js vía fetch().
-     *
-     * Query params:
-     *   texto     string|null  Término de búsqueda libre
-     *   categoria string|null  Categoría exacta: Habitacional|Industrial|Agrícola
-     *
-     * @param  Request  $request
-     * @return JsonResponse
+     * Query params: texto (string|null), categoria (Habitacional|Industrial|Agrícola|null).
      */
     public function buscar(Request $request): JsonResponse
     {
-        // ------------------------------------------------------------------
-        // a) Leer parámetros de query — ninguno es obligatorio
-        // ------------------------------------------------------------------
         $texto     = $request->query('texto', '');
         $categoria = $request->query('categoria', '');
 
-        // ------------------------------------------------------------------
-        // b) Delegar TODA la construcción de la query al DBRouterController.
-        //    El router aplica: estado_publicacion='publicado', filtro ILIKE
-        //    de texto (RF20), filtro de categoría (RF21), eager-load de
-        //    imagenesProyecto ordenadas y orden por anio_ejecucion DESC.
-        //    Devuelve una Collection<Proyecto>; aquí solo se arma el JSON.
-        // ------------------------------------------------------------------
         try {
             $proyectos = $this->db->buscarProyectosPublicados($texto, $categoria);
         } catch (QueryException $e) {
@@ -68,15 +43,9 @@ class ProyectoController extends Controller
             ], 500);
         }
 
-        // ------------------------------------------------------------------
-        // f) Mapear colección a JSON serializable
-        //    BYTEA de PostgreSQL llega como PHP resource stream → convertir
-        // ------------------------------------------------------------------
         $resultado = $proyectos->map(function (Proyecto $proyecto) {
             $thumbnail = null;
 
-            // Relación definida como imagenesProyecto() en 02_modelos_eloquent.md
-            // Se toma solo la primera imagen cargada (orderBy id_imagen asc)
             /** @var ImagenProyecto|null $imagen */
             $imagen = $proyecto->imagenesProyecto->first();
 
@@ -102,29 +71,15 @@ class ProyectoController extends Controller
             ];
         });
 
-        // ------------------------------------------------------------------
-        // g) Retornar array (vacío si sin resultados)
-        // ------------------------------------------------------------------
         return response()->json($resultado->values());
     }
 
-    // =========================================================================
-    // CU 3.6 — Detalle de proyecto (RF24)
-    // =========================================================================
-
     /**
-     * Retorna los datos completos de un proyecto publicado, incluyendo
-     * todas sus imágenes en base64 para el modal de detalle.
-     *
-     * @param  int  $id   id_proyecto
-     * @return JsonResponse
+     * Datos completos de un proyecto publicado, con todas sus imágenes en
+     * base64 para el modal de detalle.
      */
     public function detalle(int $id): JsonResponse
     {
-        // ------------------------------------------------------------------
-        // a) Buscar proyecto con TODAS sus imágenes para el carrusel del modal
-        //    El router carga la relación imagenesProyecto ordenada.
-        // ------------------------------------------------------------------
         try {
             $proyecto = $this->db->buscarProyectoConImagenes($id);
         } catch (QueryException $e) {
@@ -138,18 +93,12 @@ class ProyectoController extends Controller
             ], 500);
         }
 
-        // ------------------------------------------------------------------
-        // b) No existe o no está publicado → 404
-        // ------------------------------------------------------------------
         if (! $proyecto || $proyecto->estado_publicacion !== 'publicado') {
             return response()->json([
                 'error' => 'No encontrado',
             ], 404);
         }
 
-        // ------------------------------------------------------------------
-        // c) Serializar todas las imágenes como Data URIs base64
-        // ------------------------------------------------------------------
         $imagenes = $proyecto->imagenesProyecto->map(function (ImagenProyecto $imagen) {
             $raw    = $imagen->getRawOriginal('imagen');
             $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
@@ -179,25 +128,12 @@ class ProyectoController extends Controller
         ]);
     }
 
-    // =========================================================================
-    // RF12 — Página dedicada de Proyectos (acceso desde el Menú Lateral)
-    // =========================================================================
-
     /**
-     * Renderiza la PÁGINA COMPLETA de proyectos publicados.
-     *
-     * A diferencia de la galería one-page (que carga vía Alpine.js/AJAX a
-     * buscar()), esta es una página independiente accesible desde el Menú
-     * Lateral (RF12). El contenido se obtiene desde la Base de Datos en el
-     * mismo request GET /proyectos a través del DBRouterController, por lo
-     * que el renderizado server-side ya consulta las entidades reales.
-     *
-     * @return View
+     * Página completa de proyectos publicados (sección accesible desde el
+     * menú lateral). Renderiza server-side, a diferencia de la galería AJAX.
      */
     public function galeria(): View
     {
-        // Sin filtros: lista todos los proyectos publicados (RF20/RF21 viven
-        // en la galería interactiva; aquí es el listado completo de la sección).
         try {
             $proyectos = $this->db->buscarProyectosPublicados('', '');
         } catch (QueryException $e) {
@@ -207,7 +143,6 @@ class ProyectoController extends Controller
             return view('public.proyectos-pagina', ['proyectos' => collect()]);
         }
 
-        // Serializar la imagen de portada (BYTEA → Data URI) para render directo.
         $listado = $proyectos->map(function (Proyecto $proyecto) {
             $thumbnail = null;
             /** @var ImagenProyecto|null $imagen */
@@ -238,27 +173,15 @@ class ProyectoController extends Controller
         return view('public.proyectos-pagina', ['proyectos' => $listado]);
     }
 
-    // =========================================================================
-    // CU 4.1 — Visualizando Certificaciones (RF25)
-    // =========================================================================
-
     /**
-     * Retorna el listado público de certificados activos con metadatos.
+     * Listado público de certificados vigentes con metadatos.
      *
-     * CRÍTICO PARA PERFORMANCE: Se usa select() explícito para excluir la
-     * columna archivo_pdf (BYTEA) del listado. Traer binarios de todos los
-     * certificados en el listado dispararía un consumo de memoria inaceptable.
-     * El BYTEA solo se carga en descargarCertificado() donde se necesita.
-     *
-     * @return View
+     * Excluye la columna archivo_pdf (BYTEA) del SELECT: traer los binarios
+     * de todos los certificados dispararía un consumo de memoria inaceptable.
+     * El BYTEA solo se carga al ver o descargar un certificado.
      */
     public function certificaciones(): View
     {
-        // ------------------------------------------------------------------
-        // a) Consultar certificados activos con metadatos únicamente.
-        //    El router excluye archivo_pdf (BYTEA) del SELECT y precarga
-        //    el proyecto (id, nombre_obra, region) para evitar N+1.
-        // ------------------------------------------------------------------
         try {
             $certificados = $this->db->listarCertificadosActivos();
         } catch (QueryException $e) {
@@ -268,9 +191,6 @@ class ProyectoController extends Controller
             return view('public.certificaciones', ['certificados' => collect()]);
         }
 
-        // ------------------------------------------------------------------
-        // b) Formatear fecha_emision a d/m/Y para la vista
-        // ------------------------------------------------------------------
         $certificados->transform(function (Certificado $cert) {
             $cert->fecha_formateada = $cert->fecha_emision
                 ? $cert->fecha_emision->format('d/m/Y')
@@ -278,31 +198,13 @@ class ProyectoController extends Controller
             return $cert;
         });
 
-        // ------------------------------------------------------------------
-        // c) Retornar la página COMPLETA con layout público
-        //
-        //    ⚠️  IMPORTANTE: NO retornar view('public.partials.certificaciones')
-        //    directamente — eso renderizaría solo el partial sin navbar,
-        //    sidebar ni layout, resultando en una página visualmente rota.
-        //
-        //    Se retorna public.certificaciones (vista completa) que extiende
-        //    layouts.public e incluye el partial internamente.
-        //    Ver archivo resources/views/public/certificaciones.blade.php
-        //    definido en la sección 3b de este documento.
-        // ------------------------------------------------------------------
+        // Devolver la vista completa (con layout), no el partial suelto.
         return view('public.certificaciones', compact('certificados'));
     }
 
-    // =========================================================================
-    // CU 4.1 — Visualizando Certificado PDF en el navegador (RF25)
-    // =========================================================================
-
     /**
-     * Muestra el archivo PDF de un certificado en el navegador (inline),
-     * sin forzar la descarga. Útil para previsualizar antes de descargar.
-     *
-     * @param  int  $id  id_certificado
-     * @return Response
+     * Muestra el PDF de un certificado inline en el navegador, sin forzar
+     * la descarga.
      */
     public function verCertificado(int $id): Response
     {
@@ -343,26 +245,12 @@ class ProyectoController extends Controller
             ->header('Pragma', 'no-cache');
     }
 
-    // =========================================================================
-    // CU 4.2 — Descargando Certificados (RF26)
-    // =========================================================================
-
     /**
-     * Descarga el archivo PDF de un certificado almacenado en BYTEA.
-     *
-     * Esta ruta SÍ carga el BYTEA completo — es su única responsabilidad.
-     * El archivo se sirve como attachment para forzar la descarga en el navegador.
-     *
-     * @param  int  $id  id_certificado
-     * @return Response
+     * Descarga el PDF de un certificado (almacenado en BYTEA) como attachment.
+     * Es la única ruta que carga el binario completo.
      */
     public function descargarCertificado(int $id): Response
     {
-        // ------------------------------------------------------------------
-        // a) Buscar certificado — esta vez SÍ incluimos archivo_pdf.
-        //    El router selecciona columnas específicas (id, codigo_lote,
-        //    archivo_pdf, estado) en lugar de un select * innecesario.
-        // ------------------------------------------------------------------
         try {
             $certificado = $this->db->buscarCertificadoParaDescarga($id);
         } catch (QueryException $e) {
@@ -373,42 +261,27 @@ class ProyectoController extends Controller
             abort(500, 'La descarga no está disponible temporalmente.');
         }
 
-        // ------------------------------------------------------------------
-        // b) No existe → 404
-        // ------------------------------------------------------------------
         if (! $certificado) {
             abort(404, 'El certificado solicitado no existe.');
         }
 
-        // ------------------------------------------------------------------
-        // c) Verificar que el binario exista en la BD
-        //    BYTEA de PostgreSQL llega como PHP resource stream.
-        //    Convertir a string binario antes de operar.
-        // ------------------------------------------------------------------
+        // BYTEA de PostgreSQL llega como resource stream.
         $rawPdf = $certificado->getRawOriginal('archivo_pdf');
 
         if ($rawPdf === null) {
             abort(404, 'El archivo PDF de este certificado no está disponible.');
         }
 
-        // Convertir stream PostgreSQL a string binario
         $binary = is_resource($rawPdf) ? stream_get_contents($rawPdf) : $rawPdf;
 
         if (! $binary || strlen($binary) === 0) {
             abort(404, 'El archivo PDF de este certificado no está disponible.');
         }
 
-        // ------------------------------------------------------------------
-        // d) Nombre de archivo seguro para el header Content-Disposition
-        //    Sanitizar codigo_lote para evitar caracteres inválidos en nombres
-        //    de archivo Windows/macOS/Linux.
-        // ------------------------------------------------------------------
+        // Sanitizar codigo_lote para el nombre de archivo.
         $nombreArchivo = preg_replace('/[^a-zA-Z0-9\-_]/', '_', $certificado->codigo_lote)
             . '.pdf';
 
-        // ------------------------------------------------------------------
-        // e) Retornar respuesta de descarga
-        // ------------------------------------------------------------------
         return response($binary)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="' . $nombreArchivo . '"')

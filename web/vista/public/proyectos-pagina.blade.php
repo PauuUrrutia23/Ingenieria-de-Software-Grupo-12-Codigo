@@ -1,6 +1,6 @@
 {{--
     Página completa de Proyectos — ruta GET /proyectos
-    Retornada por ProyectoController@galeria (RF12)
+    Retornada por ProyectoController@galeria.
 
     Diferencia con public/index.blade.php:
     - index.blade.php: galería one-page que carga vía Alpine.js/AJAX

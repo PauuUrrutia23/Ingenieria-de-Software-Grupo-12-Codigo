@@ -17,29 +17,19 @@ class EnviarEmailBloqueoJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /**
-     * Número de reintentos en caso de fallo de envío.
-     */
     public int $tries = 3;
 
-    /**
-     * Tiempo de espera entre reintentos (segundos).
-     */
+    // Segundos de espera entre reintentos.
     public int $backoff = 30;
 
-    /**
-     * @param int    $adminId    ID del administrador bloqueado
-     * @param Carbon $momentoBloqueo  Instancia Carbon inmutable del momento del bloqueo
-     */
     public function __construct(
         private readonly int    $adminId,
         private readonly Carbon $momentoBloqueo,
     ) {}
 
     /**
-     * Ejecutar el job: cargar el admin y enviar el email de notificación.
-     * El DBRouterController se resuelve desde el contenedor en handle()
-     * (no por constructor, para no romper la serialización del job).
+     * Carga el admin y envía el email de bloqueo. El DBRouterController se
+     * resuelve aquí (no por constructor) para no romper la serialización del job.
      */
     public function handle(DBRouterController $db): void
     {

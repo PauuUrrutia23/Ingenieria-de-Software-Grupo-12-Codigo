@@ -420,9 +420,7 @@
                 this.errorServidor   = '';
             },
 
-            // -----------------------------------------------------------------
-            // Validación frontend completa (RF07 — CU 1.7)
-            // -----------------------------------------------------------------
+            // Validación frontend completa.
 
             /**
              * Ejecuta todas las validaciones client-side.

@@ -13,67 +13,31 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    /**
-     * Duración de la sesión en minutos.
-     */
     private const SESSION_MINUTES = 120;
-
-    /**
-     * Nombre de la cookie de sesión.
-     */
     private const COOKIE_NAME = 'ingecon_auth';
-
-    /**
-     * Máximo de intentos antes del bloqueo.
-     */
     private const MAX_INTENTOS = 5;
-
-    /**
-     * Duración del bloqueo en minutos.
-     */
     private const BLOQUEO_MINUTOS = 60;
 
-    /**
-     * Mediador de base de datos. Toda lectura/escritura pasa por aquí
-     * (ver 02b_dbrouter_controller.md). Resuelto por el contenedor de Laravel.
-     */
     public function __construct(
         private readonly DBRouterController $db
     ) {}
 
-    // =========================================================================
-    // CU 5.1 — Autenticando Personal de Administración (RF28)
-    // =========================================================================
-
     /**
-     * Procesa el formulario de login enviado desde el modal Alpine.js.
-     * Siempre retorna JSON para ser consumido por fetch() en el frontend.
+     * Procesa el login del modal y retorna JSON para fetch().
      *
-     * Cookie de sesión: almacena "id_sesion|token" en lugar de solo el token.
-     * Esto permite al middleware buscar la sesión por ID y verificar solo ese
-     * registro con Hash::check, evitando cargar todas las sesiones activas.
-     *
-     * @param Request $request  Campos: correo (string), password (string)
-     * @return JsonResponse
+     * La cookie almacena "id_sesion|token": el middleware busca la sesión por
+     * ID y verifica solo ese token_hash, sin iterar todas las sesiones activas.
      */
     public function login(Request $request): JsonResponse
     {
-        // ------------------------------------------------------------------
-        // a) Validar request — errores retornan JSON 422
-        // ------------------------------------------------------------------
         $validated = $request->validate([
             'correo'   => ['required', 'email', 'max:150'],
             'password' => ['required', 'string', 'min:1'],
         ]);
 
-        // ------------------------------------------------------------------
-        // b) Buscar Administrador por correo
-        // ------------------------------------------------------------------
         $admin = $this->db->buscarAdminPorCorreo($validated['correo']);
 
-        // ------------------------------------------------------------------
-        // c) Administrador no existe → error genérico (no revelar existencia)
-        // ------------------------------------------------------------------
+        // No revelar si el correo existe.
         if (! $admin) {
             return response()->json([
                 'success' => false,
@@ -82,9 +46,6 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // ------------------------------------------------------------------
-        // d) Cuenta desactivada (activo = false)
-        // ------------------------------------------------------------------
         if (! $admin->activo) {
             return response()->json([
                 'success' => false,
@@ -93,9 +54,6 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // ------------------------------------------------------------------
-        // e) Verificar bloqueo temporal — bloqueado_hasta > now()
-        // ------------------------------------------------------------------
         if ($admin->bloqueado_hasta && $admin->bloqueado_hasta->isFuture()) {
             $minutosRestantes = (int) now()->diffInMinutes($admin->bloqueado_hasta, true);
 
@@ -106,19 +64,12 @@ class AuthController extends Controller
             ], 423);
         }
 
-        // ------------------------------------------------------------------
-        // f) Verificar contraseña con Argon2id
-        // ------------------------------------------------------------------
         $passwordCorrecto = Hash::check($validated['password'], $admin->password_hash);
 
-        // ------------------------------------------------------------------
-        // g) Contraseña INCORRECTA → incrementar intentos y evaluar bloqueo
-        // ------------------------------------------------------------------
         if (! $passwordCorrecto) {
             $admin->intentos_fallidos += 1;
 
             if ($admin->intentos_fallidos >= self::MAX_INTENTOS) {
-                // CU 5.7 — Bloquear cuenta por 60 minutos
                 $admin->bloqueado_hasta   = now()->addMinutes(self::BLOQUEO_MINUTOS);
                 $admin->intentos_fallidos = 0;
 
@@ -135,7 +86,6 @@ class AuthController extends Controller
                     ], 500);
                 }
 
-                // Disparar job asíncrono para enviar email de bloqueo
                 EnviarEmailBloqueoJob::dispatch($admin->id_admin, now());
 
                 Log::warning('Cuenta bloqueada por intentos fallidos', [
@@ -173,11 +123,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // ------------------------------------------------------------------
-        // h) Contraseña CORRECTA → crear sesión
-        // ------------------------------------------------------------------
-
-        // Resetear contadores de seguridad
+        // Contraseña correcta: resetear contadores y abrir sesión.
         $admin->intentos_fallidos = 0;
         $admin->bloqueado_hasta   = null;
 
@@ -194,10 +140,9 @@ class AuthController extends Controller
             ], 500);
         }
 
-        // Generar token aleatorio de 64 caracteres
         $token = Str::random(64);
 
-        // Persistir sesión con hash del token (nunca guardar el token en claro)
+        // Persistir solo el hash del token, nunca el token en claro.
         try {
             $sesion = $this->db->crearSesion([
                 'token_hash'   => Hash::make($token),
@@ -216,19 +161,15 @@ class AuthController extends Controller
             ], 500);
         }
 
-        // Construir valor de cookie: "id_sesion|token"
-        // El middleware usará el id_sesion para buscar el registro directamente
-        // y verificar solo ese token_hash, sin iterar todas las sesiones activas.
         $valorCookie = $sesion->id_sesion . '|' . $token;
 
-        // Construir cookie httpOnly segura
         $cookie = cookie(
             name:     self::COOKIE_NAME,
             value:    $valorCookie,
             minutes:  self::SESSION_MINUTES,
             path:     '/',
             domain:   null,
-            secure:   app()->isProduction(),  // HTTPS solo en producción
+            secure:   app()->isProduction(),
             httpOnly: true,
             sameSite: 'Strict'
         );
@@ -239,22 +180,11 @@ class AuthController extends Controller
         ])->withCookie($cookie);
     }
 
-    // =========================================================================
-    // CU 5.6 — Cerrando Sesión (RF33)
-    // =========================================================================
-
     /**
      * Invalida la sesión activa y elimina la cookie.
-     * El middleware admin.auth garantiza que existe una sesión válida al llegar aquí.
-     *
-     * @param Request $request
-     * @return RedirectResponse
      */
     public function logout(Request $request): RedirectResponse
     {
-        // ------------------------------------------------------------------
-        // a) Leer cookie y parsear "id_sesion|token"
-        // ------------------------------------------------------------------
         $valorCookie = $request->cookie(self::COOKIE_NAME);
 
         if ($valorCookie) {
@@ -263,22 +193,13 @@ class AuthController extends Controller
             if (count($partes) === 2) {
                 [$idSesion, $token] = $partes;
 
-                // --------------------------------------------------------------
-                // b) Recuperar admin inyectado por el middleware AdminAuth
-                // --------------------------------------------------------------
                 /** @var \App\Models\Administrador $admin */
                 $admin = $request->attributes->get('admin');
 
                 if ($admin) {
-                    // ----------------------------------------------------------
-                    // c) Buscar la sesión directamente por ID — sin iterar
-                    // ----------------------------------------------------------
                     $sesionActiva = $this->db->buscarSesionActivaDeAdmin((int) $idSesion, $admin->id_admin);
 
                     if ($sesionActiva && Hash::check($token, $sesionActiva->token_hash)) {
-                        // ------------------------------------------------------
-                        // c) Invalidar la sesión (CU 33.1 Exc 3)
-                        // ------------------------------------------------------
                         $sesionActiva->estado = 'cerrada';
 
                         try {
@@ -288,21 +209,14 @@ class AuthController extends Controller
                                 'error'    => $e->getMessage(),
                                 'id_sesion'=> $sesionActiva->id_sesion,
                             ]);
-                            // La sesión local se cierra igualmente; se registra la inconsistencia.
                         }
                     }
                 }
             }
         }
 
-        // ------------------------------------------------------------------
-        // d) Eliminar cookie enviando una caducada
-        // ------------------------------------------------------------------
         $cookieExpirada = cookie()->forget(self::COOKIE_NAME);
 
-        // ------------------------------------------------------------------
-        // e) Redirigir al inicio
-        // ------------------------------------------------------------------
         return redirect('/')
             ->withCookie($cookieExpirada)
             ->with('info', 'Sesión cerrada correctamente.');

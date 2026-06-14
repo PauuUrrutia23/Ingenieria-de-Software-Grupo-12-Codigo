@@ -13,33 +13,15 @@ use Illuminate\Validation\ValidationException;
 
 class AdminController extends Controller
 {
-    /**
-     * Límite máximo de imágenes por proyecto.
-     */
     private const MAX_IMAGENES = 15;
 
-    /**
-     * Mediador de base de datos (ver 02b_dbrouter_controller.md).
-     * Resuelto automáticamente por el contenedor de Laravel. Este mismo
-     * constructor cubre también los métodos de colaboradores (09).
-     */
     public function __construct(
         private readonly DBRouterController $db
     ) {}
 
-    // =========================================================================
-    // Listar proyectos del admin autenticado
-    // =========================================================================
-
     /**
-     * Retorna los proyectos del administrador en sesión.
-     * Consumido por Alpine.js via fetch GET /admin/proyectos.
-     *
-     * El admin autenticado está disponible en $request->attributes
-     * inyectado por el middleware AdminAuth (03_autenticacion.md).
-     *
-     * @param  Request  $request
-     * @return JsonResponse
+     * Proyectos del administrador en sesión (GET /admin/proyectos).
+     * El admin lo inyecta el middleware AdminAuth en los atributos del request.
      */
     public function indexProyectos(Request $request): JsonResponse
     {
@@ -89,21 +71,10 @@ class AdminController extends Controller
         return response()->json($resultado->values());
     }
 
-    // =========================================================================
-    // Obtener un proyecto del admin con sus imágenes (cualquier estado)
-    // =========================================================================
-
     /**
-     * Retorna un proyecto del administrador en sesión con TODAS sus imágenes,
-     * sin importar su estado de publicación. Lo consume el modal de edición.
-     *
-     * Se agrega porque el endpoint público /proyectos/{id}/detalle solo sirve
-     * proyectos en estado "publicado": al editar un borrador no devolvía las
-     * imágenes (se contaban pero no se mostraban para eliminar).
-     *
-     * @param  Request  $request
-     * @param  int      $id
-     * @return JsonResponse
+     * Un proyecto del admin con todas sus imágenes, en cualquier estado.
+     * Lo consume el modal de edición; el endpoint público /proyectos/{id}/detalle
+     * solo sirve proyectos publicados y no devolvía las imágenes de un borrador.
      */
     public function showProyecto(Request $request, int $id): JsonResponse
     {
@@ -123,7 +94,6 @@ class AdminController extends Controller
             ], 500);
         }
 
-        // No existe o no pertenece al admin en sesión → 404
         if (! $proyecto || (int) $proyecto->id_admin !== (int) $admin->id_admin) {
             return response()->json(['error' => 'No encontrado'], 404);
         }
@@ -158,22 +128,11 @@ class AdminController extends Controller
         ]);
     }
 
-    // =========================================================================
-    // CU 7.6 — Registrar nuevo proyecto (RF49)
-    // =========================================================================
-
     /**
-     * Crea un nuevo proyecto con sus imágenes iniciales.
-     * Estado inicial: 'borrador' (el admin lo publica manualmente después).
-     *
-     * @param  Request  $request
-     * @return JsonResponse
+     * Crea un proyecto con sus imágenes iniciales en estado 'borrador'.
      */
     public function storeProyecto(Request $request): JsonResponse
     {
-        // ------------------------------------------------------------------
-        // Validación
-        // ------------------------------------------------------------------
         try {
             $validated = $request->validate([
                 'nombre_obra'    => ['required', 'string', 'max:150'],
@@ -196,9 +155,6 @@ class AdminController extends Controller
         /** @var \App\Models\Administrador $admin */
         $admin = $request->attributes->get('admin');
 
-        // ------------------------------------------------------------------
-        // a) Crear el proyecto en estado borrador (CU 49.1 Exc 3)
-        // ------------------------------------------------------------------
         try {
             $proyecto = $this->db->crearProyecto([
                 'nombre_obra'        => $validated['nombre_obra'],
@@ -221,11 +177,8 @@ class AdminController extends Controller
             ], 500);
         }
 
-        // ------------------------------------------------------------------
-        // b) Persistir cada fotografía como BYTEA (CU 49.2 Exc 4)
-        //    Si no se suben imágenes, el proyecto se crea igual (quedará
-        //    como borrador y no podrá publicarse hasta tener al menos una).
-        // ------------------------------------------------------------------
+        // Si no se suben imágenes, el proyecto queda como borrador y no podrá
+        // publicarse hasta tener al menos una.
         $thumbnail = null;
         $imagenesGuardadas = 0;
 
@@ -270,7 +223,6 @@ class AdminController extends Controller
                     ], 500);
                 }
 
-                // Guardar thumbnail de la primera imagen válida
                 if ($index === 0 && $thumbnail === null) {
                     $mime      = $foto->getMimeType();
                     $thumbnail = "data:{$mime};base64," . base64_encode($binary);
@@ -286,9 +238,6 @@ class AdminController extends Controller
             }
         }
 
-        // ------------------------------------------------------------------
-        // c) Retornar datos del proyecto creado
-        // ------------------------------------------------------------------
         return response()->json([
             'success' => true,
             'proyecto' => [
@@ -302,23 +251,12 @@ class AdminController extends Controller
         ], 201);
     }
 
-    // =========================================================================
-    // CU 7.7 — Editar proyecto existente (RF50)
-    // =========================================================================
-
     /**
      * Actualiza los campos de un proyecto y gestiona su inventario de imágenes.
-     * Solo el administrador propietario puede editar el proyecto (403 si no).
-     *
-     * @param  Request  $request
-     * @param  int      $id  id_proyecto
-     * @return JsonResponse
+     * Solo el administrador propietario puede editarlo.
      */
     public function updateProyecto(Request $request, int $id): JsonResponse
     {
-        // ------------------------------------------------------------------
-        // Validación
-        // ------------------------------------------------------------------
         try {
             $validated = $request->validate([
                 'nombre_obra'            => ['required', 'string', 'max:150'],
@@ -348,9 +286,6 @@ class AdminController extends Controller
         /** @var \App\Models\Administrador $admin */
         $admin = $request->attributes->get('admin');
 
-        // ------------------------------------------------------------------
-        // a) Buscar proyecto y verificar propiedad
-        // ------------------------------------------------------------------
         $proyecto = $this->db->buscarProyectoPorId($id);
 
         if (! $proyecto) {
@@ -364,9 +299,7 @@ class AdminController extends Controller
             ], 403);
         }
 
-        // ------------------------------------------------------------------
-        // b) Calcular total de imágenes resultante para validar límite
-        // ------------------------------------------------------------------
+        // Total de imágenes resultante, para validar el límite.
         $idsEliminar  = $validated['imagenes_eliminar'] ?? [];
         $nuevasFotos  = $request->file('fotografias_nuevas') ?? [];
         $cantActual   = $this->db->contarImagenesDeProyecto($proyecto);
@@ -390,9 +323,7 @@ class AdminController extends Controller
             $totalFinal = 0;
         }
 
-        // ------------------------------------------------------------------
-        // c.1) Validaciones previas a la publicación (CU 49.3 Exc 2, Exc 3)
-        // ------------------------------------------------------------------
+        // Requisitos obligatorios para pasar a 'publicado'.
         $nuevoEstado = $validated['estado_publicacion'] ?? $proyecto->estado_publicacion;
 
         if ($nuevoEstado === 'publicado') {
@@ -428,9 +359,6 @@ class AdminController extends Controller
             }
         }
 
-        // ------------------------------------------------------------------
-        // c.2) Actualizar campos del proyecto (CU 50.1 Exc 5 / CU 49.3 Exc 4)
-        // ------------------------------------------------------------------
         $proyecto->fill([
             'nombre_obra'         => $validated['nombre_obra'],
             'descripcion_tecnica' => $validated['descripcion_tecnica'] ?? $proyecto->descripcion_tecnica,
@@ -454,16 +382,10 @@ class AdminController extends Controller
             ], 500);
         }
 
-        // ------------------------------------------------------------------
-        // d) Eliminar imágenes marcadas — solo las del proyecto correcto
-        // ------------------------------------------------------------------
         if (! empty($idsEliminar)) {
             $this->db->eliminarImagenesDeProyecto($idsEliminar, $proyecto->id_proyecto);
         }
 
-        // ------------------------------------------------------------------
-        // e) Agregar imágenes nuevas
-        // ------------------------------------------------------------------
         foreach ($nuevasFotos as $foto) {
             if (! $foto->isValid()) continue;
 
@@ -478,9 +400,6 @@ class AdminController extends Controller
             ]);
         }
 
-        // ------------------------------------------------------------------
-        // f) Recargar thumbnail actualizado
-        // ------------------------------------------------------------------
         $primeraImagen = $this->db->primeraImagenDeProyecto($proyecto);
         $thumbnail     = null;
 
@@ -510,20 +429,9 @@ class AdminController extends Controller
         ]);
     }
 
-    // =========================================================================
-    // CU 7.3 — Módulo de Colaboradores (RF46)
-    // =========================================================================
-
     /**
-     * Lista todos los colaboradores del administrador autenticado.
-     * Genera el Data URI del logotipo para cada colaborador.
-     *
-     * NOTA: El campo tipo_mime se agregó en la migración adicional
-     * 2024_01_01_000010_add_tipo_mime_to_colaborador_table.php.
-     * Si es null, se usa 'image/png' como valor por defecto.
-     *
-     * @param  Request  $request
-     * @return JsonResponse
+     * Lista los colaboradores del administrador autenticado, generando el
+     * Data URI del logotipo de cada uno.
      */
     public function indexColaboradores(Request $request): JsonResponse
     {
@@ -549,11 +457,10 @@ class AdminController extends Controller
             $raw = $c->getRawOriginal('logotipo');
 
             if ($raw !== null) {
-                // PostgreSQL BYTEA llega como resource stream — convertir a string
+                // BYTEA de PostgreSQL llega como resource stream.
                 $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
 
                 if ($binary) {
-                    // Usar tipo_mime almacenado o fallback a image/png
                     $mime           = $c->tipo_mime ?: 'image/png';
                     $logotipoBase64 = "data:{$mime};base64," . base64_encode($binary);
                 }
@@ -570,16 +477,10 @@ class AdminController extends Controller
     }
 
     /**
-     * Registra un nuevo colaborador con su logotipo almacenado como BYTEA.
-     *
-     * @param  Request  $request
-     * @return JsonResponse
+     * Registra un colaborador con su logotipo almacenado como BYTEA.
      */
     public function storeColaborador(Request $request): JsonResponse
     {
-        // ------------------------------------------------------------------
-        // Validación
-        // ------------------------------------------------------------------
         try {
             $validated = $request->validate([
                 'nombre_comercial' => ['required', 'string', 'max:120'],
@@ -608,9 +509,6 @@ class AdminController extends Controller
 
         $archivo = $request->file('logotipo');
 
-        // ------------------------------------------------------------------
-        // a) Leer contenido binario del logotipo
-        // ------------------------------------------------------------------
         $binary = file_get_contents($archivo->getRealPath());
 
         if ($binary === false) {
@@ -622,14 +520,9 @@ class AdminController extends Controller
             ], 500);
         }
 
-        // ------------------------------------------------------------------
-        // b) Obtener tipo MIME real del archivo (no solo la extensión)
-        // ------------------------------------------------------------------
+        // Tipo MIME real del archivo, no la extensión.
         $tipoMime = $archivo->getMimeType();
 
-        // ------------------------------------------------------------------
-        // c) Crear el colaborador con logotipo en BYTEA (CU 46.1 Exc 3)
-        // ------------------------------------------------------------------
         try {
             $colaborador = $this->db->crearColaborador([
                 'nombre_comercial' => $validated['nombre_comercial'],
@@ -650,14 +543,8 @@ class AdminController extends Controller
             ], 500);
         }
 
-        // ------------------------------------------------------------------
-        // d) Generar Data URI para la respuesta inmediata en Alpine
-        // ------------------------------------------------------------------
         $logotipoBase64 = "data:{$tipoMime};base64," . base64_encode($binary);
 
-        // ------------------------------------------------------------------
-        // e) Retornar datos del colaborador creado
-        // ------------------------------------------------------------------
         return response()->json([
             'success' => true,
             'colaborador' => [
@@ -668,17 +555,9 @@ class AdminController extends Controller
         ], 201);
     }
 
-    // =========================================================================
-    // CU 48.1 — Eliminar un Colaborador (RF48)
-    // =========================================================================
-
     /**
-     * Elimina un Colaborador del Módulo del administrador autenticado.
-     * Consumido por Alpine.js via fetch DELETE /admin/colaboradores/{id}.
-     *
-     * @param  Request  $request
-     * @param  int      $id
-     * @return JsonResponse
+     * Elimina un colaborador del administrador autenticado
+     * (DELETE /admin/colaboradores/{id}).
      */
     public function destroyColaborador(Request $request, int $id): JsonResponse
     {
@@ -698,7 +577,6 @@ class AdminController extends Controller
             ], 500);
         }
 
-        // No existe o no pertenece al admin en sesión → 404 (CU 48.1 Exc 1)
         if (! $colaborador || (int) $colaborador->id_admin !== (int) $admin->id_admin) {
             return response()->json([
                 'success' => false,
@@ -706,7 +584,6 @@ class AdminController extends Controller
             ], 404);
         }
 
-        // Eliminar de la Base de Datos (CU 48.1 Exc 2)
         try {
             $this->db->eliminarColaborador($colaborador);
         } catch (QueryException $e) {

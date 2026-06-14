@@ -1,7 +1,6 @@
 {{--
-    Sección Certificaciones Pública — Ingecon (RF25, RF26)
-    CU 4.1: Listado de certificados activos con metadatos
-    CU 4.2: Descarga directa de PDF vía enlace
+    Sección Certificaciones pública: listado de certificados vigentes con
+    metadatos y descarga directa del PDF vía enlace.
 
     Variables recibidas:
       $certificados  \Illuminate\Database\Eloquent\Collection<Certificado>
@@ -144,10 +143,10 @@
             </div>
 
             {{-- ============================================================
-                  LADO DERECHO — Botones Ver + Descargar (RF25, RF26 — CU 4.1, 4.2)
+                  LADO DERECHO — Botones Ver + Descargar
                   ============================================================ --}}
             <div class="shrink-0 flex items-center gap-2">
-                {{-- Botón Visualizar PDF (RF25) --}}
+                {{-- Botón Visualizar PDF --}}
                 <a
                     href="{{ route('certificaciones.ver', $cert->id_certificado) }}"
                     target="_blank"
@@ -180,7 +179,7 @@
                     Ver
                 </a>
 
-                {{-- Botón Descargar PDF (RF26) --}}
+                {{-- Botón Descargar PDF --}}
                 <a
                     href="{{ route('certificaciones.descargar', $cert->id_certificado) }}"
                     class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700

@@ -62,7 +62,7 @@
                        text-center hover:shadow-md transition-shadow"
                 role="listitem"
             >
-                {{-- Botón eliminar (RF48 — CU 48.1) --}}
+                {{-- Botón eliminar --}}
                 <button
                     type="button"
                     @click="confirmarEliminar(c)"
@@ -153,7 +153,7 @@
     </div>
 
     {{-- ====================================================================
-         MODAL AGREGAR COLABORADOR (RF46 — CU 7.3)
+         MODAL AGREGAR COLABORADOR
          ==================================================================== --}}
     <div
         x-show="modalAgregar"
@@ -406,7 +406,7 @@
     </div>
 
     {{-- ====================================================================
-         MODAL CONFIRMAR ELIMINACIÓN (RF48 — CU 48.1)
+         MODAL CONFIRMAR ELIMINACIÓN
          ==================================================================== --}}
     <div
         x-show="modalEliminar"
@@ -492,7 +492,7 @@ function adminColaboradores() {
         archivoLogotipo: null,
         errorLogotipo:  '',
 
-        // Eliminación (RF48 — CU 48.1)
+        // Eliminación
         modalEliminar:        false,
         colaboradorAEliminar: null,
         eliminando:           false,
@@ -681,9 +681,7 @@ function adminColaboradores() {
             }
         },
 
-        // -----------------------------------------------------------------
-        // RF48 — Eliminar colaborador (CU 48.1)
-        // -----------------------------------------------------------------
+        // Eliminar colaborador
 
         /** Abre el modal de confirmación para el colaborador seleccionado. */
         confirmarEliminar(colaborador) {

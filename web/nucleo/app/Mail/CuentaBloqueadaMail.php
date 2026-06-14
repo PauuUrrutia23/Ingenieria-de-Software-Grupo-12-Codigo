@@ -14,18 +14,11 @@ class CuentaBloqueadaMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    /**
-     * @param Administrador $admin          El administrador cuya cuenta fue bloqueada
-     * @param Carbon        $momentoBloqueo Momento exacto en que se produjo el bloqueo
-     */
     public function __construct(
         public readonly Administrador $admin,
         public readonly Carbon        $momentoBloqueo,
     ) {}
 
-    /**
-     * Asunto y remitente del email.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -33,10 +26,6 @@ class CuentaBloqueadaMail extends Mailable
         );
     }
 
-    /**
-     * Vista Blade que renderiza el cuerpo del email.
-     * Pasa las variables públicas automáticamente a la vista.
-     */
     public function content(): Content
     {
         return new Content(

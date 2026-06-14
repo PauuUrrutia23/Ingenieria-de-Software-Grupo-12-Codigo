@@ -19,13 +19,6 @@ class Visitante extends Model
         'email',
     ];
 
-    // -------------------------------------------------------------------------
-    // Relaciones
-    // -------------------------------------------------------------------------
-
-    /**
-     * Un visitante puede enviar muchas consultas.
-     */
     public function consultas(): HasMany
     {
         return $this->hasMany(Consulta::class, 'id_visitante', 'id_visitante');

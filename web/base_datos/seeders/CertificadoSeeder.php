@@ -11,18 +11,14 @@ use Illuminate\Database\Seeder;
 class CertificadoSeeder extends Seeder
 {
     /**
-     * Crea datos de prueba para la sección pública de Certificaciones (CU 4.1 / CU 4.2):
-     * un proyecto publicado y un certificado "Vigente" con un PDF real almacenado
-     * como BYTEA en la columna archivo_pdf.
+     * Datos de prueba para la sección de Certificaciones: un proyecto publicado
+     * y un certificado "Vigente" con un PDF real almacenado como BYTEA.
      *
-     * Es idempotente: si el proyecto o el certificado ya existen (por nombre_obra /
-     * codigo_lote), se omiten para no duplicar al re-ejecutar el seeder.
+     * Idempotente: si el proyecto o el certificado ya existen (por nombre_obra /
+     * codigo_lote) se omiten, para no duplicar al re-ejecutar el seeder.
      */
     public function run(): void
     {
-        // ------------------------------------------------------------------
-        // 1) Administrador dueño del proyecto (FK proyecto.id_admin)
-        // ------------------------------------------------------------------
         $admin = Administrador::orderBy('id_admin')->first();
 
         if (! $admin) {
@@ -30,9 +26,6 @@ class CertificadoSeeder extends Seeder
             return;
         }
 
-        // ------------------------------------------------------------------
-        // 2) Proyecto publicado al cual asociar el certificado (idempotente)
-        // ------------------------------------------------------------------
         $proyecto = Proyecto::firstOrCreate(
             ['nombre_obra' => 'Edificio Mirador Las Condes'],
             [
@@ -46,12 +39,7 @@ class CertificadoSeeder extends Seeder
             ]
         );
 
-        // ------------------------------------------------------------------
-        // 2b) Imagen de portada del proyecto.
-        //     Un proyecto publicado DEBE tener al menos una imagen (regla del
-        //     programa). Solo se agrega si el proyecto aún no tiene ninguna,
-        //     para no duplicar al re-ejecutar el seeder.
-        // ------------------------------------------------------------------
+        // Un proyecto publicado debe tener al menos una imagen.
         if (! $proyecto->imagenesProyecto()->exists()) {
             ImagenProyecto::create([
                 'imagen'         => $this->generarPng(800, 500, 51, 65, 85), // slate-700
@@ -62,10 +50,7 @@ class CertificadoSeeder extends Seeder
             $this->command->info('Imagen de portada agregada al proyecto.');
         }
 
-        // ------------------------------------------------------------------
-        // 3) Certificado "Vigente" con PDF real (idempotente por codigo_lote)
-        //    El listado público solo muestra certificados con estado='Vigente'.
-        // ------------------------------------------------------------------
+        // El listado público solo muestra certificados con estado 'Vigente'.
         $codigoLote = 'LOTE-A-001';
 
         if (Certificado::where('codigo_lote', $codigoLote)->exists()) {
@@ -78,8 +63,6 @@ class CertificadoSeeder extends Seeder
             $proyecto->nombre_obra
         );
 
-        // El mutator archivo_pdf del modelo Certificado convierte el binario a
-        // BYTEA mediante decode(hex) automáticamente.
         Certificado::create([
             'codigo_lote'   => $codigoLote,
             'archivo_pdf'   => $pdf,

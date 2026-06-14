@@ -1,5 +1,5 @@
 {{--
-    Barra de Navegación Fija — Ingecon (RF13 / CU 2.3)
+    Barra de Navegación Fija.
     Permanece visible durante el scroll vertical.
     Comunicación con sidebar-menu vía evento Alpine: 'abrir-sidebar'
     Comunicación con modal de login vía evento Alpine: 'abrir-login'
@@ -12,7 +12,7 @@
     <div class="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
 
         {{-- ============================================================
-             IZQUIERDA — Ícono hamburger (abre el menú lateral RF12)
+             IZQUIERDA — Ícono hamburger (abre el menú lateral)
              ============================================================ --}}
         <button
             type="button"
@@ -128,7 +128,7 @@
             {{-- Separador visual — solo en md+ --}}
             <div class="hidden md:block w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></div>
 
-            {{-- Ícono candado — abre modal de login (RF28 en 03_autenticacion.md) --}}
+            {{-- Ícono candado — abre modal de login --}}
             <button
                 type="button"
                 @click="$dispatch('abrir-login')"

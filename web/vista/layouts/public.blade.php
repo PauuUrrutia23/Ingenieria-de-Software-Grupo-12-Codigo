@@ -39,20 +39,20 @@
 <body class="bg-white text-slate-800 antialiased">
 
     {{-- ----------------------------------------------------------------
-         Barra de navegación fija (RF13 — CU 2.3)
+         Barra de navegación fija.
          Se incluye fuera del contenido principal para que quede
          posicionada sobre cualquier sección.
          ---------------------------------------------------------------- --}}
     @include('partials.navbar')
 
     {{-- ----------------------------------------------------------------
-         Menú lateral deslizante (RF12 — CU 2.2)
+         Menú lateral deslizante.
          Se incluye fuera del flujo principal para el z-index correcto.
          ---------------------------------------------------------------- --}}
     @include('partials.sidebar-menu')
 
     {{-- ----------------------------------------------------------------
-         Modal de login (especificado en 03_autenticacion.md)
+         Modal de login.
          Responde al evento global 'abrir-login'.
          ---------------------------------------------------------------- --}}
     @include('auth.login-modal')

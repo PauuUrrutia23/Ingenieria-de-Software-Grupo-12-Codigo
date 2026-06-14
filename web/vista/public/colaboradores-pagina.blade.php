@@ -1,6 +1,6 @@
 {{--
     Página completa de Colaboradores — ruta GET /colaboradores
-    Retornada por InstitucionalCtrl@colaboradores (RF12)
+    Retornada por InstitucionalCtrl@colaboradores.
 
     Página dedicada accesible desde el Menú Lateral. El contenido (logotipos y
     nombres comerciales) se renderiza server-side con datos obtenidos de la

@@ -18,25 +18,14 @@ class Colaborador extends Model
     protected $fillable = [
         'nombre_comercial',
         'logotipo',
-        'tipo_mime',      // Necesario para el Data URI correcto en el accessor logotipoBase64
+        'tipo_mime',      // necesario para el Data URI del accessor logotipoBase64
         'id_admin',
     ];
 
-    // -------------------------------------------------------------------------
-    // Relaciones
-    // -------------------------------------------------------------------------
-
-    /**
-     * Un colaborador fue creado/gestionado por un administrador.
-     */
     public function administrador(): BelongsTo
     {
         return $this->belongsTo(Administrador::class, 'id_admin', 'id_admin');
     }
-
-    // -------------------------------------------------------------------------
-    // Mutators / Accessors
-    // -------------------------------------------------------------------------
 
     protected function logotipo(): Attribute
     {
@@ -48,20 +37,8 @@ class Colaborador extends Model
     }
 
     /**
-     * Retorna el logotipo BYTEA como Data URI lista para usar en <img src="...">.
-     * Si el logotipo es null retorna null; la vista debe manejar el fallback.
-     *
-     * Uso en Blade:
-     *   @if($colaborador->logotipo_base64)
-     *       <img src="{{ $colaborador->logotipo_base64 }}"
-     *            alt="Logo {{ $colaborador->nombre_comercial }}">
-     *   @else
-     *       <img src="/images/logo-placeholder.svg" alt="Sin logotipo">
-     *   @endif
-     *
-     * Nota: PDO con pgsql devuelve BYTEA como resource stream.
-     *       El tipo MIME se asume image/png para logotipos; ajustar si se almacena
-     *       el tipo MIME en una columna adicional en el futuro.
+     * Logotipo BYTEA como Data URI para usar en <img src="...">, o null si no
+     * hay logotipo. PDO con pgsql devuelve el BYTEA como resource stream.
      */
     protected function logotipoBase64(): Attribute
     {

@@ -22,21 +22,10 @@ class ImagenProyecto extends Model
         'id_proyecto',
     ];
 
-    // -------------------------------------------------------------------------
-    // Relaciones
-    // -------------------------------------------------------------------------
-
-    /**
-     * Una imagen pertenece a un proyecto.
-     */
     public function proyecto(): BelongsTo
     {
         return $this->belongsTo(Proyecto::class, 'id_proyecto', 'id_proyecto');
     }
-
-    // -------------------------------------------------------------------------
-    // Mutators / Accessors
-    // -------------------------------------------------------------------------
 
     protected function imagen(): Attribute
     {
@@ -48,16 +37,8 @@ class ImagenProyecto extends Model
     }
 
     /**
-     * Retorna la imagen BYTEA como Data URI lista para usar en <img src="...">.
-     *
-     * Uso en Blade:
-     *   <img src="{{ $imagen->imagen_base64 }}" alt="{{ $imagen->nombre_archivo }}">
-     *
-     * Retorna null si el campo imagen está vacío, permitiendo que la vista
-     * muestre una imagen placeholder en su lugar.
-     *
-     * Nota: PDO con pgsql devuelve BYTEA como resource stream.
-     *       stream_get_contents() convierte el stream a string binario.
+     * Imagen BYTEA como Data URI para usar en <img src="...">, o null si está
+     * vacía. PDO con pgsql devuelve el BYTEA como resource stream.
      */
     protected function imagenBase64(): Attribute
     {
@@ -73,7 +54,6 @@ class ImagenProyecto extends Model
                 $base64  = base64_encode($binary);
                 $mime    = $this->attributes['tipo_mime'] ?? 'image/jpeg';
 
-                // Data URI completa lista para src de <img>
                 return "data:{$mime};base64,{$base64}";
             }
         );
