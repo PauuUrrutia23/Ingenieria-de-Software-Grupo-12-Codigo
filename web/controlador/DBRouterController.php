@@ -145,7 +145,7 @@ class DBRouterController
 
     /**
      * Certificados vigentes con metadatos, sin el BYTEA archivo_pdf
-     * (rendimiento) y con su proyecto (id, nombre_obra, region).
+     * (rendimiento).
      *
      * @return Collection<int,Certificado>
      */
@@ -156,12 +156,8 @@ class DBRouterController
                 'codigo_lote',
                 'fecha_emision',
                 'estado',
-                'id_proyecto',
             ])
             ->where('estado', 'Vigente')
-            ->with(['proyecto' => function ($query) {
-                $query->select(['id_proyecto', 'nombre_obra', 'region']);
-            }])
             ->orderBy('fecha_emision', 'desc')
             ->get();
     }

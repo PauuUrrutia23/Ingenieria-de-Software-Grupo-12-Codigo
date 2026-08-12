@@ -46,11 +46,6 @@ class Proyecto extends Model
         return $this->hasMany(ImagenProyecto::class, 'id_proyecto', 'id_proyecto');
     }
 
-    public function certificados(): HasMany
-    {
-        return $this->hasMany(Certificado::class, 'id_proyecto', 'id_proyecto');
-    }
-
     public function scopePublicados(Builder $query): Builder
     {
         return $query->where('estado_publicacion', 'publicado');

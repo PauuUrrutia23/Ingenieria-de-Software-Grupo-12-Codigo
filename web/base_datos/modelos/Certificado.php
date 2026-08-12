@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\DB;
 
@@ -20,17 +19,12 @@ class Certificado extends Model
         'archivo_pdf',
         'fecha_emision',
         'estado',
-        'id_proyecto',
     ];
 
     protected $casts = [
         'fecha_emision' => 'date',
     ];
 
-    public function proyecto(): BelongsTo
-    {
-        return $this->belongsTo(Proyecto::class, 'id_proyecto', 'id_proyecto');
-    }
 
     protected function archivoPdf(): Attribute
     {

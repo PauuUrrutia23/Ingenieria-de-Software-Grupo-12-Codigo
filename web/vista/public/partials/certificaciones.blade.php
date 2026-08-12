@@ -4,7 +4,6 @@
 
     Variables recibidas:
       $certificados  \Illuminate\Database\Eloquent\Collection<Certificado>
-                     Con relación proyecto cargada (eager loaded).
                      Incluye propiedad fecha_formateada (string d/m/Y).
 --}}
 
@@ -104,19 +103,6 @@
                        title="{{ $cert->codigo_lote }}">
                         {{ $cert->codigo_lote }}
                     </p>
-
-                    {{-- Nombre del proyecto (relación eager loaded) --}}
-                    @if($cert->proyecto)
-                        <p class="text-slate-500 text-xs mt-0.5 truncate"
-                           title="{{ $cert->proyecto->nombre_obra }}">
-                            {{ $cert->proyecto->nombre_obra }}
-                        </p>
-                        @if($cert->proyecto->region)
-                            <p class="text-slate-400 text-xs truncate">
-                                {{ $cert->proyecto->region }}
-                            </p>
-                        @endif
-                    @endif
 
                     {{-- Fecha de emisión formateada --}}
                     <div class="flex items-center gap-1 mt-1.5">

@@ -2,55 +2,20 @@
 
 namespace Database\Seeders;
 
-use App\Models\Administrador;
 use App\Models\Certificado;
-use App\Models\ImagenProyecto;
-use App\Models\Proyecto;
 use Illuminate\Database\Seeder;
 
 class CertificadoSeeder extends Seeder
 {
     /**
-     * Datos de prueba para la sección de Certificaciones: un proyecto publicado
-     * y un certificado "Vigente" con un PDF real almacenado como BYTEA.
+     * Datos de prueba para la sección de Certificaciones: un certificado
+     * "Vigente" con un PDF real almacenado como BYTEA.
      *
-     * Idempotente: si el proyecto o el certificado ya existen (por nombre_obra /
-     * codigo_lote) se omiten, para no duplicar al re-ejecutar el seeder.
+     * Idempotente: si el certificado ya existe (por codigo_lote) se omite,
+     * para no duplicar al re-ejecutar el seeder.
      */
     public function run(): void
     {
-        $admin = Administrador::orderBy('id_admin')->first();
-
-        if (! $admin) {
-            $this->command->error('No hay administradores. Corre primero AdminSeeder.');
-            return;
-        }
-
-        $proyecto = Proyecto::firstOrCreate(
-            ['nombre_obra' => 'Edificio Mirador Las Condes'],
-            [
-                'descripcion_tecnica'  => 'Obra habitacional de prueba para visualizar certificaciones.',
-                'region'               => 'Region Metropolitana',
-                'ubicacion_geografica' => 'Las Condes, Santiago',
-                'anio_ejecucion'       => 2024,
-                'estado_publicacion'   => 'publicado',
-                'categoria'            => 'Habitacional',
-                'id_admin'             => $admin->id_admin,
-            ]
-        );
-
-        // Un proyecto publicado debe tener al menos una imagen.
-        if (! $proyecto->imagenesProyecto()->exists()) {
-            ImagenProyecto::create([
-                'imagen'         => $this->generarPng(800, 500, 51, 65, 85), // slate-700
-                'nombre_archivo' => 'portada-mirador.png',
-                'tipo_mime'      => 'image/png',
-                'id_proyecto'    => $proyecto->id_proyecto,
-            ]);
-            $this->command->info('Imagen de portada agregada al proyecto.');
-        }
-
-        // El listado público solo muestra certificados con estado 'Vigente'.
         $codigoLote = 'LOTE-A-001';
 
         if (Certificado::where('codigo_lote', $codigoLote)->exists()) {
@@ -60,7 +25,7 @@ class CertificadoSeeder extends Seeder
 
         $pdf = $this->generarPdf(
             'Certificado de Calidad - Lote A-001',
-            $proyecto->nombre_obra
+            'Edificio Mirador Las Condes'
         );
 
         Certificado::create([
@@ -68,7 +33,6 @@ class CertificadoSeeder extends Seeder
             'archivo_pdf'   => $pdf,
             'fecha_emision' => '2024-11-15',
             'estado'        => 'Vigente',
-            'id_proyecto'   => $proyecto->id_proyecto,
         ]);
 
         $this->command->info("Certificado {$codigoLote} creado (estado=Vigente, " . strlen($pdf) . " bytes).");
