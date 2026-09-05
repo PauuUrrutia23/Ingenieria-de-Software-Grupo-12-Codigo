@@ -1,60 +1,72 @@
-{{--
-    Página completa de Certificaciones — ruta GET /certificaciones
-    Retornada por ProyectoController@certificaciones.
-
-    Diferencia con public/index.blade.php:
-    - index.blade.php: página principal con TODAS las secciones (scroll one-page)
-    - Esta vista: página independiente enfocada solo en certificaciones
-      útil para compartir el enlace directo o acceder desde buscadores.
-
-    Variable recibida:
-      $certificados  Collection<Certificado>  (eager loaded con proyecto)
---}}
-
-@extends('layouts.public')
-
-@section('title', 'Certificaciones Técnicas — Ingecon')
-
-@section('content')
-
-<main class="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8 bg-slate-50">
-    <div class="max-w-5xl mx-auto">
-
-        {{-- Breadcrumb de navegación --}}
-        <nav class="mb-8 text-sm text-slate-500" aria-label="Ruta de navegación">
-            <ol class="flex items-center gap-2">
-                <li>
-                    <a href="/" class="hover:text-slate-700 transition-colors">Inicio</a>
-                </li>
-                <li aria-hidden="true">
-                    <svg class="w-4 h-4 text-slate-300" xmlns="http://www.w3.org/2000/svg"
-                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </li>
-                <li>
-                    <span class="text-slate-900 font-medium" aria-current="page">Certificaciones</span>
-                </li>
-            </ol>
-        </nav>
-
-        {{-- Incluir el partial del listado — $certificados se hereda del scope --}}
-        @include('public.partials.certificaciones')
-
-        {{-- Enlace de regreso al inicio --}}
-        <div class="mt-12 text-center">
-            <a href="/#inicio"
-               class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700
-                      text-sm transition-colors">
-                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-                Volver al inicio
-            </a>
+<x-app-layout>
+    <div class="w-full bg-[#f5f3ec] min-h-screen pb-24">
+      <!-- Header -->
+      <div class="bg-white border-b border-gray-200">
+        <div class="max-w-[1200px] mx-auto px-4 lg:px-8 py-16">
+          <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">MARCO TÉCNICO</p>
+          <h1 class="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-6 tracking-tight">Certificaciones vigentes</h1>
+          <p class="text-lg text-[#666666] max-w-2xl leading-relaxed">
+            Normativa chilena y respaldo de organismos certificadores para cada producto y proceso.
+          </p>
         </div>
+      </div>
 
+      <div class="max-w-[1200px] mx-auto px-4 lg:px-8 mt-12">
+        {{-- CU 25.1 / CU 25.2: el documento solicitado no está disponible. --}}
+        @if(session('doc_no_disponible'))
+          <div class="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded font-medium text-sm mb-6">
+            {{ session('doc_no_disponible') }}
+          </div>
+        @endif
+
+        @if($certificados->isEmpty())
+          <div class="bg-white border border-[#e8e6df] rounded-lg p-16 text-center text-[#666666]">
+            Aún no hay certificaciones publicadas.
+          </div>
+        @else
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach($certificados as $cert)
+              <div class="bg-white rounded-lg border border-[#e8e6df] shadow-sm p-8 flex flex-col">
+                <div class="w-14 h-14 bg-[#f5f3ec] rounded flex items-center justify-center mb-6 overflow-hidden">
+                  @if($cert->imagen)
+                    <img src="{{ Storage::url($cert->imagen) }}" alt="{{ $cert->nombre }}" class="w-full h-full object-contain p-1.5">
+                  @else
+                    <i data-lucide="shield-check" class="h-7 w-7 text-[#28533c]"></i>
+                  @endif
+                </div>
+                <p class="text-[#c66f4b] font-bold text-xs tracking-[0.1em] uppercase mb-1">{{ $cert->codigo }}</p>
+                <h3 class="text-xl font-bold text-[#1a1a1a] mb-3">{{ $cert->nombre }}</h3>
+                <p class="text-sm text-[#666666] leading-relaxed mb-6 flex-grow">{{ $cert->descripcion }}</p>
+
+                <div class="pt-4 border-t border-[#e8e6df] space-y-2">
+                  @if($cert->organismo)
+                    <a href="{{ $cert->url_organismo ?: '#' }}" target="_blank" rel="noopener"
+                       class="flex items-center text-sm font-semibold text-[#28533c] hover:underline">
+                      <i data-lucide="external-link" class="h-4 w-4 mr-2"></i>
+                      {{ $cert->organismo }}
+                    </a>
+                  @endif
+
+                  {{-- RF25: si el certificado no tiene documento, la opción no se muestra.
+                       CU 25.2 previsualiza en nueva pestaña; CU 25.1 descarga el archivo
+                       con un nombre seguro generado por el Controlador. --}}
+                  @if($cert->archivo_pdf)
+                    <a href="{{ Storage::url($cert->archivo_pdf) }}" target="_blank" rel="noopener"
+                       class="flex items-center text-sm font-semibold text-[#1a1a1a] hover:underline">
+                      <i data-lucide="file-text" class="h-4 w-4 mr-2"></i>
+                      Ver certificado (PDF)
+                    </a>
+                    <a href="{{ route('public.certificaciones.descargar', $cert) }}"
+                       class="flex items-center text-sm font-semibold text-[#28533c] hover:underline">
+                      <i data-lucide="download" class="h-4 w-4 mr-2"></i>
+                      Descargar certificado
+                    </a>
+                  @endif
+                </div>
+              </div>
+            @endforeach
+          </div>
+        @endif
+      </div>
     </div>
-</main>
-
-@endsection
+</x-app-layout>

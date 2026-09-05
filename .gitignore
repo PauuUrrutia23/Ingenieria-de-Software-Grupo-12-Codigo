@@ -7,25 +7,38 @@
 /.zed
 .phpactor.json
 
-# Archivos de entorno (.env vive en web/nucleo/entorno/; .env.example SI se versiona)
-.env
-.env.backup
-.env.production
+# Archivos de entorno (web/nucleo/.env.example SI se versiona)
+web/nucleo/.env
+web/nucleo/.env.backup
+web/nucleo/.env.production
 
 # Dependencias (se regeneran con composer install / npm install)
-vendor/
-node_modules/
+web/nucleo/vendor/
+web/nucleo/node_modules/
 
 # Assets compilados y enlaces de storage
-/web/nucleo/public/build
-/web/nucleo/public/hot
-/web/nucleo/public/storage
+web/nucleo/public/build
+web/nucleo/public/hot
+web/nucleo/public/storage
 
-# Claves y caches de Laravel
-/web/nucleo/storage/*.key
-/web/nucleo/storage/pail
-.phpunit.cache
-.phpunit.result.cache
+# Claves, caches y logs de Laravel
+web/nucleo/storage/*.key
+web/nucleo/storage/pail
+web/nucleo/storage/app/*
+!web/nucleo/storage/app/.gitignore
+web/nucleo/storage/framework/cache/*
+!web/nucleo/storage/framework/cache/.gitignore
+web/nucleo/storage/framework/sessions/*
+!web/nucleo/storage/framework/sessions/.gitignore
+web/nucleo/storage/framework/views/*
+!web/nucleo/storage/framework/views/.gitignore
+web/nucleo/storage/logs/*
+!web/nucleo/storage/logs/.gitignore
+web/nucleo/.phpunit.cache
+web/nucleo/.phpunit.result.cache
+
+# Base de datos local de desarrollo (SQLite)
+web/base_datos/*.sqlite
 
 # Composer / Homestead / logs
 auth.json
@@ -33,3 +46,7 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+web/nucleo/serve_out.log
+web/nucleo/serve_err.log
+web/nucleo/serve_check.log
+web/nucleo/serve_check_err.log

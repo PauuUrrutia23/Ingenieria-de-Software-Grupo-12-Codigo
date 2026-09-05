@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+/* Las vistas Blade viven en web/vista/ (hermano de nucleo/), fuera del árbol por
+   defecto que Tailwind v4 escanea automáticamente — hay que decírselo a mano. */
+@source "../../../vista/**/*.blade.php";

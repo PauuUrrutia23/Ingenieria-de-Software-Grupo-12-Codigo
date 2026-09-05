@@ -1,292 +1,125 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Models\Certificado;
-use App\Models\ImagenProyecto;
 use App\Models\Proyecto;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Log;
-use Illuminate\View\View;
+use App\Models\ImagenProyecto;
+use App\Http\Requests\StoreProyectoRequest;
+use App\Http\Requests\UpdateProyectoRequest;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class ProyectoController extends Controller
 {
-    public function __construct(
-        private readonly DBRouterController $db
-    ) {}
-
-    /**
-     * Proyectos publicados filtrados opcionalmente por texto libre
-     * (nombre_obra, ubicacion_geografica) y/o categoría exacta. Retorna JSON.
-     *
-     * Query params: texto (string|null), categoria (Habitacional|Industrial|Agrícola|null).
-     */
-    public function buscar(Request $request): JsonResponse
+    public function index()
     {
-        $texto     = $request->query('texto', '');
-        $categoria = $request->query('categoria', '');
+        $proyectos = Proyecto::with('imagenes')->orderBy('id_proyecto', 'desc')->paginate(15);
+        return view('admin.proyectos.index', compact('proyectos'));
+    }
 
-        try {
-            $proyectos = $this->db->buscarProyectosPublicados($texto, $categoria);
-        } catch (QueryException $e) {
-            Log::error('BD: No se pudo buscar proyectos publicados', [
-                'error'     => $e->getMessage(),
-                'texto'     => $texto,
-                'categoria' => $categoria,
-            ]);
-            return response()->json([
-                'error'   => true,
-                'message' => 'La búsqueda no está disponible temporalmente.',
-            ], 500);
+    public function create()
+    {
+        return view('admin.proyectos.create');
+    }
+
+    public function store(StoreProyectoRequest $request)
+    {
+        $data = $request->validated();
+        $data['id_admin'] = Auth::id();
+
+        $proyecto = Proyecto::create($data);
+
+        if ($request->hasFile('imagenes')) {
+            foreach ($request->file('imagenes') as $file) {
+                $path = $file->store('proyectos', 'public');
+                ImagenProyecto::create([
+                    'id_proyecto' => $proyecto->id_proyecto,
+                    'imagen' => $path,
+                    'nombre_archivo' => $file->getClientOriginalName(),
+                    'tipo_mime' => $file->getMimeType(),
+                ]);
+            }
         }
 
-        $resultado = $proyectos->map(function (Proyecto $proyecto) {
-            $thumbnail = null;
+        return redirect()->route('admin.proyectos.index')->with('success', 'Proyecto creado exitosamente.');
+    }
 
-            /** @var ImagenProyecto|null $imagen */
-            $imagen = $proyecto->imagenesProyecto->first();
+    public function edit(Proyecto $proyecto)
+    {
+        $proyecto->load('imagenes');
+        return view('admin.proyectos.edit', compact('proyecto'));
+    }
 
-            if ($imagen) {
-                $raw    = $imagen->getRawOriginal('imagen');
-                $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
+    public function update(UpdateProyectoRequest $request, Proyecto $proyecto)
+    {
+        $proyecto->update($request->validated());
 
-                if ($binary) {
-                    $mime      = $imagen->tipo_mime ?: 'image/jpeg';
-                    $thumbnail = "data:{$mime};base64," . base64_encode($binary);
-                }
+        if ($request->hasFile('imagenes')) {
+            foreach ($request->file('imagenes') as $file) {
+                $path = $file->store('proyectos', 'public');
+                ImagenProyecto::create([
+                    'id_proyecto' => $proyecto->id_proyecto,
+                    'imagen' => $path,
+                    'nombre_archivo' => $file->getClientOriginalName(),
+                    'tipo_mime' => $file->getMimeType(),
+                ]);
             }
+        }
 
-            return [
-                'id_proyecto'          => $proyecto->id_proyecto,
-                'nombre_obra'          => $proyecto->nombre_obra,
-                'descripcion_tecnica'  => $proyecto->descripcion_tecnica,
-                'region'               => $proyecto->region,
-                'ubicacion_geografica' => $proyecto->ubicacion_geografica,
-                'anio_ejecucion'       => $proyecto->anio_ejecucion,
-                'categoria'            => $proyecto->categoria,
-                'imagen_thumbnail'     => $thumbnail,
-            ];
-        });
-
-        return response()->json($resultado->values());
+        return redirect()->route('admin.proyectos.index')->with('success', 'Proyecto actualizado.');
     }
 
     /**
-     * Datos completos de un proyecto publicado, con todas sus imágenes en
-     * base64 para el modal de detalle.
+     * RF50 / CU 50.1 - Cambia la visibilidad desde el menú desplegable de la propia
+     * tarjeta, sin pasar por el formulario de edición completo.
      */
-    public function detalle(int $id): JsonResponse
+    public function updateVisibilidad(\Illuminate\Http\Request $request, Proyecto $proyecto)
     {
-        try {
-            $proyecto = $this->db->buscarProyectoConImagenes($id);
-        } catch (QueryException $e) {
-            Log::error('BD: No se pudo obtener el detalle del proyecto', [
-                'error'       => $e->getMessage(),
-                'id_proyecto' => $id,
-            ]);
-            return response()->json([
-                'error'   => 'No disponible',
-                'message' => 'El detalle no está disponible temporalmente.',
-            ], 500);
-        }
-
-        if (! $proyecto || $proyecto->estado_publicacion !== 'publicado') {
-            return response()->json([
-                'error' => 'No encontrado',
-            ], 404);
-        }
-
-        $imagenes = $proyecto->imagenesProyecto->map(function (ImagenProyecto $imagen) {
-            $raw    = $imagen->getRawOriginal('imagen');
-            $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
-
-            if (! $binary) {
-                return null;
-            }
-
-            $mime = $imagen->tipo_mime ?: 'image/jpeg';
-
-            return [
-                'id_imagen'      => $imagen->id_imagen,
-                'nombre_archivo' => $imagen->nombre_archivo,
-                'src'            => "data:{$mime};base64," . base64_encode($binary),
-            ];
-        })->filter()->values();
-
-        return response()->json([
-            'id_proyecto'          => $proyecto->id_proyecto,
-            'nombre_obra'          => $proyecto->nombre_obra,
-            'descripcion_tecnica'  => $proyecto->descripcion_tecnica,
-            'region'               => $proyecto->region,
-            'ubicacion_geografica' => $proyecto->ubicacion_geografica,
-            'anio_ejecucion'       => $proyecto->anio_ejecucion,
-            'categoria'            => $proyecto->categoria,
-            'imagenes'             => $imagenes,
+        $data = $request->validate([
+            'estado_publicacion' => 'required|in:borrador,publicado',
         ]);
+
+        // Excepción 1: se selecciona el mismo estado ya vigente → no genera transacción.
+        if ($proyecto->estado_publicacion === $data['estado_publicacion']) {
+            return back();
+        }
+
+        // CU 48.2 (Publicando Proyectos): un proyecto no puede publicarse sin al
+        // menos una fotografía cargada. Documentado en las pruebas unitarias
+        // originales ("Intentar publicar un proyecto sin imágenes").
+        if ($data['estado_publicacion'] === 'publicado' && $proyecto->imagenes()->count() === 0) {
+            return back()->withErrors([
+                'estado_publicacion' => 'El proyecto debe tener al menos una fotografía para poder publicarse.',
+            ]);
+        }
+
+        try {
+            $proyecto->update($data);
+        } catch (\Throwable $e) {
+            // Excepción 2: la BD no permite actualizar → conserva el estado anterior.
+            return back()->withErrors(['estado_publicacion' => 'No se pudo actualizar la visibilidad del proyecto.']);
+        }
+
+        $etiqueta = $data['estado_publicacion'] === 'publicado' ? 'Publicado' : 'Borrador';
+
+        return back()->with('success', "\"{$proyecto->nombre_obra}\" ahora está en estado {$etiqueta}.");
     }
 
-    /**
-     * Página completa de proyectos publicados (sección accesible desde el
-     * menú lateral). Renderiza server-side, a diferencia de la galería AJAX.
-     */
-    public function galeria(): View
+    public function destroy(Proyecto $proyecto)
     {
-        try {
-            $proyectos = $this->db->buscarProyectosPublicados('', '');
-        } catch (QueryException $e) {
-            Log::error('BD: No se pudieron listar los proyectos para la galería', [
-                'error' => $e->getMessage(),
-            ]);
-            return view('public.proyectos-pagina', ['proyectos' => collect()]);
+        foreach ($proyecto->imagenes as $img) {
+            Storage::disk('public')->delete($img->imagen);
+            $img->delete();
         }
+        $proyecto->delete();
 
-        $listado = $proyectos->map(function (Proyecto $proyecto) {
-            $thumbnail = null;
-            /** @var ImagenProyecto|null $imagen */
-            $imagen = $proyecto->imagenesProyecto->first();
-
-            if ($imagen) {
-                $raw    = $imagen->getRawOriginal('imagen');
-                $binary = is_resource($raw) ? stream_get_contents($raw) : $raw;
-
-                if ($binary) {
-                    $mime      = $imagen->tipo_mime ?: 'image/jpeg';
-                    $thumbnail = "data:{$mime};base64," . base64_encode($binary);
-                }
-            }
-
-            return (object) [
-                'id_proyecto'          => $proyecto->id_proyecto,
-                'nombre_obra'          => $proyecto->nombre_obra,
-                'descripcion_tecnica'  => $proyecto->descripcion_tecnica,
-                'region'               => $proyecto->region,
-                'ubicacion_geografica' => $proyecto->ubicacion_geografica,
-                'anio_ejecucion'       => $proyecto->anio_ejecucion,
-                'categoria'            => $proyecto->categoria,
-                'imagen_thumbnail'     => $thumbnail,
-            ];
-        });
-
-        return view('public.proyectos-pagina', ['proyectos' => $listado]);
+        return redirect()->route('admin.proyectos.index')->with('success', 'Proyecto eliminado.');
     }
 
-    /**
-     * Listado público de certificados vigentes con metadatos.
-     *
-     * Excluye la columna archivo_pdf (BYTEA) del SELECT: traer los binarios
-     * de todos los certificados dispararía un consumo de memoria inaceptable.
-     * El BYTEA solo se carga al ver o descargar un certificado.
-     */
-    public function certificaciones(): View
+    public function destroyImage(ImagenProyecto $imagen)
     {
-        try {
-            $certificados = $this->db->listarCertificadosActivos();
-        } catch (QueryException $e) {
-            Log::error('BD: No se pudieron listar los certificados activos', [
-                'error' => $e->getMessage(),
-            ]);
-            return view('public.certificaciones', ['certificados' => collect()]);
-        }
-
-        $certificados->transform(function (Certificado $cert) {
-            $cert->fecha_formateada = $cert->fecha_emision
-                ? $cert->fecha_emision->format('d/m/Y')
-                : '—';
-            return $cert;
-        });
-
-        // Devolver la vista completa (con layout), no el partial suelto.
-        return view('public.certificaciones', compact('certificados'));
-    }
-
-    /**
-     * Muestra el PDF de un certificado inline en el navegador, sin forzar
-     * la descarga.
-     */
-    public function verCertificado(int $id): Response
-    {
-        try {
-            $certificado = $this->db->buscarCertificadoParaDescarga($id);
-        } catch (QueryException $e) {
-            Log::error('BD: No se pudo recuperar el certificado para visualización', [
-                'error'          => $e->getMessage(),
-                'id_certificado' => $id,
-            ]);
-            abort(500, 'La visualización no está disponible temporalmente.');
-        }
-
-        if (! $certificado) {
-            abort(404, 'El certificado solicitado no existe.');
-        }
-
-        $rawPdf = $certificado->getRawOriginal('archivo_pdf');
-
-        if ($rawPdf === null) {
-            abort(404, 'El archivo PDF de este certificado no está disponible.');
-        }
-
-        $binary = is_resource($rawPdf) ? stream_get_contents($rawPdf) : $rawPdf;
-
-        if (! $binary || strlen($binary) === 0) {
-            abort(404, 'El archivo PDF de este certificado no está disponible.');
-        }
-
-        $nombreArchivo = preg_replace('/[^a-zA-Z0-9\-_]/', '_', $certificado->codigo_lote)
-            . '.pdf';
-
-        return response($binary)
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="' . $nombreArchivo . '"')
-            ->header('Content-Length', (string) strlen($binary))
-            ->header('Cache-Control', 'private, no-store, no-cache, must-revalidate')
-            ->header('Pragma', 'no-cache');
-    }
-
-    /**
-     * Descarga el PDF de un certificado (almacenado en BYTEA) como attachment.
-     * Es la única ruta que carga el binario completo.
-     */
-    public function descargarCertificado(int $id): Response
-    {
-        try {
-            $certificado = $this->db->buscarCertificadoParaDescarga($id);
-        } catch (QueryException $e) {
-            Log::error('BD: No se pudo recuperar el certificado para descarga', [
-                'error'          => $e->getMessage(),
-                'id_certificado' => $id,
-            ]);
-            abort(500, 'La descarga no está disponible temporalmente.');
-        }
-
-        if (! $certificado) {
-            abort(404, 'El certificado solicitado no existe.');
-        }
-
-        // BYTEA de PostgreSQL llega como resource stream.
-        $rawPdf = $certificado->getRawOriginal('archivo_pdf');
-
-        if ($rawPdf === null) {
-            abort(404, 'El archivo PDF de este certificado no está disponible.');
-        }
-
-        $binary = is_resource($rawPdf) ? stream_get_contents($rawPdf) : $rawPdf;
-
-        if (! $binary || strlen($binary) === 0) {
-            abort(404, 'El archivo PDF de este certificado no está disponible.');
-        }
-
-        // Sanitizar codigo_lote para el nombre de archivo.
-        $nombreArchivo = preg_replace('/[^a-zA-Z0-9\-_]/', '_', $certificado->codigo_lote)
-            . '.pdf';
-
-        return response($binary)
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="' . $nombreArchivo . '"')
-            ->header('Content-Length', (string) strlen($binary))
-            ->header('Cache-Control', 'private, no-store, no-cache, must-revalidate')
-            ->header('Pragma', 'no-cache');
+        Storage::disk('public')->delete($imagen->imagen);
+        $imagen->delete();
+        return back()->with('success', 'Imagen eliminada.');
     }
 }

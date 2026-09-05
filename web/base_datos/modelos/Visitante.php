@@ -2,25 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 class Visitante extends Model
 {
-    protected $table = 'visitante';
+    use HasFactory;
 
+    protected $table = 'visitantes';
     protected $primaryKey = 'id_visitante';
+    protected $fillable = ['nombre', 'apellido', 'email'];
 
-    public $timestamps = false;
-
-    protected $fillable = [
-        'nombre',
-        'apellido',
-        'email',
-    ];
-
-    public function consultas(): HasMany
-    {
+    public function consultas() {
         return $this->hasMany(Consulta::class, 'id_visitante', 'id_visitante');
     }
 }

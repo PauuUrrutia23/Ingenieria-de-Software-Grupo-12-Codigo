@@ -1,0 +1,15 @@
+* text=auto eol=lf
+
+# Los .bat de Windows necesitan CRLF: con LF, cmd.exe corrompe la primera
+# palabra de cada línea al ejecutar el archivo (ej. "rem" se lee como "em").
+*.bat text eol=crlf
+
+*.blade.php diff=html
+*.css diff=css
+*.html diff=html
+*.md diff=markdown
+*.php diff=php
+
+/.github export-ignore
+CHANGELOG.md export-ignore
+.styleci.yml export-ignore

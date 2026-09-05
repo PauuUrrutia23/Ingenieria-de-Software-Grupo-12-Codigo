@@ -1,375 +1,233 @@
 # Plataforma Web Ingecon
 
-Sistema web para empresa constructora chilena: portafolio publico de proyectos, certificaciones, formulario de contacto y panel de administracion.
+Sistema web para Ingecon (industrialización de la madera y construcción prefabricada):
+portafolio público de proyectos, certificaciones, colaboradores, formulario de contacto y
+Panel de Gestión administrativo. Implementa el **100% de los Incrementos 1 y 2** definidos en
+[`REQUISITOS.md`](REQUISITOS.md) (38 Requerimientos Funcionales, 17 No Funcionales y 64 Casos
+de Uso) — ver también [`ARQUITECTURA.md`](ARQUITECTURA.md) para el modelo de datos y el plan de
+fases. Este README cubre cómo instalar y correr el proyecto tal como está.
 
 ## Stack
 
-| Componente | Version |
-|------------|---------|
-| Laravel | 11 |
-| PHP | 8.2+ (8.3 recomendado) |
-| PostgreSQL | 16 |
-| Hashing | Argon2id |
-| Frontend | Tailwind CSS CDN + Alpine.js 3.14.1 |
-| Email | Resend SMTP |
+| Componente | Versión |
+|---|---|
+| Laravel | 10.10 |
+| PHP | 8.1+ |
+| Base de datos (dev) | SQLite |
+| Base de datos (prod) | MySQL 5.6 (hosting compartido cPanel) |
+| Hashing | Argon2id (fallback `bcrypt` si `sodium` no está disponible) |
+| Frontend | Tailwind CSS 4 + Alpine.js 3, compilados con Vite |
+| Email | `log` en desarrollo · `sendmail` en producción |
+| Validación de archivos | `finfo` (MIME real) + verificación de cabecera para PDF |
+
+> El stack de producción (MySQL, sendmail, límites de hosting compartido) está fijado en la
+> Dimensión Técnica del proyecto — no cambiar a Postgres, colas, Sanctum/API pública, etc. sin
+> actualizar ese documento primero.
 
 ---
 
-## Requisitos previos
+## Puesta en marcha rápida (Windows)
 
-- **PHP 8.2+** con extensiones: `pdo_pgsql`, `pgsql`, `fileinfo`, `mbstring`, `openssl`, `tokenizer`
-- **Composer 2.x**
-- **PostgreSQL 16** corriendo (local o remoto)
-- **Node.js + npm** (opcional, solo si usas Vite para compilar assets CSS/JS)
-- **Git** (opcional)
+Para no instalar nada a mano: ejecuta **[`INICIAR_INGECON.bat`](INICIAR_INGECON.bat)** desde la
+raíz del proyecto. El script:
 
----
+1. Revisa si están Scoop, PHP 8.1, Composer y Node/npm — instala automáticamente lo que falte.
+2. Habilita las extensiones de PHP necesarias (`gd`, `fileinfo`, `pdo_sqlite`, etc.) si vienen
+   comentadas en el `php.ini`.
+3. Instala dependencias (`composer install`, `npm install`) y compila los assets solo si hace
+   falta — en una segunda ejecución en la misma máquina es prácticamente instantáneo.
+4. Crea `.env`, genera `APP_KEY`, crea la base SQLite, corre migraciones y siembra los datos
+   base (idempotente: no duplica nada si ya existen).
+5. Levanta `php artisan serve` y abre el navegador en la pantalla de inicio de sesión.
 
-## Instalacion y ejecucion
+Al terminar, quedan dos ventanas abiertas: el servidor (no cerrarla mientras se use la página)
+y el navegador. Las credenciales de administrador se muestran al final del script (ver también
+más abajo).
 
-### 1. Clonar o copiar el proyecto
-
-```bash
-git clone <url-del-repo> ingecon
-cd ingecon
-```
-
-Si no usas git, copia la carpeta `ingecon-fresh` a donde prefieras y entra en ella.
-
-### 2. Instalar dependencias PHP
-
-```bash
-composer install
-```
-
-> Para produccion usar `composer install --no-dev --optimize-autoloader`.
-
-### 3. Configurar el archivo `.env`
-
-El proyecto ya incluye un `.env` preconfigurado para desarrollo local. Si necesitas crearlo desde cero:
-
-```bash
-cp .env.example .env
-```
-
-Variables criticas que debes revisar en `.env`:
-
-```ini
-APP_URL=http://localhost:8000
-
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=ingecon_db
-DB_USERNAME=postgres         # Cambiar segun tu instalacion PostgreSQL
-DB_PASSWORD=123              # Cambiar segun tu instalacion
-
-SESSION_DRIVER=file          # file (desarrollo) | database (produccion)
-
-MAIL_MAILER=log              # log (desarrollo) | smtp (produccion con Resend)
-QUEUE_CONNECTION=sync        # sync (desarrollo) | database (produccion)
-```
-
-### 4. Generar APP_KEY
-
-```bash
-php artisan key:generate
-```
-
-> Si el `.env` ya tiene un `APP_KEY`, este paso es opcional.
-
-### 5. Crear la base de datos en PostgreSQL
-
-Abre `psql` como superusuario y ejecuta:
-
-```sql
-CREATE DATABASE ingecon_db
-    WITH ENCODING 'UTF8'
-    LC_COLLATE = 'es_CL.UTF-8'
-    LC_CTYPE   = 'es_CL.UTF-8'
-    TEMPLATE = template0;
-```
-
-> **Nota:** Si usas Windows, los locales `es_CL.UTF-8` pueden no estar disponibles. En ese caso omite `LC_COLLATE` y `LC_CTYPE`, o usa `'Spanish_Chile.1252'`.
-
-Crea un usuario y asigna permisos (o usa tu usuario existente de PostgreSQL):
-
-```sql
-CREATE USER ingecon_user WITH ENCRYPTED PASSWORD 'tu_password';
-GRANT ALL PRIVILEGES ON DATABASE ingecon_db TO ingecon_user;
-\c ingecon_db
-GRANT ALL ON SCHEMA public TO ingecon_user;
-```
-
-> Ajusta `DB_USERNAME` y `DB_PASSWORD` en `.env` segun el usuario que creaste o el que ya tengas.
-
-### 6. Ejecutar migraciones y seeders
-
-```bash
-php artisan migrate:fresh --seed
-```
-
-Esto crea las 9 tablas del sistema y ejecuta el seeder inicial:
-
-| Tabla | Descripcion |
-|-------|-------------|
-| `administrador` | Cuentas de acceso al panel admin |
-| `visitante` | Datos de personas que envian consultas |
-| `sesion` | Tokens de sesion activa del admin |
-| `consulta` | Mensajes del formulario de contacto |
-| `archivo_adjunto` | PDFs adjuntos a consultas (BYTEA) |
-| `proyecto` | Obras del portafolio |
-| `imagen_proyecto` | Fotografias de proyectos (BYTEA) |
-| `certificado` | Certificados de calidad/lote (BYTEA) |
-| `colaborador` | Empresas colaboradoras con logotipo (BYTEA) |
-
-> El `AdminSeeder` (ejecutado via `DatabaseSeeder`) crea el administrador inicial:
-> - **Email:** `admin@ingecon.cl`
-> - **Password:** `Ingecon2024!`
->
-> Cambia esta contrasena inmediatamente en produccion.
-
-### 7. Instalar dependencias frontend (opcional)
-
-Si necesitas compilar assets con Vite (Tailwind, JS):
-
-```bash
-npm install
-npm run build     # compilar para produccion
-npm run dev       # hot-reload para desarrollo
-```
-
-> Para desarrollo rapido, los layouts usan Tailwind CSS Play CDN y Alpine.js CDN, por lo que **no es obligatorio** ejecutar `npm install`.
-
-### 8. Iniciar el servidor
-
-```bash
-php artisan serve
-```
-
-Abre `http://localhost:8000` en tu navegador.
-
----
-
-## Resumen rapido (ya configurado)
-
-Si clonaste el repo y tienes PostgreSQL corriendo con una BD `ingecon_db`:
-
-```bash
-composer install
-php artisan key:generate
-php artisan migrate:fresh --seed
-php artisan serve
-```
-
----
-
-## Rutas de la aplicacion
-
-### Rutas publicas
-
-| Metodo | URL | Descripcion |
-|--------|-----|-------------|
-| `GET` | `/` | Pagina principal (one-page scroll con todas las secciones) |
-| `POST` | `/contacto` | Envio de formulario de contacto (AJAX) |
-| `GET` | `/proyectos/buscar` | Buscar proyectos publicados (JSON, filtros: `?texto=&categoria=`) |
-| `GET` | `/proyectos/{id}/detalle` | Detalle de proyecto con imagenes (JSON) |
-| `GET` | `/certificaciones` | Pagina de certificaciones activas |
-| `GET` | `/certificaciones/{id}/descargar` | Descarga de PDF de certificado |
-| `POST` | `/login` | Inicio de sesion admin (JSON, via modal Alpine.js) |
-
-### Rutas protegidas (requieren sesion admin)
-
-| Metodo | URL | Descripcion |
-|--------|-----|-------------|
-| `POST` | `/logout` | Cerrar sesion |
-| `GET` | `/admin/dashboard` | Panel de administracion |
-| `GET` | `/admin/proyectos/panel` | Vista HTML del modulo de proyectos |
-| `GET` | `/admin/proyectos` | Listar proyectos del admin (JSON) |
-| `POST` | `/admin/proyectos` | Crear proyecto con imagenes |
-| `PUT` | `/admin/proyectos/{id}` | Editar proyecto (campos + gestion de imagenes) |
-| `GET` | `/admin/colaboradores/panel` | Vista HTML del modulo de colaboradores |
-| `GET` | `/admin/colaboradores` | Listar colaboradores del admin (JSON) |
-| `POST` | `/admin/colaboradores` | Registrar colaborador con logotipo |
+Si prefieres instalar todo manualmente, o estás en Linux/Mac, sigue la sección siguiente.
 
 ---
 
 ## Estructura del proyecto
 
+El código Laravel está repartido en 4 carpetas dentro de [`web/`](web/), separadas por
+responsabilidad (M-V-C + núcleo del framework):
+
 ```
-├── vistas/                               # Blade templates (V de MVC)
-│   ├── layouts/
-│   │   ├── admin.blade.php               # Layout del panel administrativo
-│   │   └── public.blade.php              # Layout publico (navbar + sidebar + login modal)
-│   ├── partials/
-│   │   ├── navbar.blade.php              # Barra de navegacion fija
-│   │   └── sidebar-menu.blade.php        # Menu lateral deslizante
-│   ├── admin/
-│   │   ├── dashboard.blade.php           # Dashboard del panel
-│   │   ├── proyectos.blade.php           # Modulo gestion de proyectos
-│   │   └── colaboradores.blade.php       # Modulo gestion de colaboradores
-│   ├── auth/
-│   │   ├── login-modal.blade.php         # Modal de login Alpine.js
-│   │   └── emails/
-│   │       └── cuenta-bloqueada.blade.php # Plantilla email de bloqueo
-│   ├── errors/
-│   │   └── 404.blade.php                 # Pagina 404 personalizada
-│   └── public/
-│       ├── index.blade.php               # Pagina principal (one-page)
-│       ├── certificaciones.blade.php     # Pagina independiente de certificaciones
-│       └── partials/
-│           ├── inicio.blade.php          # Seccion Hero/Inicio
-│           ├── proyectos.blade.php       # Wrapper que incluye galeria
-│           ├── galeria.blade.php         # Galeria con Alpine.js (filtros, busqueda, modal)
-│           ├── certificaciones.blade.php # Listado de certificados para descarga
-│           └── contacto.blade.php        # Formulario de contacto con Alpine.js
+web/
+├── nucleo/                 # Esqueleto de Laravel: bootstrap, config, public, routes,
+│                           # storage, tests, vendor, node_modules, composer.json, .env,
+│                           # y lo que Laravel espera en su propio app/ (Mail, Providers,
+│                           # Console, Exceptions, Http/Kernel.php)
 │
-├── controlador/                          # Controllers + Middleware (C de MVC)
-│   ├── AdminController.php               # CRUD proyectos + colaboradores
-│   ├── AuthController.php                # Login/logout con bloqueo
-│   ├── ContactoController.php            # Formulario de contacto publico
-│   ├── Controller.php                    # Base controller
-│   ├── DBRouterController.php            # Intermediario de base de datos
-│   ├── InstitucionalCtrl.php             # Pagina principal
-│   ├── ProyectoController.php            # Busqueda, detalle, certificaciones
-│   └── AdminAuth.php                     # Middleware: verifica cookie de sesion admin
+├── controlador/            # App\Http\Controllers\*, App\Rules\*
+│   ├── Middleware/         # App\Http\Middleware\*
+│   ├── Requests/           # App\Http\Requests\*
+│   └── Rules/              # PdfValido (RNF04/06), DominioCorreoValido (CU 1.1 exc. 4)
 │
-├── base_datos/                           # Models + Migrations + Seeders (M de MVC)
-│   ├── modelos/                          # 9 modelos Eloquent
-│   │   ├── Administrador.php
-│   │   ├── ArchivoAdjunto.php
-│   │   ├── Certificado.php
-│   │   ├── Colaborador.php
-│   │   ├── Consulta.php
-│   │   ├── ImagenProyecto.php
-│   │   ├── Proyecto.php
-│   │   ├── Sesion.php
-│   │   └── Visitante.php
-│   ├── migrations/                       # 10 migraciones (tablas del sistema)
-│   ├── seeders/                          # AdminSeeder + DatabaseSeeder
-│   └── factories/                        # UserFactory
+├── base_datos/             # App\Models\* + migraciones + factories + seeders
+│   ├── modelos/            # Visitante, Administrador, Sesion, RecuperacionPassword, Proyecto,
+│   │                       # ImagenProyecto, Certificado, Colaborador, Contenido
+│   ├── migrations/         # 10 migraciones (ver ARQUITECTURA.md §3 para el esquema completo)
+│   ├── factories/
+│   ├── seeders/            # AdminJefeSeeder, EjemploDatosSeeder, DatabaseSeeder
+│   └── database.sqlite     # BD local de desarrollo (no versionada)
 │
-├── documentacion/                        # Documentacion del proyecto
-│   ├── 01_setup_laravel_migraciones.md
-│   ├── 02_modelos_eloquent.md
-│   ├── 02b_dbrouter_controller.md
-│   ├── 03_autenticacion.md
-│   ├── 04_formulario_contacto.md
-│   ├── 05_navegacion_publica.md
-│   ├── 06_galeria_proyectos.md
-│   ├── 07_certificaciones_publicas.md
-│   ├── 08_admin_proyectos.md
-│   ├── 09_admin_colaboradores.md
-│   ├── 10_integracion_y_pruebas.md
-│   ├── PRUEBAS.md
-│   └── Ingecon_Como_Funciona.docx
-│
-├── app/                                  # Jobs, Mail, Providers
-│   ├── Jobs/
-│   │   └── EnviarEmailBloqueoJob.php     # Job asincrono de email de bloqueo
-│   ├── Mail/
-│   │   └── CuentaBloqueadaMail.php       # Mailable de cuenta bloqueada
-│   └── Providers/
-│       └── AppServiceProvider.php
-├── bootstrap/
-├── config/
-│   ├── database.php                      # Conexion pgsql + PDO::ATTR_EMULATE_PREPARES
-│   └── hashing.php                       # Driver argon2id
-├── routes/
-│   └── web.php                           # Todas las rutas
-├── public/
-├── storage/
-├── tests/
-├── .env                                  # Variables de entorno
-├── artisan
-├── composer.json
-├── package.json
-├── INSTALACION.md                        # Guia de instalacion detallada
-├── CHANGELOG.md
-└── README.md
+└── vista/                  # resources/views de Laravel, movida aquí completa
+    ├── components/         # app-layout (público), admin-layout (panel), modal (Ventana Modal)
+    ├── public/              # index, proyectos, certificaciones, colaboradores, producto
+    │   └── partials/        # fragmento de galería reutilizado por el filtrado dinámico (RF21)
+    ├── admin/               # dashboard, proyectos, certificados, colaboradores, consultas,
+    │                        # contenido (FAQ/Opiniones/Banner/Fases), password, qa
+    ├── auth/                # login (Ventana Modal), reset-password
+    ├── legal/               # términos y condiciones
+    └── emails/              # consulta_recibida, cuenta_bloqueada, recuperacion_password
+
+scripts/                      # helpers de INICIAR_INGECON.bat (habilitar extensiones de PHP)
+REQUISITOS.md                 # requerimientos y casos de uso (documentación, fuera de web/)
+ARQUITECTURA.md               # arquitectura y plan de fases (documentación, fuera de web/)
+INICIAR_INGECON.bat           # instalador + arranque de un solo clic (Windows)
 ```
+
+**Cómo funciona esto por dentro:** `controlador/`, `base_datos/modelos/`, `base_datos/factories/`
+y `base_datos/seeders/` NO son carpetas de Laravel por convención — existen porque
+`web/nucleo/composer.json` mapea esos namespaces PHP (`App\Http\Controllers\`, `App\Models\`,
+`App\Rules\`, `Database\Factories\`, `Database\Seeders\`) a esas rutas físicas vía PSR-4.
+`vista/` funciona porque `web/nucleo/config/view.php` le dice a Blade que busque ahí. Las
+migraciones se cargan desde `base_datos/migrations` porque `AppServiceProvider::boot()` lo
+registra explícitamente. Si mueves o renombras algo dentro de estas carpetas, **tenés que
+actualizar esos archivos** (`composer.json`, `config/view.php`, `AppServiceProvider.php`) o
+Laravel no va a encontrar las clases/vistas.
 
 ---
 
-## Requerimientos funcionales implementados
+## Requisitos previos
 
-### Incremento 1
+- **PHP 8.1+** con extensiones: `pdo_sqlite` (dev) o `pdo_mysql` (prod), `fileinfo`, `gd`, `mbstring`, `openssl`, `tokenizer`
+- **Composer 2.x**
+- **Node.js + npm** (para compilar Tailwind/Alpine con Vite)
+- **Git**
 
-| RF | Descripcion | Endpoint principal |
-|----|-------------|-------------------|
-| RF01 | Visitante envia consulta de contacto | `POST /contacto` |
-| RF02 | Formulario con 6 campos (nombre, apellido, email, mensaje, fecha, adjunto PDF) | `GET /` |
-| RF07 | Validaciones frontend + backend con mensajes en espanol | `POST /contacto` |
-| RF12 | Menu lateral deslizante con navegacion | `GET /` |
-| RF13 | Barra de navegacion fija con scroll suave | `GET /` |
-| RF20 | Filtro de proyectos por texto libre (ILIKE en PostgreSQL) | `GET /proyectos/buscar?texto=` |
-| RF21 | Filtro de proyectos por categoria (Habitacional/Industrial/Agricola) | `GET /proyectos/buscar?categoria=` |
-| RF24 | Modal detalle proyecto con carrusel de imagenes | `GET /proyectos/{id}/detalle` |
-| RF25 | Visualizar certificaciones activas con metadatos | `GET /certificaciones` |
-| RF26 | Descargar PDF de certificado desde BYTEA | `GET /certificaciones/{id}/descargar` |
-| RF28 | Login admin con credenciales (modal Alpine.js) | `POST /login` |
-| RF33 | Logout con invalidacion de sesion | `POST /logout` |
-| RF34 | Bloqueo por 5 intentos fallidos (60 min) + notificacion email | `POST /login` |
-| RF46 | Registrar colaborador (nombre comercial + logotipo BYTEA) | `POST /admin/colaboradores` |
-| RF49 | Crear proyecto con fotografias (estado inicial: borrador) | `POST /admin/proyectos` |
-| RF50 | Editar proyecto existente con gestion de imagenes | `PUT /admin/proyectos/{id}` |
+En Windows, `INICIAR_INGECON.bat` instala y configura todo esto automáticamente.
 
 ---
 
-## Verificacion de funcionamiento
+## Instalación y ejecución manual (desarrollo local)
 
-Para probar cada funcionalidad implementada, revisa el archivo [`PRUEBAS.md`](documentacion/PRUEBAS.md) que contiene flujos de prueba paso a paso para cada requerimiento funcional.
-
----
-
-## Notas tecnicas
-
-### Almacenamiento BYTEA en PostgreSQL
-
-Todas las imagenes, PDFs y logotipos se almacenan como binario (`BYTEA`) directamente en PostgreSQL. Los modelos Eloquent usan accessors que convierten el binario a Data URIs base64 para renderizar en vistas Blade. Los controladores usan `stream_get_contents()` cuando el driver pgsql devuelve el BYTEA como resource stream.
-
-Configuracion relevante en `config/database.php`:
-
-```php
-'pgsql' => [
-    // ...
-    'options' => [
-        PDO::ATTR_EMULATE_PREPARES => true,
-    ],
-],
-```
-
-### Autenticacion
-
-Sistema de sesiones propio (sin Breeze ni Fortify):
-
-- Cookie httpOnly: `ingecon_session` (formato: `id_sesion|token`)
-- El token en claro nunca se persiste en BD (se guarda su hash con Argon2id)
-- El middleware `AdminAuth` busca la sesion por ID y verifica el token con `Hash::check()`
-- Bloqueo de cuenta: 5 intentos fallidos → 60 minutos. Dispara job `EnviarEmailBloqueoJob`
-
-### Frontend
-
-- **Tailwind CSS**: Play CDN en layouts (`public.blade.php` y `admin.blade.php`). En produccion, reemplazar por build con Vite (`npm run build`)
-- **Alpine.js 3.14.1**: CDN con version fijada (no `@3.x.x`) para consistencia entre deploys
-- Los modales y formularios usan Alpine.js con `fetch()` para comunicacion JSON con el backend
-- Validaciones en dos capas: frontend (Alpine.js, antes del fetch) y backend (Laravel validation)
-
-### Email
-
-Configurado para Resend SMTP. En desarrollo se recomienda usar `MAIL_MAILER=log` para ver los correos en `storage/logs/laravel.log` sin necesidad de un servidor SMTP.
-
-### Comandos utiles
+Los comandos de Composer/Artisan/npm se corren parado dentro de `web/nucleo/` (ahí vive
+`composer.json` y `artisan`):
 
 ```bash
-php artisan route:list              # Listar todas las rutas
-php artisan route:list --path=admin # Solo rutas del panel admin
-php artisan migrate:fresh --seed    # Recrear BD desde cero con datos iniciales
+cd web/nucleo
 
-# Limpiar cache (util tras cambios de config)
+composer install
+npm install
+
+cp .env.example .env      # si no existe ya un .env
+php artisan key:generate  # si el .env no trae APP_KEY
+
+php artisan migrate
+php artisan db:seed       # idempotente: crea el admin y datos de ejemplo si no existen
+php artisan storage:link
+
+npm run build      # o `npm run dev` para hot-reload
+php artisan serve
+```
+
+Abre `http://localhost:8000`.
+
+El `.env` de desarrollo ya trae `DB_CONNECTION=sqlite`, `MAIL_MAILER=log` y
+`QUEUE_CONNECTION=sync` — no requiere un servidor de base de datos ni de correo aparte.
+
+> **Si algo tira "Class not found" o "View not found"**: corré `composer dump-autoload`, o
+> revisá que no haya un typo en las rutas relativas de `nucleo/composer.json` /
+> `nucleo/config/view.php`.
+
+### Cuenta de Administrador Jefe sembrada
+
+El seeder `AdminJefeSeeder` (llamado desde `DatabaseSeeder`) crea:
+
+- **Correo:** `admin@ingecon.cl`
+- **Contraseña:** `Admin123!`
+
+Cambiar esta contraseña antes de cualquier despliegue real.
+
+---
+
+## Rutas de la aplicación
+
+### Públicas
+
+| Método | URL | Descripción |
+|---|---|---|
+| `GET` | `/` | Página de inicio (proyectos recientes, certificados, colaboradores, formulario de contacto) |
+| `GET` | `/proyectos` | Galería pública de proyectos con filtros combinados (texto, categoría, ubicación) |
+| `GET` | `/producto` | Ficha de Conectores Metálicos |
+| `GET` | `/certificaciones` | Listado completo de certificaciones vigentes |
+| `GET` | `/certificaciones/{certificado}/descargar` | Descarga del PDF con nombre de archivo seguro |
+| `GET` | `/colaboradores` | Listado público de colaboradores |
+| `GET` | `/conectores/documentacion` | Redirección a la documentación técnica (URL resuelta desde BD) |
+| `POST` | `/contacto` | Envío del formulario de contacto |
+| `GET` | `/terminos` | Términos y Condiciones / Política de Privacidad |
+| `GET` / `POST` | `/login` | Ventana Modal e inicio de sesión del Personal de Administración |
+| `POST` | `/password/email` | Solicitud de enlace de recuperación de contraseña |
+| `GET` | `/password/restablecer/{token}` | Formulario de restablecimiento |
+| `POST` | `/password/restablecer` | Confirmación del restablecimiento |
+
+### Panel de Gestión (requieren sesión de administrador)
+
+| Método | URL | Descripción |
+|---|---|---|
+| `POST` | `/logout` | Cerrar sesión |
+| `GET` | `/admin/dashboard` | Panel principal |
+| `resource` | `/admin/proyectos` | CRUD de proyectos + `PATCH /admin/proyectos/{p}/visibilidad` (Borrador ⇄ Publicado) + `DELETE /admin/imagenes/{imagen}` |
+| `resource` | `/admin/certificados` | CRUD de certificados |
+| `resource` | `/admin/colaboradores` | CRUD de colaboradores |
+| `resource` (parcial) | `/admin/consultas` | Listado paginado, detalle y actualización de estado |
+| `resource` (parcial) | `/admin/contenido` | Gestión de FAQ, Opiniones, Banner de Inicio y Fases Industriales |
+| `GET` / `PUT` | `/admin/password` | Cambio de contraseña del administrador autenticado |
+| `GET` | `/admin/qa` + `/admin/qa/stream` | Bitácora de pruebas automáticas en vivo (solo entorno `local`) |
+
+Ver `web/nucleo/routes/web.php` para el detalle exacto, o `php artisan route:list` (parado en
+`web/nucleo/`).
+
+---
+
+## Estado de la implementación
+
+Los 38 Requerimientos Funcionales, los 17 No Funcionales y los 64 Casos de Uso de
+`REQUISITOS.md` (Incrementos 1 y 2 completos) están implementados y verificados en vivo. Los
+requisitos No Funcionales de infraestructura (RNF07 disponibilidad, RNF14 respaldos, RNF15
+concurrencia) son responsabilidad del hosting cPanel de producción y no aplican al código.
+
+---
+
+## Tests
+
+```bash
+cd web/nucleo
+php artisan test
+```
+
+70 tests / 182 aserciones, cubriendo formulario de contacto, autenticación y bloqueo de cuenta,
+filtros de proyectos, certificaciones, gestión de colaboradores/proyectos/certificados,
+recuperación de contraseña, gestión de contenido multimedia y reglas de negocio (límites de
+archivos, validación de PDF real, dominios de correo, etc.). Corren contra una base SQLite en
+memoria — la base de datos de desarrollo no se toca. También se pueden ejecutar en vivo, viendo
+cada test aparecer en tiempo real, desde **Panel de Gestión → Bitácora de Pruebas** (solo en
+entorno `local`).
+
+---
+
+## Comandos útiles
+
+Todos se ejecutan parado dentro de `web/nucleo/`:
+
+```bash
+cd web/nucleo
+
+php artisan route:list                 # listar todas las rutas
+php artisan migrate:fresh --seed       # recrear la BD desde cero
+php artisan test                       # correr la suite de tests
 php artisan route:clear && php artisan config:clear && php artisan cache:clear
-
-# Ver logs
-tail -f storage/logs/laravel.log    # Linux/macOS
-Get-Content storage/logs/laravel.log -Wait  # PowerShell
 ```

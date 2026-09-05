@@ -1,140 +1,101 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Models\ArchivoAdjunto;
-use App\Models\Consulta;
-use App\Models\Visitante;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Models\Visitante;
+use App\Models\Consulta;
+use App\Mail\ConsultaRecibidaMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
+use App\Rules\DominioCorreoValido;
+use Carbon\Carbon;
 
 class ContactoController extends Controller
 {
-    private const MAX_ADJUNTO_BYTES = 10 * 1024 * 1024;
+    // CU 1.1, Excepción 3: máximo 5 consultas pendientes por visitante en 24h.
+    private const LIMITE_CONSULTAS_24H = 5;
 
-    // Todo PDF comienza con la firma "%PDF".
-    private const PDF_MAGIC_BYTES = '%PDF';
-
-    public function __construct(
-        private readonly DBRouterController $db
-    ) {}
-
-    /**
-     * Recibe, valida y persiste una consulta de contacto pública. Retorna JSON.
-     *
-     * Campos (multipart/form-data): nombre, apellido, email, mensaje,
-     * fecha_consulta y un adjunto PDF opcional (máx. 10 MB).
-     */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'nombre'          => ['required', 'string', 'max:80'],
-                'apellido'        => ['required', 'string', 'max:80'],
-                'email'           => ['required', 'email', 'max:150'],
-                'mensaje'         => ['required', 'string', 'min:10'],
-                'fecha_consulta'  => ['required', 'date', 'after_or_equal:today'],
-                'adjunto'         => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
-            ], [
-                'nombre.required'         => 'El campo Nombre es obligatorio.',
-                'nombre.max'              => 'El nombre no puede superar los 80 caracteres.',
-                'apellido.required'       => 'El campo Apellido es obligatorio.',
-                'apellido.max'            => 'El apellido no puede superar los 80 caracteres.',
-                'email.required'          => 'El campo Email es obligatorio.',
-                'email.email'             => 'Ingresa un correo electrónico válido.',
-                'email.max'               => 'El correo no puede superar los 150 caracteres.',
-                'mensaje.required'        => 'El campo Mensaje es obligatorio.',
-                'mensaje.min'             => 'El mensaje debe tener al menos 10 caracteres.',
-                'fecha_consulta.required' => 'El campo Fecha es obligatorio.',
-                'fecha_consulta.date'     => 'La fecha ingresada no es válida.',
-                'fecha_consulta.after_or_equal' => 'La fecha no puede ser anterior a hoy.',
-                'adjunto.file'            => 'El adjunto debe ser un archivo válido.',
-                'adjunto.mimes'           => 'Solo se permiten archivos en formato PDF.',
-                'adjunto.max'             => 'El archivo no puede superar los 10 MB.',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'errors'  => $e->errors(),
-            ], 422);
-        }
-
-        // firstOrCreate evita duplicar visitantes con el mismo email.
-        $visitante = $this->db->obtenerOCrearVisitante(
-            $validated['email'],
-            [
-                'nombre'   => $validated['nombre'],
-                'apellido' => $validated['apellido'],
-            ]
-        );
-
-        // id_admin_responsable queda NULL hasta que un admin tome la consulta.
-        $consulta = $this->db->crearConsulta([
-            'mensaje'              => $validated['mensaje'],
-            'fecha_consulta'       => $validated['fecha_consulta'],
-            'estado'               => 'pendiente',
-            'prioridad'            => 'media',
-            'id_visitante'         => $visitante->id_visitante,
-            'id_admin_responsable' => null,
+        $request->validate([
+            'nombre' => ['required', 'string', 'max:80', 'regex:/^[\pL\s]+$/u'],
+            'apellido' => ['nullable', 'string', 'max:80', 'regex:/^[\pL\s]+$/u'],
+            // CU 1.1 Excepción 5 (formato) y Excepción 4 (dominio inexistente).
+            'email' => ['required', 'email:rfc', 'max:150', new DominioCorreoValido()],
+            // DS-42: alfanumérico, 10 a 1000 caracteres.
+            'mensaje' => ['required', 'string', 'min:10', 'max:1000'],
+            'acepta_terminos' => ['required', 'accepted'],
+        ], [
+            'nombre.regex' => 'El nombre solo puede contener letras y espacios.',
+            'apellido.regex' => 'El apellido solo puede contener letras y espacios.',
+            'mensaje.min' => 'El mensaje debe tener al menos 10 caracteres.',
+            'mensaje.max' => 'El mensaje no puede superar los 1000 caracteres.',
+            'email.email' => 'Ingrese un correo electrónico válido.',
         ]);
 
-        if ($request->hasFile('adjunto') && $request->file('adjunto')->isValid()) {
-            $archivo = $request->file('adjunto');
-            $rutaTemporal = $archivo->getRealPath();
+        // CU 1.1, Excepción 3: bloquear si el visitante ya tiene 5+ consultas
+        // pendientes registradas en las últimas 24 horas.
+        $consultasRecientes = Consulta::whereHas('visitante', function ($q) use ($request) {
+                $q->where('email', $request->email);
+            })
+            ->where('estado', 'pendiente')
+            ->where('created_at', '>=', Carbon::now()->subDay())
+            ->count();
 
-            // El archivo puede tener extensión .pdf sin ser un PDF real:
-            // verificar los magic bytes.
-            $primerosBytesRaw = file_get_contents($rutaTemporal, false, null, 0, 4);
+        if ($consultasRecientes >= self::LIMITE_CONSULTAS_24H) {
+            return back()->withErrors([
+                'mensaje' => 'Alcanzó el límite de ' . self::LIMITE_CONSULTAS_24H . ' consultas en las últimas 24 horas. Por favor, intente nuevamente más tarde.',
+            ])->withInput();
+        }
 
-            if ($primerosBytesRaw === false || $primerosBytesRaw !== self::PDF_MAGIC_BYTES) {
-                Log::warning('Adjunto rechazado: magic bytes inválidos', [
-                    'nombre_archivo'  => $archivo->getClientOriginalName(),
-                    'bytes_detectados' => bin2hex($primerosBytesRaw ?: ''),
-                    'id_consulta'     => $consulta->id_consulta,
-                ]);
+        // CU 1.1 Excepción 6 / CU 9.1 Excepción 1: si la BD no logra registrar la
+        // Consulta, se informa en lenguaje claro (RNF10) sin exponer el error técnico.
+        try {
+            $visitante = Visitante::firstOrCreate(
+                ['email' => $request->email],
+                ['nombre' => $request->nombre, 'apellido' => $request->apellido]
+            );
 
-                // Compensar la consulta ya creada.
-                $this->db->eliminarConsulta($consulta);
+            $consulta = Consulta::create([
+                'id_visitante' => $visitante->id_visitante,
+                'mensaje' => $request->mensaje,
+                'fecha_consulta' => Carbon::now()->toDateString(),
+                'estado' => 'pendiente',
+                'created_at' => Carbon::now()
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('No se pudo registrar la consulta de contacto.', ['motivo' => $e->getMessage()]);
 
-                return response()->json([
-                    'success' => false,
-                    'errors'  => [
-                        'adjunto' => ['Solo se permiten archivos en formato PDF.'],
-                    ],
-                ], 422);
-            }
+            return back()->withErrors([
+                'mensaje' => 'El envío no pudo completarse por una congestión temporal del servidor. Por favor, intente nuevamente.',
+            ])->withInput();
+        }
 
-            $contenidoBinario = file_get_contents($rutaTemporal);
+        // CU 9.1: antes de confirmar al Visitante hay que verificar que la ID retornada
+        // por el insert coincida con la que quedó efectivamente registrada en BD.
+        // Excepción 1: la BD no logró registrar la Consulta.
+        // Excepción 2: la ID no coincide → no se muestra confirmación, se pide reintentar.
+        $registrada = Consulta::find($consulta->id_consulta);
 
-            if ($contenidoBinario === false) {
-                Log::error('Error al leer el archivo adjunto', [
-                    'ruta'       => $rutaTemporal,
-                    'id_consulta' => $consulta->id_consulta,
-                ]);
+        if (!$registrada || $registrada->id_consulta !== $consulta->id_consulta) {
+            return back()->withErrors([
+                'mensaje' => 'El envío no pudo completarse. Por favor, intente nuevamente.',
+            ])->withInput();
+        }
 
-                $this->db->eliminarConsulta($consulta);
-
-                return response()->json([
-                    'success' => false,
-                    'errors'  => [
-                        'adjunto' => ['Ocurrió un error al procesar el archivo. Por favor intenta nuevamente.'],
-                    ],
-                ], 500);
-            }
-
-            $this->db->crearArchivoAdjunto([
-                'archivo_pdf'    => $contenidoBinario,
-                'nombre_archivo' => $archivo->getClientOriginalName(),
-                'tipo_mime'      => 'application/pdf',
-                'id_consulta'    => $consulta->id_consulta,
+        // La consulta ya quedó registrada: si el correo de acuse falla, no se pierde
+        // el registro ni se le muestra un error al Visitante (RNF10).
+        try {
+            Mail::to($visitante->email)->send(new ConsultaRecibidaMail($consulta));
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo enviar el acuse de recibo de la consulta.', [
+                'id_consulta' => $consulta->id_consulta,
+                'motivo' => $e->getMessage(),
             ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'mensaje' => 'Consulta registrada correctamente. Nos pondremos en contacto a la brevedad.',
-        ], 201);
+        return redirect('/#contacto')
+            ->with('contacto_success', 'Mensaje enviado correctamente. Le hemos enviado un correo de confirmación.')
+            ->with('consulta_id', $registrada->id_consulta);
     }
 }
