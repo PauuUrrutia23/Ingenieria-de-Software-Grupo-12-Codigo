@@ -1,19 +1,26 @@
 <?php
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Visitante;
 use App\Models\Consulta;
-use App\Mail\ConsultaRecibidaMail;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
+use App\Models\Visitante;
 use App\Rules\DominioCorreoValido;
+use App\Services\NotificationService;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
+/**
+ * ContactoController («Control») — Diagrama de Componentes: "Formularios y consultas".
+ */
 class ContactoController extends Controller
 {
     // CU 1.1, Excepción 3: máximo 5 consultas pendientes por visitante en 24h.
     private const LIMITE_CONSULTAS_24H = 5;
+
+    public function __construct(
+        private DBRouterController $db,
+        private NotificationService $notificaciones,
+    ) {
+    }
 
     public function store(Request $request)
     {
@@ -35,7 +42,8 @@ class ContactoController extends Controller
 
         // CU 1.1, Excepción 3: bloquear si el visitante ya tiene 5+ consultas
         // pendientes registradas en las últimas 24 horas.
-        $consultasRecientes = Consulta::whereHas('visitante', function ($q) use ($request) {
+        $consultasRecientes = $this->db->query(Consulta::class)
+            ->whereHas('visitante', function ($q) use ($request) {
                 $q->where('email', $request->email);
             })
             ->where('estado', 'pendiente')
@@ -56,15 +64,15 @@ class ContactoController extends Controller
                 ['nombre' => $request->nombre, 'apellido' => $request->apellido]
             );
 
-            $consulta = Consulta::create([
+            $consulta = $this->db->create(Consulta::class, [
                 'id_visitante' => $visitante->id_visitante,
                 'mensaje' => $request->mensaje,
                 'fecha_consulta' => Carbon::now()->toDateString(),
                 'estado' => 'pendiente',
-                'created_at' => Carbon::now()
+                'created_at' => Carbon::now(),
             ]);
         } catch (\Throwable $e) {
-            Log::error('No se pudo registrar la consulta de contacto.', ['motivo' => $e->getMessage()]);
+            report($e);
 
             return back()->withErrors([
                 'mensaje' => 'El envío no pudo completarse por una congestión temporal del servidor. Por favor, intente nuevamente.',
@@ -75,7 +83,7 @@ class ContactoController extends Controller
         // por el insert coincida con la que quedó efectivamente registrada en BD.
         // Excepción 1: la BD no logró registrar la Consulta.
         // Excepción 2: la ID no coincide → no se muestra confirmación, se pide reintentar.
-        $registrada = Consulta::find($consulta->id_consulta);
+        $registrada = $this->db->find(Consulta::class, $consulta->id_consulta);
 
         if (!$registrada || $registrada->id_consulta !== $consulta->id_consulta) {
             return back()->withErrors([
@@ -85,14 +93,7 @@ class ContactoController extends Controller
 
         // La consulta ya quedó registrada: si el correo de acuse falla, no se pierde
         // el registro ni se le muestra un error al Visitante (RNF10).
-        try {
-            Mail::to($visitante->email)->send(new ConsultaRecibidaMail($consulta));
-        } catch (\Throwable $e) {
-            Log::warning('No se pudo enviar el acuse de recibo de la consulta.', [
-                'id_consulta' => $consulta->id_consulta,
-                'motivo' => $e->getMessage(),
-            ]);
-        }
+        $this->notificaciones->notificarConsultaRecibida($visitante->email, $consulta);
 
         return redirect('/#contacto')
             ->with('contacto_success', 'Mensaje enviado correctamente. Le hemos enviado un correo de confirmación.')

@@ -28,6 +28,7 @@
             "App\\Http\\Middleware\\": "../controlador/Middleware/",
             "App\\Http\\Requests\\": "../controlador/Requests/",
             "App\\Rules\\": "../controlador/Rules/",
+            "App\\Services\\": "../controlador/Services/",
             "App\\Models\\": "../base_datos/modelos/",
             "Database\\Factories\\": "../base_datos/factories/",
             "Database\\Seeders\\": "../base_datos/seeders/"

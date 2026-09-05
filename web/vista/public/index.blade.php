@@ -44,8 +44,10 @@
         </div>
       </section>
 
+      {{-- RF12 / CU 12.1: la Barra de Navegación Fija se desplaza a esta sección
+           dentro de la misma página (ancla "#productos"), no navega a otra página. --}}
       <!-- Production Lines Section -->
-      <section class="py-24 bg-white">
+      <section id="productos" class="py-24 bg-white scroll-mt-[88px]">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-14 gap-4">
             <div>
@@ -145,8 +147,12 @@
         </div>
       </section>
 
+      {{-- RF12 / CU 12.1: ancla "#proyectos" para el desplazamiento desde la
+           Barra de Navegación Fija. La galería completa con filtros (RF19-21)
+           sigue viviendo en /proyectos, alcanzable desde el Menú Lateral (RF11)
+           o el enlace "Ver galería completa" de más abajo. --}}
       <!-- Recent Projects Section -->
-      <section class="py-24 bg-white">
+      <section id="proyectos" class="py-24 bg-white scroll-mt-[88px]">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-14 gap-4">
             <div>
@@ -186,8 +192,11 @@
         </div>
       </section>
 
+      {{-- RF12 / CU 12.1: ancla "#certificaciones". El listado completo (RF24)
+           sigue en /certificaciones, alcanzable desde el Menú Lateral (RF11)
+           o el enlace "Ver certificados" de esta sección. --}}
       <!-- Certifications Section -->
-      <section class="py-24 bg-[#29543d] text-white">
+      <section id="certificaciones" class="py-24 bg-[#29543d] text-white scroll-mt-[88px]">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
             <div class="lg:col-span-4 pr-0 lg:pr-8">
@@ -241,7 +250,7 @@
       </section>
 
       <!-- Contact Section -->
-      <section id="contacto" class="py-24 bg-white border-t border-gray-100">
+      <section id="contacto" class="py-24 bg-white border-t border-gray-100 scroll-mt-[88px]">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
           <div class="bg-[#f5f3ec] rounded-2xl p-8 md:p-14">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">

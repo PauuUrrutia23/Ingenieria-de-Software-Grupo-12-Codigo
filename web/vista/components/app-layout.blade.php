@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -56,18 +56,23 @@
             <span class="font-bold text-xl tracking-tight text-[#1a1a1a]">INGECON</span>
           </a>
 
+          {{-- RF12 / CU 12.1: la Barra de Navegación Fija se desplaza a la sección
+               correspondiente DENTRO de la misma página (anclas del home), no navega
+               a otra página. Las páginas dedicadas con filtros/listados completos
+               (RF19-21, RF24) siguen existiendo, pero se llega a ellas por el Menú
+               Lateral (RF11) o los enlaces "Ver más" de cada sección. --}}
           <!-- Desktop Menu -->
           <div class="hidden md:flex items-center space-x-8">
             <a href="/" class="text-sm font-semibold pb-1 border-b-2 transition-colors {{ request()->is('/') ? 'text-[#1a1a1a] border-[#28533c]' : 'text-[#4a4a4a] border-transparent hover:text-[#1a1a1a]' }}">
                 Nosotros
             </a>
-            <a href="{{ route('public.producto') }}" class="text-sm font-semibold pb-1 border-b-2 transition-colors {{ request()->is('producto*') ? 'text-[#1a1a1a] border-[#28533c]' : 'text-[#4a4a4a] border-transparent hover:text-[#1a1a1a]' }}">
+            <a href="/#productos" class="text-sm font-semibold pb-1 border-b-2 border-transparent text-[#4a4a4a] hover:text-[#1a1a1a] transition-colors">
                 Productos
             </a>
-            <a href="/proyectos" class="text-sm font-semibold pb-1 border-b-2 transition-colors {{ request()->is('proyectos*') ? 'text-[#1a1a1a] border-[#28533c]' : 'text-[#4a4a4a] border-transparent hover:text-[#1a1a1a]' }}">
+            <a href="/#proyectos" class="text-sm font-semibold pb-1 border-b-2 border-transparent text-[#4a4a4a] hover:text-[#1a1a1a] transition-colors">
                 Proyectos
             </a>
-            <a href="/certificaciones" class="text-sm font-semibold pb-1 border-b-2 transition-colors {{ request()->is('certificaciones*') ? 'text-[#1a1a1a] border-[#28533c]' : 'text-[#4a4a4a] border-transparent hover:text-[#1a1a1a]' }}">
+            <a href="/#certificaciones" class="text-sm font-semibold pb-1 border-b-2 border-transparent text-[#4a4a4a] hover:text-[#1a1a1a] transition-colors">
                 Certificaciones
             </a>
             {{-- RF10 / CU 10.1: enlace del encabezado a la documentación técnica de
@@ -97,11 +102,11 @@
       <div x-show="isMobileMenuOpen" style="display: none;" class="md:hidden bg-white border-t border-gray-100 absolute w-full shadow-lg">
         <div class="px-4 pt-2 pb-6 space-y-2">
             <a href="/" class="block w-full text-left px-3 py-3 text-base font-semibold text-[#4a4a4a] hover:text-[#28533c] hover:bg-gray-50 rounded-md">Nosotros</a>
-            <a href="{{ route('public.producto') }}" class="block w-full text-left px-3 py-3 text-base font-semibold text-[#4a4a4a] hover:text-[#28533c] hover:bg-gray-50 rounded-md">Productos</a>
-            <a href="/proyectos" class="block w-full text-left px-3 py-3 text-base font-semibold text-[#4a4a4a] hover:text-[#28533c] hover:bg-gray-50 rounded-md">Proyectos</a>
-            <a href="/certificaciones" class="block w-full text-left px-3 py-3 text-base font-semibold text-[#4a4a4a] hover:text-[#28533c] hover:bg-gray-50 rounded-md">Certificaciones</a>
+            <a href="/#productos" @click="isMobileMenuOpen = false" class="block w-full text-left px-3 py-3 text-base font-semibold text-[#4a4a4a] hover:text-[#28533c] hover:bg-gray-50 rounded-md">Productos</a>
+            <a href="/#proyectos" @click="isMobileMenuOpen = false" class="block w-full text-left px-3 py-3 text-base font-semibold text-[#4a4a4a] hover:text-[#28533c] hover:bg-gray-50 rounded-md">Proyectos</a>
+            <a href="/#certificaciones" @click="isMobileMenuOpen = false" class="block w-full text-left px-3 py-3 text-base font-semibold text-[#4a4a4a] hover:text-[#28533c] hover:bg-gray-50 rounded-md">Certificaciones</a>
             <a href="{{ route('public.documentacion.conectores') }}" target="_blank" rel="noopener" class="block w-full text-left px-3 py-3 text-base font-semibold text-[#4a4a4a] hover:text-[#28533c] hover:bg-gray-50 rounded-md">Conectores Metálicos</a>
-            <a href="/contacto" class="block w-full text-center mt-4 bg-[#28533c] text-white px-5 py-3 rounded-md font-semibold">
+            <a href="/#contacto" @click="isMobileMenuOpen = false" class="block w-full text-center mt-4 bg-[#28533c] text-white px-5 py-3 rounded-md font-semibold">
               Contáctanos
             </a>
         </div>

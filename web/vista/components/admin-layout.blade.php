@@ -53,15 +53,6 @@
                     {{ $item['label'] }}
                 </a>
             @endforeach
-
-            @if (app()->environment('local'))
-                <a href="{{ route('admin.qa.index') }}"
-                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors
-                          {{ request()->is('admin/qa*') ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-                    <i data-lucide="flask-conical" class="w-[18px] h-[18px] shrink-0 {{ request()->is('admin/qa*') ? 'text-white' : 'text-slate-400' }}"></i>
-                    Bitácora de Pruebas
-                </a>
-            @endif
         </nav>
 
         {{-- Cuenta --}}

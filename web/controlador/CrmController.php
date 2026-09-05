@@ -5,16 +5,26 @@ use App\Models\Consulta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class ConsultaController extends Controller
+/**
+ * CrmController («Control») — Diagrama de Componentes: "Clientes y reportes".
+ *
+ * Módulo comercial (RF34/CU 34.2): historial paginado de Consultas (RF36),
+ * detalle en Ventana Modal (RF39) y actualización de estado (RF41).
+ */
+class CrmController extends Controller
 {
+    public function __construct(private DBRouterController $db)
+    {
+    }
+
     public function index(Request $request)
     {
-        $query = Consulta::with(['visitante', 'adminResponsable'])->orderBy('created_at', 'desc');
-        
+        $query = $this->db->query(Consulta::class)->with(['visitante', 'adminResponsable'])->orderBy('created_at', 'desc');
+
         if ($request->filled('estado')) {
             $query->where('estado', $request->estado);
         }
-        
+
         $consultas = $query->paginate(10);
         return view('admin.consultas.index', compact('consultas'));
     }
@@ -34,7 +44,7 @@ class ConsultaController extends Controller
 
         $consulta->estado = $request->estado;
         $consulta->prioridad = $request->prioridad;
-        
+
         // Si asume la responsabilidad (pasa a en_proceso y no tiene responsable)
         if ($request->estado != 'pendiente' && !$consulta->id_admin_responsable) {
             $consulta->id_admin_responsable = Auth::id();

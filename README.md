@@ -78,7 +78,7 @@ web/
     ├── public/              # index, proyectos, certificaciones, colaboradores, producto
     │   └── partials/        # fragmento de galería reutilizado por el filtrado dinámico (RF21)
     ├── admin/               # dashboard, proyectos, certificados, colaboradores, consultas,
-    │                        # contenido (FAQ/Opiniones/Banner/Fases), password, qa
+    │                        # contenido (FAQ/Opiniones/Banner/Fases), password
     ├── auth/                # login (Ventana Modal), reset-password
     ├── legal/               # términos y condiciones
     └── emails/              # consulta_recibida, cuenta_bloqueada, recuperacion_password
@@ -186,7 +186,6 @@ Cambiar esta contraseña antes de cualquier despliegue real.
 | `resource` (parcial) | `/admin/consultas` | Listado paginado, detalle y actualización de estado |
 | `resource` (parcial) | `/admin/contenido` | Gestión de FAQ, Opiniones, Banner de Inicio y Fases Industriales |
 | `GET` / `PUT` | `/admin/password` | Cambio de contraseña del administrador autenticado |
-| `GET` | `/admin/qa` + `/admin/qa/stream` | Bitácora de pruebas automáticas en vivo (solo entorno `local`) |
 
 Ver `web/nucleo/routes/web.php` para el detalle exacto, o `php artisan route:list` (parado en
 `web/nucleo/`).
@@ -213,9 +212,7 @@ php artisan test
 filtros de proyectos, certificaciones, gestión de colaboradores/proyectos/certificados,
 recuperación de contraseña, gestión de contenido multimedia y reglas de negocio (límites de
 archivos, validación de PDF real, dominios de correo, etc.). Corren contra una base SQLite en
-memoria — la base de datos de desarrollo no se toca. También se pueden ejecutar en vivo, viendo
-cada test aparecer en tiempo real, desde **Panel de Gestión → Bitácora de Pruebas** (solo en
-entorno `local`).
+memoria — la base de datos de desarrollo no se toca.
 
 ---
 
