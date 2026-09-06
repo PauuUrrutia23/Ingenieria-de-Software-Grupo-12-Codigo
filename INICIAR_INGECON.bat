@@ -19,7 +19,6 @@ rem =============================================================
 set "PROJECT_DIR=%~dp0"
 set "WEB_DIR=%PROJECT_DIR%web"
 set "NUCLEO_DIR=%WEB_DIR%\nucleo"
-set "SQLITE_DB=%WEB_DIR%\base_datos\database.sqlite"
 set "SCRIPTS_DIR=%PROJECT_DIR%scripts"
 set "APP_PORT=8000"
 set "APP_URL=http://127.0.0.1:%APP_PORT%"
@@ -189,9 +188,17 @@ if errorlevel 1 (
     echo   OK: clave de la aplicacion ya configurada.
 )
 
-if not exist "%SQLITE_DB%" (
-    echo   Creando base de datos SQLite vacia...
-    type nul > "%SQLITE_DB%"
+rem Crea la base MySQL si todavia no existe. Lee las credenciales del .env;
+rem no pide ni guarda contrasenas. Si la conexion falla, dice que corregir.
+echo   Preparando la base de datos MySQL...
+"!PHP_CMD!" "%SCRIPTS_DIR%\preparar-bd.php" "%NUCLEO_DIR%\.env"
+if errorlevel 1 (
+    echo.
+    echo [ERROR] No se pudo preparar la base de datos. Corrige lo indicado arriba
+    echo         en "%NUCLEO_DIR%\.env" y vuelve a ejecutar este archivo.
+    echo.
+    pause
+    exit /b 1
 )
 
 echo   Aplicando migraciones...

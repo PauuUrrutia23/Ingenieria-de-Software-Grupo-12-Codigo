@@ -19,7 +19,9 @@ $requeridas = @(
     'mbstring',   # Manejo de cadenas UTF-8 (nombres, mensajes)
     'curl',       # Peticiones salientes (verificación de dominios de correo, etc.)
     'openssl',    # Hashing y generación de tokens seguros
-    'pdo_sqlite', # Motor de la BD de desarrollo (SQLite)
+    'pdo_mysql',  # Motor de la BD del proyecto (MySQL, igual que el hosting)
+    'mysqli',     # Utilidades de MySQL para herramientas externas
+    'pdo_sqlite', # Alternativa liviana para pruebas locales
     'sqlite3'
 )
 
