@@ -12,18 +12,8 @@
         @csrf @method('PUT')
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <label for="ec-codigo" class="block text-sm font-semibold text-slate-700 mb-1.5">Código</label>
-                <input id="ec-codigo" type="text" name="codigo" value="{{ $certificado->codigo }}"
-                       class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300" required>
-            </div>
-            <div>
                 <label for="ec-nombre" class="block text-sm font-semibold text-slate-700 mb-1.5">Nombre de la Normativa</label>
                 <input id="ec-nombre" type="text" name="nombre" value="{{ $certificado->nombre }}"
-                       class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300" required>
-            </div>
-            <div>
-                <label for="ec-fecha" class="block text-sm font-semibold text-slate-700 mb-1.5">Fecha Emisión</label>
-                <input id="ec-fecha" type="date" name="fecha_emision" value="{{ $certificado->fecha_emision->format('Y-m-d') }}"
                        class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300" required>
             </div>
             <div>

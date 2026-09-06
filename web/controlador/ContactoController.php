@@ -59,7 +59,8 @@ class ContactoController extends Controller
         // CU 1.1 Excepción 6 / CU 9.1 Excepción 1: si la BD no logra registrar la
         // Consulta, se informa en lenguaje claro (RNF10) sin exponer el error técnico.
         try {
-            $visitante = Visitante::firstOrCreate(
+            $visitante = $this->db->firstOrCreate(
+                Visitante::class,
                 ['email' => $request->email],
                 ['nombre' => $request->nombre, 'apellido' => $request->apellido]
             );
@@ -67,7 +68,6 @@ class ContactoController extends Controller
             $consulta = $this->db->create(Consulta::class, [
                 'id_visitante' => $visitante->id_visitante,
                 'mensaje' => $request->mensaje,
-                'fecha_consulta' => Carbon::now()->toDateString(),
                 'estado' => 'pendiente',
                 'created_at' => Carbon::now(),
             ]);

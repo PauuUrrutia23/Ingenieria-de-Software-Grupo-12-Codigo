@@ -1,10 +1,9 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Certificado;
 use App\Models\Colaborador;
+use App\Models\Consulta;
 use App\Models\Contenido;
-use App\Rules\PdfValido;
 use App\Services\StorageAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,10 +12,9 @@ use Illuminate\Support\Facades\Auth;
  * AdminController («Control») — Diagrama de Componentes: "Dashboard y CRUD".
  *
  * Agrupa los módulos del Panel de Gestión que no tienen su propio nodo en el
- * diagrama de componentes: el Dashboard de bienvenida, Certificados (RF26),
- * Colaboradores (RF45-47) y el Panel de contenido multimedia (RF43-44). Cada
- * módulo mantiene sus propios nombres de método (prefijo `certificados*`,
- * `colaboradores*`, `contenido*`) para no chocar entre sí dentro de una sola clase.
+ * diagrama de componentes: el Dashboard de bienvenida, Colaboradores (RF45-47) y el Panel de contenido multimedia (RF43-44). Cada
+ * módulo mantiene sus propios nombres de método (prefijo `colaboradores*`,
+ * `contenido*`, `consultas*`) para no chocar entre sí dentro de una sola clase.
  */
 class AdminController extends Controller
 {
@@ -33,88 +31,6 @@ class AdminController extends Controller
     public function dashboard()
     {
         return view('admin.dashboard');
-    }
-
-    // ==================================================================
-    // Certificados (RF26 / CU 26.1, CU 34.6)
-    // ==================================================================
-
-    public function certificadosIndex()
-    {
-        $certificados = $this->db->query(Certificado::class)->orderBy('id_certificado', 'desc')->paginate(15);
-        return view('admin.certificados.index', compact('certificados'));
-    }
-
-    public function certificadosCreate()
-    {
-        return view('admin.certificados.create');
-    }
-
-    public function certificadosStore(Request $request)
-    {
-        $data = $request->validate([
-            'codigo' => 'required|string|max:80|unique:certificados',
-            'nombre' => 'required|string|max:200',
-            'descripcion' => 'nullable|string',
-            'fecha_emision' => 'required|date',
-            'estado' => 'required|in:vigente,vencido,revocado',
-            'organismo' => 'required|string|max:120',
-            'url_organismo' => 'nullable|url|max:300',
-            'imagen' => 'nullable|image|max:2048',
-            'archivo_pdf' => ['nullable', 'file', 'max:5120', new PdfValido()],
-        ]);
-
-        $data['id_admin'] = Auth::id();
-
-        if ($request->hasFile('imagen')) {
-            $data['imagen'] = $this->storage->guardar($request->file('imagen'), 'certificados');
-            $data['tipo_mime'] = $request->file('imagen')->getMimeType();
-        }
-        if ($request->hasFile('archivo_pdf')) {
-            $data['archivo_pdf'] = $this->storage->guardar($request->file('archivo_pdf'), 'certificados_pdf');
-        }
-
-        $this->db->create(Certificado::class, $data);
-        return redirect()->route('admin.certificados.index')->with('success', 'Certificado creado.');
-    }
-
-    public function certificadosEdit(Certificado $certificado)
-    {
-        return view('admin.certificados.edit', compact('certificado'));
-    }
-
-    public function certificadosUpdate(Request $request, Certificado $certificado)
-    {
-        $data = $request->validate([
-            'codigo' => 'required|string|max:80|unique:certificados,codigo,' . $certificado->id_certificado . ',id_certificado',
-            'nombre' => 'required|string|max:200',
-            'descripcion' => 'nullable|string',
-            'fecha_emision' => 'required|date',
-            'estado' => 'required|in:vigente,vencido,revocado',
-            'organismo' => 'required|string|max:120',
-            'url_organismo' => 'nullable|url|max:300',
-            'imagen' => 'nullable|image|max:2048',
-            'archivo_pdf' => ['nullable', 'file', 'max:5120', new PdfValido()],
-        ]);
-
-        if ($request->hasFile('imagen')) {
-            $data['imagen'] = $this->storage->reemplazar($certificado->imagen, $request->file('imagen'), 'certificados');
-            $data['tipo_mime'] = $request->file('imagen')->getMimeType();
-        }
-        if ($request->hasFile('archivo_pdf')) {
-            $data['archivo_pdf'] = $this->storage->reemplazar($certificado->archivo_pdf, $request->file('archivo_pdf'), 'certificados_pdf');
-        }
-
-        $this->db->update($certificado, $data);
-        return redirect()->route('admin.certificados.index')->with('success', 'Certificado actualizado.');
-    }
-
-    public function certificadosDestroy(Certificado $certificado)
-    {
-        $this->storage->borrar($certificado->imagen);
-        $this->storage->borrar($certificado->archivo_pdf);
-        $this->db->delete($certificado);
-        return redirect()->route('admin.certificados.index')->with('success', 'Certificado eliminado.');
     }
 
     // ==================================================================
@@ -211,9 +127,7 @@ class AdminController extends Controller
         return [
             'titulo' => [isset($obligatorios['titulo']) ? 'required' : 'nullable', 'string', 'max:200'],
             'cuerpo' => [isset($obligatorios['cuerpo']) ? 'required' : 'nullable', 'string'],
-            'enlace' => ['nullable', 'url', 'max:300'],
             'archivo' => ['nullable', 'file', 'mimes:jpeg,png,webp,jpg,mp4', 'max:5120'],
-            'orden' => ['nullable', 'integer'],
         ];
     }
 
@@ -231,7 +145,7 @@ class AdminController extends Controller
             $seccionActual = 'faq';
         }
 
-        $contenidos = $this->db->query(Contenido::class)->where('seccion', $seccionActual)->orderBy('orden')->get();
+        $contenidos = $this->db->query(Contenido::class)->where('seccion', $seccionActual)->orderBy('id_contenido')->get();
 
         return view('admin.contenido.index', [
             'contenidos' => $contenidos,
@@ -324,5 +238,65 @@ class AdminController extends Controller
 
         return redirect()->route('admin.contenido.index', ['seccion' => $seccion])
             ->with('success', 'Contenido eliminado correctamente.');
+    }
+
+    // ==================================================================
+    // Consultas Comerciales (RF36, RF39, RF41 / CU 36.1, 36.2, 39.1, 41.1)
+    // ==================================================================
+
+    /**
+     * RF36 / CU 36.1 - Historial de Consultas en bloques de 10.
+     *
+     * El orden es fijo, de la más reciente a la más antigua: el control de
+     * ordenamiento es RF37 (UR 6.4) y la búsqueda por texto es RF38 (UR 6.5),
+     * ambos de Prioridad 3, o sea Incremento 3.
+     */
+    public function consultasIndex()
+    {
+        $consultas = $this->db->query(Consulta::class)
+            ->with(['visitante', 'adminResponsable'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('admin.consultas.index', compact('consultas'));
+    }
+
+    /** RF39 / CU 39.1 - Detalle de una Consulta en la Ventana Modal. */
+    public function consultasShow(Consulta $consulta)
+    {
+        $consulta->load(['visitante', 'adminResponsable']);
+        return view('admin.consultas.show', compact('consulta'));
+    }
+
+    /** RF41 / CU 41.1 - Actualización del Estado de la Consulta. */
+    public function consultasUpdate(Request $request, Consulta $consulta)
+    {
+        $request->validate([
+            'estado' => 'required|in:pendiente,en_proceso,finalizada',
+            'prioridad' => 'nullable|in:baja,media,alta'
+        ]);
+
+        $cambios = ['estado' => $request->estado, 'prioridad' => $request->prioridad];
+
+        // Si asume la responsabilidad (pasa a en_proceso y no tiene responsable)
+        if ($request->estado != 'pendiente' && !$consulta->id_admin_responsable) {
+            $cambios['id_admin_responsable'] = Auth::id();
+        }
+
+        // CU 41.1 Excepcion 1: si se elige el mismo estado vigente, no se genera transaccion.
+        $consulta->fill($cambios);
+        if (!$consulta->isDirty()) {
+            return back();
+        }
+
+        try {
+            $this->db->update($consulta, $cambios);
+        } catch (\Throwable $e) {
+            // CU 41.1 Excepcion 2: conserva el estado anterior visible.
+            return back()->withErrors(['estado' => 'No se pudo actualizar el estado de la consulta.']);
+        }
+
+        // Se vuelve al origen: el selector vive en el modal de detalle del listado (RF41).
+        return back()->with('success', 'Estado de la consulta actualizado.');
     }
 }

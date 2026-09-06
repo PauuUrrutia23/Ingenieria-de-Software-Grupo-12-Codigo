@@ -14,7 +14,7 @@ use App\Models\Proyecto;
 
 /**
  * Cobertura de los requerimientos que faltaban al cerrar el Incremento 2:
- * RF04, RF05, RF08, RF09, RF10, RF21, RF23, RF39, RF41, RF50, RNF04/06 y RNF11.
+ * RF04, RF05, RF08, RF09, RF10, RF21, RF23, RF39, RF41, RF50, RNF04 y RNF11.
  */
 class IncrementoCoverageTest extends TestCase
 {
@@ -283,9 +283,9 @@ class IncrementoCoverageTest extends TestCase
         $this->assertEquals('en_proceso', $consulta->fresh()->estado);
     }
 
-    // ---------------------------------------------------------- RNF04/RNF06
+    // --------------------------------------------------------------- RNF04
 
-    /** RNF04 / RNF06 - un archivo que no es PDF real se rechaza aunque tenga extensión .pdf */
+    /** RNF04 - un archivo que no es PDF real se rechaza aunque tenga extensión .pdf */
     public function test_fake_pdf_is_rejected_by_content_not_by_extension()
     {
         Storage::fake('public');
@@ -295,19 +295,16 @@ class IncrementoCoverageTest extends TestCase
         $falso = UploadedFile::fake()->createWithContent('manual.pdf', 'MZ ejecutable, no es un PDF');
 
         $response = $this->actingAs($admin)->post(route('admin.certificados.store'), [
-            'codigo' => 'NCH-TEST-1',
             'nombre' => 'Norma de prueba',
-            'fecha_emision' => '2024-01-01',
-            'estado' => 'vigente',
             'organismo' => 'Organismo de prueba',
             'archivo_pdf' => $falso,
         ]);
 
         $response->assertSessionHasErrors('archivo_pdf');
-        $this->assertDatabaseMissing('certificados', ['codigo' => 'NCH-TEST-1']);
+        $this->assertDatabaseMissing('certificados', ['nombre' => 'Norma de prueba']);
     }
 
-    /** RNF04 / RNF06 - un PDF con cabecera válida sí se acepta */
+    /** RNF04 - un PDF con cabecera válida sí se acepta */
     public function test_real_pdf_header_is_accepted()
     {
         Storage::fake('public');
@@ -319,15 +316,12 @@ class IncrementoCoverageTest extends TestCase
         );
 
         $this->actingAs($admin)->post(route('admin.certificados.store'), [
-            'codigo' => 'NCH-TEST-2',
             'nombre' => 'Norma de prueba valida',
-            'fecha_emision' => '2024-01-01',
-            'estado' => 'vigente',
             'organismo' => 'Organismo de prueba',
             'archivo_pdf' => $pdf,
         ]);
 
-        $this->assertDatabaseHas('certificados', ['codigo' => 'NCH-TEST-2']);
+        $this->assertDatabaseHas('certificados', ['nombre' => 'Norma de prueba valida']);
     }
 
     // ---------------------------------------------------------------- RNF11
@@ -405,7 +399,6 @@ class IncrementoCoverageTest extends TestCase
         Storage::disk('public')->put('certificados_pdf/x.pdf', '%PDF-1.4 contenido');
 
         $certificado = \App\Models\Certificado::factory()->create([
-            'codigo' => 'NCH 1198',
             'nombre' => 'Madera / Construcciones',
             'estado' => 'vigente',
             'archivo_pdf' => 'certificados_pdf/x.pdf',
@@ -414,7 +407,7 @@ class IncrementoCoverageTest extends TestCase
         $response = $this->get(route('public.certificaciones.descargar', $certificado));
 
         $response->assertStatus(200);
-        $response->assertHeader('content-disposition', 'attachment; filename=nch-1198-madera-construcciones.pdf');
+        $response->assertHeader('content-disposition', 'attachment; filename=madera-construcciones.pdf');
     }
 
     /** CU 25.2 Exc. 1 y 2 - certificado sin PDF cargado informa indisponibilidad */

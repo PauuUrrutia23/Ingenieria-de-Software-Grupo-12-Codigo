@@ -21,7 +21,8 @@ use Illuminate\Support\Str;
  */
 class AuthController extends Controller
 {
-    // DS-51: minimo 8 caracteres, 1 mayuscula, 1 minuscula, 1 numero y 1 caracter especial.
+    // RNF06 / DS-51: minimo 8 caracteres, 1 mayuscula, 1 minuscula, 1 numero
+    // y 1 caracter especial. Se rechaza el registro o el cambio que no cumpla.
     private const REGLAS_PASSWORD = ['required', 'string', 'min:8', 'confirmed',
         'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[^a-zA-Z0-9]/'];
 

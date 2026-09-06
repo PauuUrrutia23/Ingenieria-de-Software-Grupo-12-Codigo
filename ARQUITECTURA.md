@@ -105,8 +105,8 @@ Visitante ─┐                                      ┌─▶ OpenStreetMap (t
 | `InstitucionalController` | `Public/HomeController` (navegación, banner, footer, T&C) |
 | `ContactoController` | `Public/ContactoController` |
 | `ProyectoController` | `Public/ProyectoPublicoController` (galería) **+** `Admin/ProyectoController` (CRUD) — mismo componente lógico del diagrama, separado en dos controllers Laravel por guard (público vs `auth:admin`) |
-| `CrmController` | `Admin/ConsultaController` (Módulo comercial: consultas, filtros, exportación futura) |
-| `AdminController` | `Admin/DashboardController`, `Admin/ColaboradorController`, `Admin/CertificadoController`, `Admin/ContenidoController` |
+| `CertificadoController` | Certificaciones completas: listado público y descarga del PDF (RF24/RF25) + CRUD del Panel de Gestión (RF26). Agregado al Diagrama de Componentes v3. |
+| `AdminController` | Dashboard, Colaboradores, Contenido multimedia y Consultas Comerciales (RF36/39/41) — el módulo comercial no tiene componente propio en el diagrama |
 | `NotificationService` / `SendmailAdapter` | `app/Services/*` + `app/Mail/*` (ya definidos en §2) |
 | `FinfoValidator` | `app/Services/PdfValidationService.php` |
 | `Argon2id` | Config `hashing.php` (`driver => argon2id`, fallback `bcrypt`) — no es un service propio, es config nativa de Laravel |

@@ -29,7 +29,6 @@
             <table class="min-w-full divide-y divide-slate-100">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Código</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Nombre</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Organismo</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Estado</th>
@@ -39,7 +38,6 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse($certificados as $c)
                     <tr class="hover:bg-slate-50/60 transition-colors">
-                        <td class="px-6 py-4 text-sm text-slate-500">{{ $c->codigo }}</td>
                         <td class="px-6 py-4 text-sm font-semibold text-slate-900">{{ $c->nombre }}</td>
                         <td class="px-6 py-4 text-sm text-slate-600">{{ $c->organismo }}</td>
                         <td class="px-6 py-4">
@@ -85,27 +83,9 @@
                 <input type="hidden" name="_modal" value="crear">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label for="cert-codigo" class="block text-sm font-semibold text-slate-700 mb-1.5">Código</label>
-                        <input id="cert-codigo" type="text" name="codigo" value="{{ old('codigo') }}"
-                               class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300" required>
-                    </div>
-                    <div>
                         <label for="cert-nombre" class="block text-sm font-semibold text-slate-700 mb-1.5">Nombre de la Normativa</label>
                         <input id="cert-nombre" type="text" name="nombre" value="{{ old('nombre') }}"
                                class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300" required>
-                    </div>
-                    <div>
-                        <label for="cert-fecha" class="block text-sm font-semibold text-slate-700 mb-1.5">Fecha Emisión</label>
-                        <input id="cert-fecha" type="date" name="fecha_emision" value="{{ old('fecha_emision') }}"
-                               class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300" required>
-                    </div>
-                    <div>
-                        <label for="cert-estado" class="block text-sm font-semibold text-slate-700 mb-1.5">Estado</label>
-                        <select id="cert-estado" name="estado" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer">
-                            <option value="vigente">Vigente</option>
-                            <option value="vencido">Vencido</option>
-                            <option value="revocado">Revocado</option>
-                        </select>
                     </div>
                     <div>
                         <label for="cert-organismo" class="block text-sm font-semibold text-slate-700 mb-1.5">Organismo Certificador</label>
@@ -134,7 +114,7 @@
                         <label for="cert-pdf" class="block text-sm font-semibold text-slate-700 mb-1.5">Archivo PDF adjunto (opcional)</label>
                         <input id="cert-pdf" type="file" name="archivo_pdf" accept="application/pdf"
                                class="w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
-                        <p class="text-xs text-slate-400 mt-1.5">Se valida el formato PDF real, no la extensión (RNF04/RNF06).</p>
+                        <p class="text-xs text-slate-400 mt-1.5">Se valida el formato PDF real, no la extensión (RNF04).</p>
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 pt-2">

@@ -7,12 +7,12 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\UploadedFile;
 
 /**
- * RNF04 / RNF06 - Validación de documentos PDF.
+ * RNF04 - Validación de documentos PDF.
  *
  * No basta con confiar en la extensión del archivo: FinfoValidator (Diagrama de
  * Componentes, capa Servicios) verifica el MIME real con la extensión nativa
  * `finfo` de PHP y además la cabecera del archivo (`%PDF-`), que es lo que define
- * un PDF conforme a ISO 32000-1. Un .exe renombrado a .pdf pasa la validación por
+ * un PDF conforme al formato estándar. Un .exe renombrado a .pdf pasa la validación por
  * extensión pero falla acá. Esta Rule es solo el punto de entrada que usa Laravel
  * en las validaciones de Request; la lógica real vive en FinfoValidator.
  */

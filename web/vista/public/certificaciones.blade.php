@@ -34,7 +34,6 @@
                     <i data-lucide="shield-check" class="h-7 w-7 text-[#28533c]"></i>
                   @endif
                 </div>
-                <p class="text-[#c66f4b] font-bold text-xs tracking-[0.1em] uppercase mb-1">{{ $cert->codigo }}</p>
                 <h3 class="text-xl font-bold text-[#1a1a1a] mb-3">{{ $cert->nombre }}</h3>
                 <p class="text-sm text-[#666666] leading-relaxed mb-6 flex-grow">{{ $cert->descripcion }}</p>
 

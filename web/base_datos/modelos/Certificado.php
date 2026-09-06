@@ -12,8 +12,7 @@ class Certificado extends Model
 
     protected $table = 'certificados';
     protected $primaryKey = 'id_certificado';
-    protected $fillable = ['codigo', 'nombre', 'descripcion', 'imagen', 'tipo_mime', 'archivo_pdf', 'fecha_emision', 'estado', 'organismo', 'url_organismo', 'id_admin'];
-    protected $casts = ['fecha_emision' => 'date'];
+    protected $fillable = ['nombre', 'descripcion', 'imagen', 'tipo_mime', 'archivo_pdf', 'estado', 'organismo', 'url_organismo', 'id_admin'];
 
     public function administrador() { return $this->belongsTo(Administrador::class, 'id_admin', 'id_admin'); }
 }

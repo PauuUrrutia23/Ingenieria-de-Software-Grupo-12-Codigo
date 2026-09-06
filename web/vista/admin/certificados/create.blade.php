@@ -4,10 +4,7 @@
     <form action="{{ route('admin.certificados.store') }}" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow max-w-4xl space-y-6">
         @csrf
         <div class="grid grid-cols-2 gap-6">
-            <div><label class="block font-bold mb-2">Código</label><input type="text" name="codigo" class="w-full border p-2" required></div>
             <div><label class="block font-bold mb-2">Nombre</label><input type="text" name="nombre" class="w-full border p-2" required></div>
-            <div><label class="block font-bold mb-2">Fecha Emisión</label><input type="date" name="fecha_emision" class="w-full border p-2" required></div>
-            <div><label class="block font-bold mb-2">Estado</label><select name="estado" class="w-full border p-2"><option value="vigente">Vigente</option><option value="vencido">Vencido</option><option value="revocado">Revocado</option></select></div>
             <div><label class="block font-bold mb-2">Organismo</label><input type="text" name="organismo" class="w-full border p-2" required></div>
             <div><label class="block font-bold mb-2">URL Organismo</label><input type="url" name="url_organismo" class="w-full border p-2"></div>
         </div>

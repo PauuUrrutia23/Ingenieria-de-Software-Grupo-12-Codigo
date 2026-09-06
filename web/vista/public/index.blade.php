@@ -220,8 +220,8 @@
                       <div class="w-3 h-3 border-2 border-[#29543d] rounded-sm"></div>
                     @endif
                   </div>
-                  <h3 class="text-xl font-bold mb-3">{{ $cert->codigo }}</h3>
-                  <p class="text-sm text-[#d8e3dc] leading-relaxed">{{ $cert->nombre }}</p>
+                  <h3 class="text-xl font-bold mb-3">{{ $cert->nombre }}</h3>
+                  <p class="text-sm text-[#d8e3dc] leading-relaxed">{{ $cert->organismo }}</p>
                 </div>
               </div>
               @empty

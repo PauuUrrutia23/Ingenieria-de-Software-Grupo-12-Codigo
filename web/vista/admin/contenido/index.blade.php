@@ -37,7 +37,6 @@
         <table class="min-w-full divide-y divide-slate-100">
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Orden</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Título</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Archivo</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Acciones</th>
@@ -46,7 +45,6 @@
             <tbody class="divide-y divide-slate-100">
                 @forelse($contenidos as $c)
                 <tr class="hover:bg-slate-50/60 transition-colors">
-                    <td class="px-6 py-4 text-sm text-slate-500">{{ $c->orden }}</td>
                     <td class="px-6 py-4 text-sm font-semibold text-slate-900">{{ $c->titulo ?? '—' }}</td>
                     <td class="px-6 py-4 text-sm">
                         @if($c->archivo)

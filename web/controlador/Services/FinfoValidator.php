@@ -39,7 +39,7 @@ class FinfoValidator
         return $this->tieneCabeceraPdf($archivo);
     }
 
-    /** RNF06: todo PDF ISO 32000-1 comienza con la cabecera "%PDF-". */
+    /** RNF04: todo PDF con formato estándar comienza con la cabecera "%PDF-". */
     public function tieneCabeceraPdf(UploadedFile $archivo): bool
     {
         $manejador = @fopen($archivo->getRealPath(), 'rb');

@@ -7,19 +7,6 @@
 
         <p class="text-slate-500 text-sm -mt-2 mb-6">Historial de consultas recibidas desde el Formulario de Contacto.</p>
 
-        <div class="mb-6 flex gap-2 flex-wrap">
-            @php
-                $filtros = [null => 'Todas', 'pendiente' => 'Pendientes', 'en_proceso' => 'En Proceso', 'finalizada' => 'Finalizadas'];
-            @endphp
-            @foreach ($filtros as $valor => $etiqueta)
-                <a href="{{ route('admin.consultas.index', $valor ? ['estado' => $valor] : []) }}"
-                   class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors
-                          {{ request('estado') == $valor ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">
-                    {{ $etiqueta }}
-                </a>
-            @endforeach
-        </div>
-
         @if(session('success'))
             <div class="mb-6 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium px-5 py-3 rounded-xl">
                 <i data-lucide="check-circle-2" class="w-5 h-5 shrink-0"></i>
@@ -37,6 +24,7 @@
                         <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Fecha</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Visitante</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Estado</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Prioridad</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Responsable</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Acciones</th>
                     </tr>
@@ -58,6 +46,22 @@
                                 };
                             @endphp
                             <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $badge[0] }}">{{ $badge[1] }}</span>
+                        </td>
+                        {{-- RF40: la prioridad se asigna en la Ventana Modal; acá solo se muestra. --}}
+                        <td class="px-6 py-4">
+                            @php
+                                $prio = match($c->prioridad) {
+                                    'alta' => ['bg-red-100 text-red-700', 'Alta'],
+                                    'media' => ['bg-amber-100 text-amber-700', 'Media'],
+                                    'baja' => ['bg-slate-100 text-slate-600', 'Baja'],
+                                    default => null,
+                                };
+                            @endphp
+                            @if($prio)
+                                <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $prio[0] }}">{{ $prio[1] }}</span>
+                            @else
+                                <span class="text-xs text-slate-400">Sin asignar</span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 text-sm text-slate-500">{{ $c->adminResponsable->correo ?? 'No asignado' }}</td>
                         <td class="px-6 py-4">

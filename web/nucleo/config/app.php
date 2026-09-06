@@ -83,7 +83,8 @@ return [
     |
     */
 
-    'locale' => 'en',
+    // RNF10: los Mensajes del Sistema se muestran en español (lang/es/validation.php).
+    'locale' => 'es',
 
     /*
     |--------------------------------------------------------------------------

@@ -35,6 +35,17 @@ class DBRouterController extends Controller
         return $modelo::create($datos);
     }
 
+    /**
+     * Busca por los atributos indicados y, si no existe, crea el registro
+     * agregando los valores adicionales. Es la operación que necesita el
+     * Formulario de Contacto: un mismo Visitante puede enviar varias Consultas
+     * y no debe duplicarse en la tabla.
+     */
+    public function firstOrCreate(string $modelo, array $atributos, array $valores = []): Model
+    {
+        return $modelo::firstOrCreate($atributos, $valores);
+    }
+
     /** Actualiza un registro ya cargado y devuelve la instancia actualizada. */
     public function update(Model $registro, array $datos): Model
     {

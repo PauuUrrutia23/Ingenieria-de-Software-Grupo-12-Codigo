@@ -46,19 +46,6 @@
                 @error('archivo') <p class="text-xs text-red-600 mt-1.5">{{ $message }}</p> @enderror
             </div>
 
-            <div>
-                <label for="cont-enlace" class="block text-sm font-semibold text-slate-700 mb-1.5">Enlace <span class="font-normal text-slate-400">(opcional)</span></label>
-                <input id="cont-enlace" type="url" name="enlace" value="{{ old('enlace') }}" placeholder="https://"
-                       class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300">
-                @error('enlace') <p class="text-xs text-red-600 mt-1.5">{{ $message }}</p> @enderror
-            </div>
-
-            <div>
-                <label for="cont-orden" class="block text-sm font-semibold text-slate-700 mb-1.5">Orden</label>
-                <input id="cont-orden" type="number" name="orden" value="{{ old('orden', 0) }}"
-                       class="w-32 px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300">
-            </div>
-
             <div class="flex justify-end gap-3 pt-2">
                 <a href="{{ route('admin.contenido.index', ['seccion' => $seccion]) }}"
                    class="px-5 py-2.5 text-sm font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Cancelar</a>

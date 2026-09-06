@@ -13,10 +13,8 @@ class CertificadoFactory extends Factory
     public function definition()
     {
         return [
-            'codigo' => strtoupper($this->faker->unique()->bothify('CERT-####')),
             'nombre' => $this->faker->sentence(3),
             'organismo' => $this->faker->company(),
-            'fecha_emision' => $this->faker->date(),
             'estado' => 'vigente',
             'id_admin' => Administrador::factory(),
         ];

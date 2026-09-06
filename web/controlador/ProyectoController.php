@@ -162,7 +162,7 @@ class ProyectoController extends Controller
     {
         foreach ($proyecto->imagenes as $img) {
             $this->storage->borrar($img->imagen);
-            $img->delete();
+            $this->db->delete($img);
         }
         $this->db->delete($proyecto);
 
@@ -172,7 +172,7 @@ class ProyectoController extends Controller
     public function destroyImage(ImagenProyecto $imagen)
     {
         $this->storage->borrar($imagen->imagen);
-        $imagen->delete();
+        $this->db->delete($imagen);
         return back()->with('success', 'Imagen eliminada.');
     }
 }

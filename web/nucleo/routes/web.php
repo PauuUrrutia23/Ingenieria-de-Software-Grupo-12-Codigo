@@ -4,13 +4,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactoController;
-use App\Http\Controllers\CrmController;
+use App\Http\Controllers\CertificadoController;
 use App\Http\Controllers\InstitucionalCtrl;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Middleware\CheckAdminSession;
 
 // ============================================================================
-// Sitio público — InstitucionalCtrl + ProyectoController (galería) + ContactoController
+// Sitio público — InstitucionalCtrl + ProyectoController (galería) +
+// CertificadoController (certificaciones) + ContactoController
 // ============================================================================
 
 Route::get('/', [InstitucionalCtrl::class, 'home'])->name('inicio');
@@ -26,10 +27,10 @@ Route::get('/conectores/documentacion', [InstitucionalCtrl::class, 'documentacio
     ->name('public.documentacion.conectores');
 
 // Certificaciones vigentes (RF24 / RF25 / CU 24.1)
-Route::get('/certificaciones', [InstitucionalCtrl::class, 'certificaciones'])->name('public.certificaciones');
+Route::get('/certificaciones', [CertificadoController::class, 'listadoPublico'])->name('public.certificaciones');
 
 // Descarga del PDF con nombre de archivo seguro (RF25 / CU 25.1)
-Route::get('/certificaciones/{certificado}/descargar', [InstitucionalCtrl::class, 'certificacionesDescargar'])
+Route::get('/certificaciones/{certificado}/descargar', [CertificadoController::class, 'descargar'])
     ->name('public.certificaciones.descargar');
 
 // Colaboradores (RF11 / CU 11.2)
@@ -56,7 +57,7 @@ Route::middleware('guest')->group(function () {
 });
 
 // ============================================================================
-// Panel de Gestión (protegido) — ProyectoController, CrmController, AdminController
+// Panel de Gestión (protegido) — ProyectoController, CertificadoController, AdminController
 // ============================================================================
 
 Route::middleware(['auth', CheckAdminSession::class])->group(function () {
@@ -70,13 +71,11 @@ Route::middleware(['auth', CheckAdminSession::class])->group(function () {
     Route::patch('admin/proyectos/{proyecto}/visibilidad', [ProyectoController::class, 'updateVisibilidad'])
         ->name('admin.proyectos.visibilidad');
 
-    // Certificados CRUD (AdminController)
-    Route::get('admin/certificados', [AdminController::class, 'certificadosIndex'])->name('admin.certificados.index');
-    Route::get('admin/certificados/create', [AdminController::class, 'certificadosCreate'])->name('admin.certificados.create');
-    Route::post('admin/certificados', [AdminController::class, 'certificadosStore'])->name('admin.certificados.store');
-    Route::get('admin/certificados/{certificado}/edit', [AdminController::class, 'certificadosEdit'])->name('admin.certificados.edit');
-    Route::put('admin/certificados/{certificado}', [AdminController::class, 'certificadosUpdate'])->name('admin.certificados.update');
-    Route::delete('admin/certificados/{certificado}', [AdminController::class, 'certificadosDestroy'])->name('admin.certificados.destroy');
+    // Certificados CRUD (CertificadoController)
+    Route::resource('admin/certificados', CertificadoController::class)
+        ->except(['show'])
+        ->names('admin.certificados')
+        ->parameters(['certificados' => 'certificado']);
 
     // Colaboradores CRUD (AdminController)
     Route::get('admin/colaboradores', [AdminController::class, 'colaboradoresIndex'])->name('admin.colaboradores.index');
@@ -86,10 +85,10 @@ Route::middleware(['auth', CheckAdminSession::class])->group(function () {
     Route::put('admin/colaboradores/{colaboradore}', [AdminController::class, 'colaboradoresUpdate'])->name('admin.colaboradores.update');
     Route::delete('admin/colaboradores/{colaboradore}', [AdminController::class, 'colaboradoresDestroy'])->name('admin.colaboradores.destroy');
 
-    // Consultas Comerciales (CrmController)
-    Route::get('admin/consultas', [CrmController::class, 'index'])->name('admin.consultas.index');
-    Route::get('admin/consultas/{consulta}', [CrmController::class, 'show'])->name('admin.consultas.show');
-    Route::put('admin/consultas/{consulta}', [CrmController::class, 'update'])->name('admin.consultas.update');
+    // Consultas Comerciales (AdminController)
+    Route::get('admin/consultas', [AdminController::class, 'consultasIndex'])->name('admin.consultas.index');
+    Route::get('admin/consultas/{consulta}', [AdminController::class, 'consultasShow'])->name('admin.consultas.show');
+    Route::put('admin/consultas/{consulta}', [AdminController::class, 'consultasUpdate'])->name('admin.consultas.update');
 
     // Cambiar contraseña (CU 28.1 / 28.2) (AuthController)
     Route::get('admin/password', [AuthController::class, 'passwordEdit'])->name('admin.password.edit');

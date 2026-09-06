@@ -6,15 +6,13 @@ use App\Models\Certificado;
 use App\Models\Colaborador;
 use App\Models\Contenido;
 use App\Models\Proyecto;
-use App\Services\StorageAdapter;
-use Illuminate\Support\Str;
 
 /**
  * InstitucionalCtrl («Control») — Diagrama de Componentes: "Páginas institucionales".
  *
  * Todo el contenido público que no es el formulario de contacto ni la galería de
  * proyectos con filtros (esa vive en ProyectoController): inicio, línea de
- * producto, certificaciones, colaboradores, términos y el enlace a documentación
+ * producto, colaboradores, términos y el enlace a documentación
  * técnica externa.
  */
 class InstitucionalCtrl extends Controller
@@ -49,7 +47,7 @@ class InstitucionalCtrl extends Controller
     public function producto()
     {
         return view('public.producto', [
-            'docsUrl' => self::urlDocumentacionVigente() ?: '#',
+            'docsUrl' => $this->urlDocumentacionVigente() ?: '#',
         ]);
     }
 
@@ -66,7 +64,7 @@ class InstitucionalCtrl extends Controller
      */
     public function documentacionConectores()
     {
-        $url = self::urlDocumentacionVigente();
+        $url = $this->urlDocumentacionVigente();
 
         // Excepción 2: URL registrada en BD no disponible o eliminada.
         if (!$url) {
@@ -80,12 +78,13 @@ class InstitucionalCtrl extends Controller
     }
 
     /** Resuelve la URL vigente de documentación; null si no hay ninguna registrada. */
-    public static function urlDocumentacionVigente(): ?string
+    private function urlDocumentacionVigente(): ?string
     {
         try {
-            $registro = Contenido::where('seccion', self::SECCION_DOCUMENTACION)
+            $registro = $this->db->query(Contenido::class)
+                ->where('seccion', self::SECCION_DOCUMENTACION)
                 ->where('activo', true)
-                ->orderBy('orden')
+                ->orderBy('id_contenido', 'desc')
                 ->first();
         } catch (\Throwable $e) {
             // Excepción 2: falla la consulta a BD. No se propaga el error técnico (RNF10).
@@ -95,42 +94,6 @@ class InstitucionalCtrl extends Controller
         $url = $registro->enlace ?? env('DOCS_CONECTORES_URL');
 
         return ($url && $url !== '#') ? $url : null;
-    }
-
-    /** RF24 / CU 24.1 - Listado público de certificaciones vigentes. */
-    public function certificaciones()
-    {
-        $certificados = $this->db->query(Certificado::class)->where('estado', 'vigente')->orderBy('nombre')->get();
-
-        return view('public.certificaciones', compact('certificados'));
-    }
-
-    /**
-     * RF25 / CU 25.1 - Descarga del PDF del certificado.
-     *
-     * No se enlaza el archivo directo desde storage: pasa por el Controlador para
-     * poder resolver las excepciones del caso de uso y, sobre todo, para generar
-     * un nombre de archivo seguro cuando el registro no tiene uno válido
-     * (CU 25.1 Excepción 4).
-     */
-    public function certificacionesDescargar(Certificado $certificado, StorageAdapter $storage)
-    {
-        // CU 25.2 Excepciones 1 y 2: el certificado no tiene PDF cargado, o el archivo
-        // referenciado en BD ya no está en disco.
-        if (!$certificado->archivo_pdf || !$storage->existe($certificado->archivo_pdf)) {
-            return redirect()
-                ->route('public.certificaciones')
-                ->with('doc_no_disponible', 'El documento solicitado no está disponible por el momento.');
-        }
-
-        // CU 25.1 Excepción 4: si el nombre almacenado no sirve, se construye uno seguro
-        // a partir del código y el nombre de la normativa.
-        $nombreSeguro = Str::slug($certificado->codigo . '-' . $certificado->nombre);
-        if ($nombreSeguro === '') {
-            $nombreSeguro = 'certificado-' . $certificado->id_certificado;
-        }
-
-        return $storage->descargar($certificado->archivo_pdf, $nombreSeguro . '.pdf');
     }
 
     /** RF11 / CU 11.2 - Página pública de colaboradores (logos y nombres desde BD). */

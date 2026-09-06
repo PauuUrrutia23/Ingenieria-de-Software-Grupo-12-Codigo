@@ -1,0 +1,137 @@
+<?php
+
+/**
+ * Mensajes de validación en español (RNF10: "manejar errores mediante Mensajes
+ * del Sistema claros, evitando mostrar información técnica al Usuario").
+ *
+ * Sin este archivo Laravel responde en inglés, y como los controladores sí
+ * declaran los nombres de campo en español salían frases mezcladas del tipo
+ * "The la nueva contraseña field must be at least 8 characters".
+ *
+ * Cubre las reglas que el proyecto usa; cualquier otra cae al inglés por el
+ * fallback_locale de config/app.php.
+ */
+
+return [
+
+    'accepted' => 'Debe aceptar :attribute para continuar.',
+    'active_url' => 'Debe ingresar una dirección web válida en :attribute.',
+    'after' => 'Debe ingresar en :attribute una fecha posterior a :date.',
+    'alpha' => 'Solo se permiten letras en :attribute.',
+    'alpha_dash' => 'Solo se permiten letras, números, guiones y guiones bajos en :attribute.',
+    'alpha_num' => 'Solo se permiten letras y números en :attribute.',
+    'array' => 'Debe enviar un conjunto de elementos en :attribute.',
+    'before' => 'Debe ingresar en :attribute una fecha anterior a :date.',
+    'between' => [
+        'array' => 'Debe incluir entre :min y :max elementos en :attribute.',
+        'file' => 'El archivo de :attribute debe pesar entre :min y :max kilobytes.',
+        'numeric' => 'Debe ingresar un valor entre :min y :max en :attribute.',
+        'string' => 'Debe ingresar entre :min y :max caracteres en :attribute.',
+    ],
+    'boolean' => 'Solo se admite verdadero o falso en :attribute.',
+    'confirmed' => 'La confirmación de :attribute no coincide.',
+    'date' => 'Debe ingresar una fecha válida en :attribute.',
+    'date_format' => 'La fecha de :attribute no corresponde al formato :format.',
+    'different' => 'Los valores de :attribute y :other deben ser distintos.',
+    'digits' => 'Debe ingresar :digits dígitos en :attribute.',
+    'email' => 'Debe ingresar una dirección de correo válida en :attribute.',
+    'exists' => 'La opción seleccionada en :attribute no existe.',
+    'file' => 'Debe adjuntar un archivo en :attribute.',
+    'filled' => 'No puede dejar vacío :attribute.',
+    'image' => 'Debe adjuntar una imagen en :attribute.',
+    'in' => 'La opción seleccionada en :attribute no es válida.',
+    'integer' => 'Debe ingresar un número entero en :attribute.',
+    'max' => [
+        'array' => 'No puede incluir más de :max elementos en :attribute.',
+        'file' => 'El archivo de :attribute no puede pesar más de :max kilobytes.',
+        'numeric' => 'El valor de :attribute no puede ser mayor que :max.',
+        'string' => 'No puede superar los :max caracteres en :attribute.',
+    ],
+    'mimes' => 'Debe adjuntar en :attribute un archivo de tipo: :values.',
+    'mimetypes' => 'Debe adjuntar en :attribute un archivo de tipo: :values.',
+    'min' => [
+        'array' => 'Debe incluir al menos :min elementos en :attribute.',
+        'file' => 'El archivo de :attribute debe pesar al menos :min kilobytes.',
+        'numeric' => 'El valor de :attribute debe ser al menos :min.',
+        'string' => 'Debe ingresar al menos :min caracteres en :attribute.',
+    ],
+    'not_in' => 'La opción seleccionada en :attribute no es válida.',
+    'numeric' => 'Debe ingresar un número en :attribute.',
+    'present' => 'Falta enviar :attribute.',
+    'regex' => 'El formato de :attribute no es válido.',
+    'required' => 'Debe completar :attribute.',
+    'required_if' => 'Debe completar :attribute cuando :other es :value.',
+    'required_with' => 'Debe completar :attribute cuando :values está presente.',
+    'same' => 'Los valores de :attribute y :other deben coincidir.',
+    'size' => [
+        'array' => 'Debe incluir exactamente :size elementos en :attribute.',
+        'file' => 'El archivo de :attribute debe pesar :size kilobytes.',
+        'numeric' => 'El valor de :attribute debe ser :size.',
+        'string' => 'Debe ingresar exactamente :size caracteres en :attribute.',
+    ],
+    'string' => 'Debe ingresar texto en :attribute.',
+    'unique' => 'Ya existe un registro con ese valor en :attribute.',
+    'uploaded' => 'No se pudo subir :attribute. Verifique el tamaño del archivo.',
+    'url' => 'Debe ingresar una dirección web válida en :attribute.',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mensajes propios por campo y regla
+    |--------------------------------------------------------------------------
+    */
+
+    'custom' => [
+        'password' => [
+            'regex' => 'La nueva contraseña debe incluir al menos una mayúscula, una minúscula, un número y un carácter especial.',
+        ],
+        // CU 4.1: sin aceptar los documentos legales no se envía la Consulta.
+        'acepta_terminos' => [
+            'required' => 'Debe aceptar los Términos, Condiciones y Políticas de Privacidad para enviar la Consulta.',
+            'accepted' => 'Debe aceptar los Términos, Condiciones y Políticas de Privacidad para enviar la Consulta.',
+        ],
+        // Evita el "…válida en el correo electrónico", que repite el sujeto.
+        'email' => [
+            'email' => 'Debe ingresar una dirección de correo electrónico válida.',
+        ],
+        'correo' => [
+            'email' => 'Debe ingresar una dirección de correo electrónico válida.',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Nombres de campo tal como los ve el Usuario
+    |--------------------------------------------------------------------------
+    */
+
+    'attributes' => [
+        'nombre' => 'el nombre',
+        'apellido' => 'el apellido',
+        'email' => 'el correo electrónico',
+        'correo' => 'el correo electrónico',
+        'mensaje' => 'el mensaje',
+        'acepta_terminos' => 'los Términos y Condiciones',
+        'password' => 'la contraseña',
+        'password_actual' => 'la contraseña actual',
+        'password_confirmation' => 'la confirmación de la contraseña',
+        'titulo' => 'el título',
+        'cuerpo' => 'el texto',
+        'archivo' => 'el archivo',
+        'archivo_pdf' => 'el archivo PDF',
+        'imagen' => 'la imagen',
+        'imagenes' => 'las imágenes',
+        'organismo' => 'el Organismo Certificador',
+        'url_organismo' => 'el enlace del Organismo Certificador',
+        'descripcion' => 'la descripción',
+        'estado' => 'el estado',
+        'prioridad' => 'la prioridad',
+        'nombre_obra' => 'el Nombre de la Obra',
+        'ubicacion_geografica' => 'la Ubicación Geográfica',
+        'categoria' => 'la categoría',
+        'anio_ejecucion' => 'el año de ejecución',
+        'estado_publicacion' => 'el estado de publicación',
+        'nombre_comercial' => 'el Nombre Comercial',
+        'logotipo' => 'el logotipo',
+    ],
+
+];

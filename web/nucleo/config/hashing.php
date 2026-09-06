@@ -15,7 +15,11 @@ return [
     |
     */
 
-    'driver' => 'bcrypt',
+    // Diagrama de Componentes: Argon2id «Entity» — Hashing (fallback bcrypt).
+    // Verificado en el hosting el 06-09-2026: PHP 8.1.32 expone argon2id en
+    // password_algos() y genera hashes de 97 caracteres, dentro del VARCHAR(255)
+    // de administradores.password_hash.
+    'driver' => 'argon2id',
 
     /*
     |--------------------------------------------------------------------------

@@ -41,9 +41,9 @@ class EjemploDatosSeeder extends Seeder
 
         if (Certificado::count() === 0) {
             $certificados = [
-                ['codigo' => 'NCH819', 'nombre' => 'Madera preservada - Pino radiata', 'organismo' => 'INN Chile', 'fecha_emision' => '2024-03-01'],
-                ['codigo' => 'COPROF', 'nombre' => 'Control de calidad de la madera tratada', 'organismo' => 'COPROF Laboratorios', 'fecha_emision' => '2024-05-15'],
-                ['codigo' => 'NCH1198', 'nombre' => 'Madera - Construcciones - Cálculo', 'organismo' => 'INN Chile', 'fecha_emision' => '2024-01-20'],
+                ['nombre' => 'Madera preservada - Pino radiata', 'organismo' => 'INN Chile'],
+                ['nombre' => 'Control de calidad de la madera tratada', 'organismo' => 'COPROF Laboratorios'],
+                ['nombre' => 'Madera - Construcciones - Cálculo', 'organismo' => 'INN Chile'],
             ];
 
             foreach ($certificados as $c) {
@@ -78,11 +78,14 @@ class EjemploDatosSeeder extends Seeder
 
         // RF10 / CU 10.1: la URL de la documentacion tecnica de Conectores Metalicos
         // vive en BD para poder cambiarla sin tocar el codigo.
+        // PROVISIONAL: el valor definitivo lo tiene que confirmar Ingecon. El anterior
+        // (simpsonstrongtie.cl) ni siquiera resuelve en DNS; este si carga y al menos
+        // apunta a documentacion tecnica y no a la portada de un fabricante.
         if (Contenido::where('seccion', 'documentacion')->count() === 0) {
             Contenido::create([
                 'seccion' => 'documentacion',
                 'titulo' => 'Documentacion tecnica - Conectores Metalicos',
-                'enlace' => env('DOCS_CONECTORES_URL', 'https://www.simpsonstrongtie.cl/'),
+                'enlace' => env('DOCS_CONECTORES_URL', 'https://www.strongtie.com/literature'),
                 'activo' => true,
                 'orden' => 0,
                 'id_admin' => $admin->id_admin,
