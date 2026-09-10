@@ -85,7 +85,7 @@ class EjemploDatosSeeder extends Seeder
             Contenido::create([
                 'seccion' => 'documentacion',
                 'titulo' => 'Documentacion tecnica - Conectores Metalicos',
-                'enlace' => env('DOCS_CONECTORES_URL', 'https://www.strongtie.com/literature'),
+                'enlace' => env('DOCS_CONECTORES_URL', 'https://www.strongtie.com/products/connectors'),
                 'activo' => true,
                 'orden' => 0,
                 'id_admin' => $admin->id_admin,
