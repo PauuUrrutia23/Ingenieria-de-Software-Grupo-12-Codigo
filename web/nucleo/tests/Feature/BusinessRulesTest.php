@@ -15,7 +15,6 @@ class BusinessRulesTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** CU1.1 Excepción 2 - mensaje muy corto se rechaza (DS-42, min 10 caracteres) */
     public function test_contact_form_rejects_message_shorter_than_10_characters()
     {
         $response = $this->post('/contacto', [
@@ -30,7 +29,6 @@ class BusinessRulesTest extends TestCase
         $this->assertDatabaseMissing('consultas', ['mensaje' => 'Hola']);
     }
 
-    /** CU1.1 Excepción 3 - máximo 5 consultas pendientes por visitante en 24h */
     public function test_contact_form_blocks_after_5_pending_consultas_in_24h()
     {
         $visitante = Visitante::factory()->create(['email' => 'repetido@example.com']);
@@ -52,7 +50,6 @@ class BusinessRulesTest extends TestCase
         $this->assertEquals(5, Consulta::where('id_visitante', $visitante->id_visitante)->count());
     }
 
-    /** RF50 / CU50.1 - un proyecto en Borrador no debe aparecer en la galería pública */
     public function test_draft_project_is_hidden_from_public_gallery()
     {
         $admin = Administrador::factory()->create();
@@ -66,7 +63,6 @@ class BusinessRulesTest extends TestCase
         $response->assertDontSee('Obra en Borrador Oculta');
     }
 
-    /** RF36 / CU36.1 - el historial de consultas se pagina en bloques de 10 */
     public function test_consultas_are_paginated_in_blocks_of_10()
     {
         $admin = Administrador::factory()->create();
@@ -80,12 +76,11 @@ class BusinessRulesTest extends TestCase
         });
     }
 
-    /** RNF17 - el logotipo de un colaborador no puede superar los 500KB */
     public function test_colaborador_logo_over_500kb_is_rejected()
     {
         Storage::fake('public');
         $admin = Administrador::factory()->create();
-        $logoGrande = UploadedFile::fake()->image('logo.png')->size(600); // KB
+        $logoGrande = UploadedFile::fake()->image('logo.png')->size(600);
 
         $response = $this->actingAs($admin)->post('/admin/colaboradores', [
             'nombre_comercial' => 'Proveedor Test',
@@ -96,7 +91,6 @@ class BusinessRulesTest extends TestCase
         $this->assertDatabaseMissing('colaboradores', ['nombre_comercial' => 'Proveedor Test']);
     }
 
-    /** RT-02 / CU48.1 Excepción 3 - máximo 15 imágenes por proyecto */
     public function test_proyecto_rejects_more_than_15_images()
     {
         Storage::fake('public');

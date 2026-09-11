@@ -1,7 +1,3 @@
-{{-- RNF10: el 419 de Laravel ("Page Expired") es un código HTTP en inglés.
-     La página caduca cuando el formulario queda abierto más que la sesión
-     (SESSION_LIFETIME, 120 minutos): el token CSRF deja de ser válido y el
-     envío se rechaza. Es la protección funcionando, no un error del Usuario. --}}
 <x-app-layout>
     <div class="flex items-center justify-center min-h-[60vh] bg-gray-50">
         <div class="text-center max-w-lg px-6">

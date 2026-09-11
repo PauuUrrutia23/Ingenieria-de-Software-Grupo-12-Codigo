@@ -1,8 +1,6 @@
 <x-admin-layout>
     <x-slot name="header">Panel de Gestión</x-slot>
 
-    {{-- CU 34.5: panel de gestión de contenido multimedia.
-         RF44 / CU 44.1-44.5: la eliminación se confirma en Ventana Modal. --}}
     <div x-data="moduloContenido()">
 
     <p class="text-slate-500 text-sm -mt-2 mb-6">Contenido multimedia de las secciones informativas del sitio público.</p>
@@ -14,7 +12,6 @@
         </div>
     @endif
 
-    {{-- Tabs de secciones --}}
     <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-4">
         @foreach($secciones as $s)
             <a href="{{ route('admin.contenido.index', ['seccion' => $s]) }}"
@@ -55,12 +52,10 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex gap-2 items-center">
-                            {{-- RF43 (actualizar): formulario precargado --}}
                             <a href="{{ route('admin.contenido.edit', $c) }}"
                                class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors" aria-label="Editar">
                                 <i data-lucide="pencil" class="w-4 h-4"></i>
                             </a>
-                            {{-- RF44 / CU 44.1: ícono "Eliminar" + Ventana Modal de confirmación --}}
                             <button type="button"
                                     @click="abrirEliminar({{ $c->id_contenido }}, @js($c->titulo ?? 'este contenido'), @js($nombresSeccion[$seccionActual]))"
                                     class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors" aria-label="Eliminar">
@@ -83,7 +78,6 @@
         </table>
     </div>
 
-    {{-- RF44 / CU 44.1-44.5 - Confirmación previa a eliminar contenido multimedia --}}
     <x-modal show="eliminar" titulo="Eliminar contenido" ancho="max-w-md">
         <p class="text-slate-700 mb-2">
             ¿Confirma que desea eliminar <strong x-text="seleccionado.titulo"></strong>

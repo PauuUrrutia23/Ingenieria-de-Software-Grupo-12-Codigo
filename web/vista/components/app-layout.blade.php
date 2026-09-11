@@ -5,25 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'Ingecon') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <!-- Añadir Lucide icons via CDN o SVG en el código -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="antialiased font-sans text-[#1a1a1a] flex flex-col min-h-screen">
-    
-    <!-- Menú Lateral (RF11 / CU 11.1): ícono dedicado que despliega un panel lateral
-         con enlaces a Proyectos, Certificaciones y Colaboradores. Es independiente de
-         la Barra de Navegación Fija (RF12) que ya vive en el <nav> de abajo. -->
+
     <div x-data="{ isLateralOpen: false }">
       <button @click="isLateralOpen = true" aria-label="Abrir menú lateral"
               class="fixed top-6 left-4 z-[55] bg-white border border-gray-200 shadow-sm rounded-full p-2.5 hover:bg-gray-50 transition-colors">
         <i data-lucide="menu" class="h-5 w-5 text-[#1a1a1a]"></i>
       </button>
 
-      <!-- Fondo oscuro -->
       <div x-show="isLateralOpen" @click="isLateralOpen = false"
            style="display: none;" class="fixed inset-0 bg-black/40 z-[60]"></div>
 
-      <!-- Panel lateral -->
       <aside x-show="isLateralOpen"
              style="display: none;" class="fixed top-0 left-0 h-full w-72 bg-white z-[70] shadow-xl flex flex-col">
         <div class="flex items-center justify-between p-5 border-b border-gray-200">
@@ -46,22 +40,14 @@
       </aside>
     </div>
 
-    <!-- Navbar (RF12 - Barra de Navegación Fija) -->
     <nav x-data="{ isMobileMenuOpen: false }" class="sticky top-0 z-50 bg-white border-b border-gray-200">
       <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
         <div class="flex justify-between items-center h-[88px]">
-          <!-- Logo -->
           <a href="/" class="flex items-center gap-2 cursor-pointer ml-10">
             <i data-lucide="home" class="h-7 w-7 text-[#28533c] mr-2" stroke-width="2.5"></i>
             <span class="font-bold text-xl tracking-tight text-[#1a1a1a]">INGECON</span>
           </a>
 
-          {{-- RF12 / CU 12.1: la Barra de Navegación Fija se desplaza a la sección
-               correspondiente DENTRO de la misma página (anclas del home), no navega
-               a otra página. Las páginas dedicadas con filtros/listados completos
-               (RF19-21, RF24) siguen existiendo, pero se llega a ellas por el Menú
-               Lateral (RF11) o los enlaces "Ver más" de cada sección. --}}
-          <!-- Desktop Menu -->
           <div class="hidden md:flex items-center space-x-8">
             <a href="/" class="text-sm font-semibold pb-1 border-b-2 transition-colors {{ request()->is('/') ? 'text-[#1a1a1a] border-[#28533c]' : 'text-[#4a4a4a] border-transparent hover:text-[#1a1a1a]' }}">
                 Nosotros
@@ -75,9 +61,6 @@
             <a href="/#certificaciones" class="text-sm font-semibold pb-1 border-b-2 border-transparent text-[#4a4a4a] hover:text-[#1a1a1a] transition-colors">
                 Certificaciones
             </a>
-            {{-- RF10 / CU 10.1: enlace del encabezado a la documentación técnica de
-                 Conectores Metálicos. Pasa por el Controlador, que resuelve la URL
-                 vigente desde BD antes de redirigir. --}}
             <a href="{{ route('public.documentacion.conectores') }}" target="_blank" rel="noopener"
                class="text-sm font-semibold pb-1 border-b-2 border-transparent text-[#4a4a4a] hover:text-[#1a1a1a] transition-colors flex items-center gap-1">
                 Conectores Metálicos <i data-lucide="external-link" class="h-3.5 w-3.5"></i>
@@ -88,7 +71,6 @@
             </a>
           </div>
 
-          <!-- Mobile Menu Button -->
           <div class="md:hidden flex items-center">
             <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="text-[#1a1a1a] hover:text-[#28533c] focus:outline-none">
                 <i data-lucide="menu" x-show="!isMobileMenuOpen" class="h-7 w-7"></i>
@@ -98,7 +80,6 @@
         </div>
       </div>
 
-      <!-- Mobile Menu Dropdown -->
       <div x-show="isMobileMenuOpen" style="display: none;" class="md:hidden bg-white border-t border-gray-100 absolute w-full shadow-lg">
         <div class="px-4 pt-2 pb-6 space-y-2">
             <a href="/" class="block w-full text-left px-3 py-3 text-base font-semibold text-[#4a4a4a] hover:text-[#28533c] hover:bg-gray-50 rounded-md">Nosotros</a>
@@ -117,7 +98,6 @@
         {{ $slot }}
     </main>
 
-    <!-- Footer -->
     <footer class="bg-[#28533c] text-white py-12">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8 flex flex-col items-center">
             <div class="flex items-center mb-4">

@@ -12,7 +12,6 @@ class RecuperacionPasswordFactory extends Factory
     public function definition()
     {
         return [
-            // TODO
         ];
     }
 }

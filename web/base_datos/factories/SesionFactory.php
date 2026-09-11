@@ -12,7 +12,6 @@ class SesionFactory extends Factory
     public function definition()
     {
         return [
-            // TODO
         ];
     }
 }

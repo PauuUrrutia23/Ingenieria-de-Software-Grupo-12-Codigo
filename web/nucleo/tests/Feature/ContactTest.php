@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,7 +18,7 @@ class ContactTest extends TestCase
             'apellido' => 'Pérez',
             'email' => 'juan@example.com',
             'mensaje' => 'Hola, me interesa una cotización.',
-            'acepta_terminos' => 'on' // checkbox
+            'acepta_terminos' => 'on'
         ]);
 
         $response->assertRedirect('/#contacto');

@@ -1,19 +1,5 @@
 <?php
 
-/**
- * Prepara la base de datos MySQL antes de las migraciones.
- *
- * Lee las credenciales del .env de web/nucleo/ y, si la base indicada en
- * DB_DATABASE todavia no existe, la crea con utf8mb4_unicode_ci (la misma
- * colacion que declara config/database.php).
- *
- * No pide ni guarda contrasenas: usa las que ya estan en el .env. Si la
- * conexion falla, explica en una linea que hay que corregir.
- *
- * Uso:  php scripts/preparar-bd.php  [ruta-al-.env]
- * Codigos de salida: 0 todo listo / 1 hay algo que corregir.
- */
-
 $env = $argv[1] ?? __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR
     . 'web' . DIRECTORY_SEPARATOR . 'nucleo' . DIRECTORY_SEPARATOR . '.env';
 
@@ -22,7 +8,6 @@ if (!is_file($env)) {
     exit(1);
 }
 
-// --- leer el .env sin dependencias ---
 $cfg = [];
 foreach (file($env, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $linea) {
     $linea = trim($linea);
@@ -58,7 +43,6 @@ if ($base === '') {
 }
 
 try {
-    // Conexion al servidor, sin nombre de base: la base puede no existir todavia.
     $pdo = new PDO("mysql:host=$host;port=$puerto", $usuario, $clave, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_TIMEOUT => 10,
@@ -86,8 +70,6 @@ if ($existia) {
     exit(0);
 }
 
-// El nombre viene del .env local, no de una entrada del Usuario; aun asi se
-// acota a lo que MySQL admite como identificador antes de interpolarlo.
 if (!preg_match('/^[A-Za-z0-9_]+$/', $base)) {
     fwrite(STDERR, "  [ERROR] El nombre '$base' no es valido para una base de datos.\n");
     fwrite(STDERR, "          Use solo letras, numeros y guion bajo en DB_DATABASE.\n");

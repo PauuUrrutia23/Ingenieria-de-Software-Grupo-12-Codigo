@@ -12,14 +12,12 @@ class ContenidoManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** CU34.5 - el guest no puede acceder al Panel de gestión de contenido */
     public function test_guest_cannot_access_content_panel()
     {
         $response = $this->get('/admin/contenido');
         $response->assertRedirect('/login');
     }
 
-    /** CU43.2 - agregar una pregunta frecuente */
     public function test_admin_can_add_faq_content()
     {
         $admin = Administrador::factory()->create();
@@ -37,7 +35,6 @@ class ContenidoManagementTest extends TestCase
         ]);
     }
 
-    /** CU43.6 - actualizar contenido existente */
     public function test_admin_can_update_content()
     {
         $admin = Administrador::factory()->create();
@@ -55,7 +52,6 @@ class ContenidoManagementTest extends TestCase
         $this->assertDatabaseHas('contenidos', ['id_contenido' => $contenido->id_contenido, 'titulo' => 'Pregunta editada']);
     }
 
-    /** CU44.1 - eliminar contenido con confirmación */
     public function test_admin_can_delete_content()
     {
         $admin = Administrador::factory()->create();

@@ -1,19 +1,6 @@
 <?php
 
-/**
- * Mensajes de validación en español (RNF10: "manejar errores mediante Mensajes
- * del Sistema claros, evitando mostrar información técnica al Usuario").
- *
- * Sin este archivo Laravel responde en inglés, y como los controladores sí
- * declaran los nombres de campo en español salían frases mezcladas del tipo
- * "The la nueva contraseña field must be at least 8 characters".
- *
- * Cubre las reglas que el proyecto usa; cualquier otra cae al inglés por el
- * fallback_locale de config/app.php.
- */
-
 return [
-
     'accepted' => 'Debe aceptar :attribute para continuar.',
     'active_url' => 'Debe ingresar una dirección web válida en :attribute.',
     'after' => 'Debe ingresar en :attribute una fecha posterior a :date.',
@@ -74,22 +61,16 @@ return [
     'uploaded' => 'No se pudo subir :attribute. Verifique el tamaño del archivo.',
     'url' => 'Debe ingresar una dirección web válida en :attribute.',
 
-    /*
-    |--------------------------------------------------------------------------
-    | Mensajes propios por campo y regla
-    |--------------------------------------------------------------------------
-    */
-
     'custom' => [
         'password' => [
             'regex' => 'La nueva contraseña debe incluir al menos una mayúscula, una minúscula, un número y un carácter especial.',
         ],
-        // CU 4.1: sin aceptar los documentos legales no se envía la Consulta.
+
         'acepta_terminos' => [
             'required' => 'Debe aceptar los Términos, Condiciones y Políticas de Privacidad para enviar la Consulta.',
             'accepted' => 'Debe aceptar los Términos, Condiciones y Políticas de Privacidad para enviar la Consulta.',
         ],
-        // Evita el "…válida en el correo electrónico", que repite el sujeto.
+
         'email' => [
             'email' => 'Debe ingresar una dirección de correo electrónico válida.',
         ],
@@ -97,12 +78,6 @@ return [
             'email' => 'Debe ingresar una dirección de correo electrónico válida.',
         ],
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Nombres de campo tal como los ve el Usuario
-    |--------------------------------------------------------------------------
-    */
 
     'attributes' => [
         'nombre' => 'el nombre',
@@ -133,5 +108,4 @@ return [
         'nombre_comercial' => 'el Nombre Comercial',
         'logotipo' => 'el logotipo',
     ],
-
 ];

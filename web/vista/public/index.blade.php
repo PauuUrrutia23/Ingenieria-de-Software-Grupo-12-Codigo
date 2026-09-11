@@ -1,10 +1,9 @@
 <x-app-layout>
     <div class="w-full">
-      <!-- Hero Section -->
       <section class="relative bg-[#4a504c] text-white overflow-hidden flex items-center min-h-[500px]">
         <div class="absolute inset-0 bg-gradient-to-r from-[#3a413d] to-[#7a7f79] opacity-80 mix-blend-multiply"></div>
         <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-white/20 to-transparent"></div>
-        
+
         <div class="relative max-w-[1200px] mx-auto px-4 lg:px-8 py-20 md:py-32 w-full">
           <div class="max-w-2xl">
             <p class="text-[#c66f4b] font-bold text-xs tracking-[0.2em] uppercase mb-5 flex items-center">
@@ -15,19 +14,15 @@
               Viviendas y galpones en madera, fabricados en serie
             </h1>
 
-            {{-- RNF11: los años de experiencia se calculan dinámicamente desde 1994,
-                 nunca se escriben a mano. --}}
             @php $aniosExperiencia = now()->year - 1994; @endphp
             <p class="text-[#c66f4b] font-bold text-sm tracking-wide mb-6 flex items-center">
               <i data-lucide="award" class="w-5 h-5 mr-2"></i>
               {{ $aniosExperiencia }} años de experiencia — desde 1994
             </p>
 
-            <!-- Desktop Subtitle -->
             <p class="hidden md:block text-lg text-gray-200 mb-10 max-w-xl font-medium">
               Producimos volumen para constructoras e inmobiliarias, con la calidad de cada unidad y certificaciones que suman valor.
             </p>
-            <!-- Mobile Subtitle -->
             <p class="md:hidden text-lg text-gray-200 mb-10 font-medium">
               Producimos volumen para constructoras e inmobiliarias.
             </p>
@@ -44,9 +39,6 @@
         </div>
       </section>
 
-      {{-- RF12 / CU 12.1: la Barra de Navegación Fija se desplaza a esta sección
-           dentro de la misma página (ancla "#productos"), no navega a otra página. --}}
-      <!-- Production Lines Section -->
       <section id="productos" class="py-24 bg-white scroll-mt-[88px]">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-14 gap-4">
@@ -60,7 +52,6 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Item 1 -->
             <a href="/producto" class="group cursor-pointer flex flex-col h-full block">
               <div class="flex items-center justify-center text-[#99968f] text-xs font-medium tracking-widest uppercase bg-[#e8e6df] w-full h-[220px] rounded-t-lg mb-0" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)">FOTOGRAFÍA</div>
               <div class="border border-t-0 border-[#e8e6df] p-8 rounded-b-lg flex-grow flex flex-col">
@@ -71,8 +62,7 @@
                 </span>
               </div>
             </a>
-            
-            <!-- Item 2 -->
+
             <a href="/producto" class="group cursor-pointer flex flex-col h-full block">
               <div class="flex items-center justify-center text-[#99968f] text-xs font-medium tracking-widest uppercase bg-[#e8e6df] w-full h-[220px] rounded-t-lg mb-0" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)">FOTOGRAFÍA</div>
               <div class="border border-t-0 border-[#e8e6df] p-8 rounded-b-lg flex-grow flex flex-col">
@@ -83,8 +73,7 @@
                 </span>
               </div>
             </a>
-            
-            <!-- Item 3 -->
+
             <a href="/producto" class="group cursor-pointer flex flex-col h-full block">
               <div class="flex items-center justify-center text-[#99968f] text-xs font-medium tracking-widest uppercase bg-[#e8e6df] w-full h-[220px] rounded-t-lg mb-0" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)">FOTOGRAFÍA</div>
               <div class="border border-t-0 border-[#e8e6df] p-8 rounded-b-lg flex-grow flex flex-col">
@@ -99,7 +88,6 @@
         </div>
       </section>
 
-      <!-- Process Section -->
       <section class="py-24 bg-[#f5f3ec]">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
           <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">NUESTRO PROCESO</p>
@@ -121,7 +109,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div>
               <div class="flex items-center justify-center text-[#99968f] text-xs font-medium tracking-widest uppercase bg-[#e8e6df] w-full h-[180px] rounded-lg mb-6" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)">FOTOGRAFÍA DE LA ETAPA</div>
               <div class="flex items-start mb-3 gap-4">
@@ -132,7 +120,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div>
               <div class="flex items-center justify-center text-[#99968f] text-xs font-medium tracking-widest uppercase bg-[#e8e6df] w-full h-[180px] rounded-lg mb-6" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)">FOTOGRAFÍA DE LA ETAPA</div>
               <div class="flex items-start mb-3 gap-4">
@@ -147,11 +135,6 @@
         </div>
       </section>
 
-      {{-- RF12 / CU 12.1: ancla "#proyectos" para el desplazamiento desde la
-           Barra de Navegación Fija. La galería completa con filtros (RF19-21)
-           sigue viviendo en /proyectos, alcanzable desde el Menú Lateral (RF11)
-           o el enlace "Ver galería completa" de más abajo. --}}
-      <!-- Recent Projects Section -->
       <section id="proyectos" class="py-24 bg-white scroll-mt-[88px]">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-14 gap-4">
@@ -192,10 +175,6 @@
         </div>
       </section>
 
-      {{-- RF12 / CU 12.1: ancla "#certificaciones". El listado completo (RF24)
-           sigue en /certificaciones, alcanzable desde el Menú Lateral (RF11)
-           o el enlace "Ver certificados" de esta sección. --}}
-      <!-- Certifications Section -->
       <section id="certificaciones" class="py-24 bg-[#29543d] text-white scroll-mt-[88px]">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
@@ -232,7 +211,6 @@
         </div>
       </section>
 
-      <!-- Proveedores Estratégicos Section -->
       <section class="py-24 bg-white text-center">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
           <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">PROVEEDORES</p>
@@ -249,7 +227,6 @@
         </div>
       </section>
 
-      <!-- Contact Section -->
       <section id="contacto" class="py-24 bg-white border-t border-gray-100 scroll-mt-[88px]">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
           <div class="bg-[#f5f3ec] rounded-2xl p-8 md:p-14">
@@ -257,7 +234,7 @@
               <div>
                 <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">ESCRÍBANOS</p>
                 <h2 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-6 tracking-tight">Cuéntenos su proyecto</h2>
-                
+
                 @if(session('contacto_success'))
                     <div class="bg-green-50 text-green-700 p-4 rounded-md mb-6 font-medium border border-green-200">
                         {{ session('contacto_success') }}
@@ -278,7 +255,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="bg-transparent" x-data="formularioContacto()">
                 <form x-ref="form" action="/contacto" method="POST" class="space-y-6"
                       @submit.prevent="pedirConfirmacion()">
@@ -310,8 +287,6 @@
                     @error('mensaje')<p class="text-sm text-red-600 mt-1.5 font-medium">{{ $message }}</p>@enderror
                   </div>
 
-                  {{-- RF04 / CU 4.1: marcar la casilla habilita "Enviar"; desmarcarla vuelve
-                       a deshabilitarlo (Excepción 2). El Controlador igual lo valida. --}}
                   <div>
                     <div class="flex items-center"
                          :class="resaltarTerminos ? 'ring-2 ring-red-400 rounded p-2 -m-2' : ''">
@@ -325,7 +300,6 @@
                   </div>
 
                   <div class="flex flex-col sm:flex-row gap-3">
-                    {{-- RF08 / CU 8.1: vacía todos los campos y restablece la casilla. --}}
                     <button type="button" @click="limpiar()" :disabled="enviando"
                             class="sm:w-40 border border-[#28533c] text-[#28533c] px-6 py-4 rounded text-sm font-semibold hover:bg-[#eaf0ec] transition-colors disabled:opacity-50">
                       Limpiar
@@ -340,7 +314,6 @@
                   </p>
                 </form>
 
-                {{-- RF05 / CU 5.1 - Ventana Modal de confirmación previa al envío --}}
                 <div x-show="confirmando" style="display:none;"
                      class="fixed inset-0 z-[80] flex items-center justify-center px-4"
                      @keydown.escape.window="cancelarEnvio()">
@@ -364,8 +337,6 @@
                   </div>
                 </div>
 
-                {{-- RF09 / CU 9.1 - Ventana Modal de confirmación de envío exitoso.
-                     Solo se renderiza si el Controlador verificó la ID en BD. --}}
                 @if(session('consulta_id'))
                   <div x-data="{ exito: true }" x-show="exito" style="display:none;"
                        class="fixed inset-0 z-[80] flex items-center justify-center px-4"
@@ -402,7 +373,6 @@
           enviando: false,
 
           init() {
-            // Rehidrata los valores devueltos por el servidor tras un error de validación.
             this.$nextTick(() => {
               const f = this.$refs.form;
               this.campos.nombre = f.nombre.value;
@@ -412,15 +382,13 @@
             });
           },
 
-          // RF05 / CU 5.1
           pedirConfirmacion() {
-            // CU 4.1 Excepción 3: intento de envío sin aceptar los términos.
             if (!this.aceptaTerminos) {
               this.resaltarTerminos = true;
               setTimeout(() => (this.resaltarTerminos = false), 2500);
               return;
             }
-            // CU 5.1 Excepción 1: con errores de validación pendientes no se abre el modal.
+
             if (!this.$refs.form.checkValidity()) {
               this.$refs.form.reportValidity();
               return;
@@ -428,7 +396,6 @@
             this.confirmando = true;
           },
 
-          // CU 5.1 Excepción 2: cerrar sin elegir equivale a cancelar; el formulario se conserva.
           cancelarEnvio() {
             this.confirmando = false;
           },
@@ -439,12 +406,9 @@
             this.$refs.form.submit();
           },
 
-          // RF08 / CU 8.1
           limpiar() {
-            // Excepción 2: si hay un envío en curso, se ignora.
             if (this.enviando) return;
-            // x-model gobierna los inputs: limpiar el estado vacía los campos.
-            // No se usa form.reset() porque restauraría los valores de old().
+
             this.campos = { nombre: '', apellido: '', email: '', mensaje: '' };
             this.aceptaTerminos = false;
           },

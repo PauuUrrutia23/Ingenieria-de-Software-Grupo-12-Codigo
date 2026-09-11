@@ -1,8 +1,6 @@
 <x-admin-layout>
     <x-slot name="header">Módulo comercial</x-slot>
 
-    {{-- CU 34.2 / CU 36.1: historial de Consultas en bloques de 10 (RF36).
-         RF39 abre el detalle completo en Ventana Modal y RF41 cambia el estado allí mismo. --}}
     <div x-data="moduloConsultas()">
 
         <p class="text-slate-500 text-sm -mt-2 mb-6">Historial de consultas recibidas desde el Formulario de Contacto.</p>
@@ -47,7 +45,6 @@
                             @endphp
                             <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $badge[0] }}">{{ $badge[1] }}</span>
                         </td>
-                        {{-- RF40: la prioridad se asigna en la Ventana Modal; acá solo se muestra. --}}
                         <td class="px-6 py-4">
                             @php
                                 $prio = match($c->prioridad) {
@@ -77,7 +74,6 @@
                                     'responsable' => $c->adminResponsable->correo ?? null,
                                 ];
                             @endphp
-                            {{-- RF39 / CU 39.1: contenido completo en Ventana Modal --}}
                             <button type="button" class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-slate-900"
                                     @click="abrirDetalle({{ Js::from($detalleConsulta) }})">
                                 <i data-lucide="eye" class="w-4 h-4 text-slate-400"></i>
@@ -86,7 +82,6 @@
                         </td>
                     </tr>
                     @empty
-                    {{-- CU 36.1 Excepción 2 / CU 34.2 Excepción 3 --}}
                     <tr><td colspan="5" class="px-6 py-16 text-center">
                         <div class="flex flex-col items-center">
                             <i data-lucide="inbox" class="w-12 h-12 text-slate-300 mb-3"></i>
@@ -96,11 +91,9 @@
                     @endforelse
                 </tbody>
             </table>
-            {{-- RF36 / CU 36.2: controles de paginación en bloques de 10 --}}
             <div class="px-6 py-4 border-t border-slate-100">{{ $consultas->withQueryString()->links() }}</div>
         </div>
 
-        {{-- RF39 / CU 39.1 + RF41 / CU 41.1 - Detalle y gestión en Ventana Modal --}}
         <x-modal show="detalle" titulo="Detalle de la Consulta" ancho="max-w-2xl">
             <div class="space-y-6">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
@@ -129,7 +122,6 @@
                     <p class="text-slate-700 whitespace-pre-wrap bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm" x-text="c.mensaje"></p>
                 </div>
 
-                {{-- RF41 / CU 41.1: selector de estado dentro del modal de detalle --}}
                 <form :action="'{{ url('admin/consultas') }}/' + c.id" method="POST"
                       class="border-t border-slate-100 pt-5 space-y-4">
                     @csrf @method('PUT')

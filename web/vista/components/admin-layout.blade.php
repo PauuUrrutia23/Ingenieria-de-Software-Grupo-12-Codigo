@@ -7,13 +7,6 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-{{--
-    Menú Lateral del Panel de Gestión (RF34 / CU 34.1): los 5 accesos exigidos
-    ("Módulo comercial", "Gestión de proyectos", "Colaboradores", "Panel de
-    gestión", "Certificados") con el rótulo textual exacto del requerimiento.
-    Paleta y componentes (slate, cards rounded-2xl, iconos atenuados) tomados
-    como base visual del panel de administración de referencia del proyecto.
---}}
 <body class="h-full antialiased bg-slate-50 text-slate-800 flex">
 
     @php
@@ -32,7 +25,6 @@
     @endphp
 
     <aside class="w-64 h-screen sticky top-0 bg-white border-r border-slate-100 flex flex-col shrink-0">
-        {{-- Marca --}}
         <div class="flex items-center gap-2.5 px-5 py-5 border-b border-slate-100">
             <div class="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center shrink-0" aria-hidden="true">
                 <span class="text-white text-xs font-black tracking-tighter">IC</span>
@@ -43,7 +35,6 @@
             </div>
         </div>
 
-        {{-- Accesos del Menú Lateral (RF34) --}}
         <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto" aria-label="Menú del panel de gestión">
             @foreach ($items as $item)
                 <a href="{{ $item['href'] }}"
@@ -55,7 +46,6 @@
             @endforeach
         </nav>
 
-        {{-- Cuenta --}}
         <div class="px-3 py-4 border-t border-slate-100 space-y-0.5">
             <p class="px-3.5 text-xs text-slate-400 truncate mb-1" title="{{ Auth::user()->correo }}">{{ Auth::user()->correo }}</p>
             <a href="{{ route('admin.password.edit') }}"
@@ -75,7 +65,6 @@
         </div>
     </aside>
 
-    {{-- Contenido Principal --}}
     <main class="flex-1 min-w-0 overflow-y-auto">
         <div class="max-w-6xl mx-auto px-6 sm:px-10 py-8">
             <header class="mb-8">

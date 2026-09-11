@@ -7,14 +7,6 @@ use App\Models\Colaborador;
 use App\Models\Contenido;
 use App\Models\Proyecto;
 
-/**
- * InstitucionalCtrl («Control») — Diagrama de Componentes: "Páginas institucionales".
- *
- * Todo el contenido público que no es el formulario de contacto ni la galería de
- * proyectos con filtros (esa vive en ProyectoController): inicio, línea de
- * producto, colaboradores, términos y el enlace a documentación
- * técnica externa.
- */
 class InstitucionalCtrl extends Controller
 {
     private const SECCION_DOCUMENTACION = 'documentacion';
@@ -23,7 +15,6 @@ class InstitucionalCtrl extends Controller
     {
     }
 
-    /** RF12 / CU 12.1 - Página de inicio con las secciones de la Barra de Navegación Fija. */
     public function home()
     {
         $proyectosRecientes = $this->db->query(Proyecto::class)
@@ -43,7 +34,6 @@ class InstitucionalCtrl extends Controller
         ]);
     }
 
-    /** RF10 - Ficha de Conectores Metálicos. */
     public function producto()
     {
         return view('public.producto', [
@@ -51,22 +41,15 @@ class InstitucionalCtrl extends Controller
         ]);
     }
 
-    /** CU 2.1 - Términos y Condiciones y Política de Privacidad. */
     public function terminos()
     {
         return view('legal.terminos');
     }
 
-    /**
-     * RF10 / CU 10.1 - Redirección a la documentación técnica de Conectores
-     * Metálicos. La URL se resuelve desde BD (tabla `contenidos`, sección
-     * "documentacion"), no está fija en código.
-     */
     public function documentacionConectores()
     {
         $url = $this->urlDocumentacionVigente();
 
-        // Excepción 2: URL registrada en BD no disponible o eliminada.
         if (!$url) {
             return redirect()->route('public.producto')->with(
                 'doc_no_disponible',
@@ -77,7 +60,6 @@ class InstitucionalCtrl extends Controller
         return redirect()->away($url);
     }
 
-    /** Resuelve la URL vigente de documentación; null si no hay ninguna registrada. */
     private function urlDocumentacionVigente(): ?string
     {
         try {
@@ -87,7 +69,6 @@ class InstitucionalCtrl extends Controller
                 ->orderBy('id_contenido', 'desc')
                 ->first();
         } catch (\Throwable $e) {
-            // Excepción 2: falla la consulta a BD. No se propaga el error técnico (RNF10).
             return null;
         }
 
@@ -96,7 +77,6 @@ class InstitucionalCtrl extends Controller
         return ($url && $url !== '#') ? $url : null;
     }
 
-    /** RF11 / CU 11.2 - Página pública de colaboradores (logos y nombres desde BD). */
     public function colaboradores()
     {
         $colaboradores = $this->db->query(Colaborador::class)->orderBy('nombre_comercial')->get();

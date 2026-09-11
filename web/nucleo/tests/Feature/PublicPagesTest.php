@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,7 +23,6 @@ class PublicPagesTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** RF24 / CU 24.1 - lista todos los certificados vigentes, no solo un top-3 */
     public function test_certificaciones_page_lists_all_vigentes()
     {
         Certificado::factory()->count(5)->create(['estado' => 'vigente']);
@@ -34,7 +34,6 @@ class PublicPagesTest extends TestCase
         $response->assertDontSee('Certificado Vencido');
     }
 
-    /** RF11 / CU 11.2 - página pública de colaboradores */
     public function test_colaboradores_page_lists_registered_colaboradores()
     {
         Colaborador::factory()->create(['nombre_comercial' => 'Proveedor Ejemplo']);
@@ -45,7 +44,6 @@ class PublicPagesTest extends TestCase
         $response->assertSee('Proveedor Ejemplo');
     }
 
-    /** CU 11.2 Excepción 2 - sin colaboradores registrados, muestra estado vacío */
     public function test_colaboradores_page_shows_empty_state()
     {
         $response = $this->get('/colaboradores');

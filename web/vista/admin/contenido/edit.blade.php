@@ -6,7 +6,6 @@
             @csrf
             @method('PUT')
 
-            {{-- Mismas etiquetas y obligatoriedad que en el alta (CU 43.6 a CU 43.9). --}}
             @php
                 $etiquetaTitulo = [
                     'faq' => 'Pregunta',

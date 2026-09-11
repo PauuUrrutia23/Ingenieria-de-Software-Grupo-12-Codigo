@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Certificado;
@@ -8,20 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
-/**
- * CertificadoController («Control») — Diagrama de Componentes: "Certificaciones".
- *
- * Único punto de entrada de las Certificaciones, tanto del lado público como del
- * Panel de Gestión, tal como lo modelan los Diagramas de Secuencia:
- *
- *   - Incremento 1: CU 24.1 (listado público), CU 25.1 (descarga del PDF) y
- *     CU 25.2 (previsualización en el navegador).
- *   - Incremento 2: CU 26.1 (registro de una nueva Certificación) y CU 34.6
- *     (módulo de Certificaciones dentro del Panel de Gestión).
- *
- * Las acciones del Panel pasan además por CheckAdminSession (C_AdminAuth en los
- * diagramas); las públicas no. Toda la persistencia va por DBRouterController.
- */
 class CertificadoController extends Controller
 {
     public function __construct(
@@ -30,11 +17,6 @@ class CertificadoController extends Controller
     ) {
     }
 
-    // ==================================================================
-    // Sitio público (RF24, RF25 / CU 24.1, CU 25.1)
-    // ==================================================================
-
-    /** RF24 / CU 24.1 - Listado público de certificaciones vigentes. */
     public function listadoPublico()
     {
         $certificados = $this->db->query(Certificado::class)->where('estado', 'vigente')->orderBy('nombre')->get();
@@ -42,26 +24,14 @@ class CertificadoController extends Controller
         return view('public.certificaciones', compact('certificados'));
     }
 
-    /**
-     * RF25 / CU 25.1 - Descarga del PDF del certificado.
-     *
-     * No se enlaza el archivo directo desde storage: pasa por el Controlador para
-     * poder resolver las excepciones del caso de uso y, sobre todo, para generar
-     * un nombre de archivo seguro cuando el registro no tiene uno válido
-     * (CU 25.1 Excepción 4).
-     */
     public function descargar(Certificado $certificado)
     {
-        // CU 25.2 Excepciones 1 y 2: el certificado no tiene PDF cargado, o el archivo
-        // referenciado en BD ya no está en disco.
         if (!$certificado->archivo_pdf || !$this->storage->existe($certificado->archivo_pdf)) {
             return redirect()
                 ->route('public.certificaciones')
                 ->with('doc_no_disponible', 'El documento solicitado no está disponible por el momento.');
         }
 
-        // CU 25.1 Excepción 4: si el nombre almacenado no sirve, se construye uno seguro
-        // a partir del Nombre de la Normativa (RF26: el formulario no captura ningún código).
         $nombreSeguro = Str::slug($certificado->nombre);
         if ($nombreSeguro === '') {
             $nombreSeguro = 'certificado-' . $certificado->id_certificado;
@@ -69,10 +39,6 @@ class CertificadoController extends Controller
 
         return $this->storage->descargar($certificado->archivo_pdf, $nombreSeguro . '.pdf');
     }
-
-    // ==================================================================
-    // Panel de Gestión (RF26 / CU 26.1, CU 34.6)
-    // ==================================================================
 
     public function index()
     {

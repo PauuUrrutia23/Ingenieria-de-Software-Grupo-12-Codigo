@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -16,7 +17,7 @@ class UpdateProyectoRequest extends FormRequest
             'longitud' => 'nullable|numeric|between:-180,180',
             'anio_ejecucion' => 'required|integer|min:1990|max:' . (date('Y') + 1),
             'categoria' => 'required|string|max:50',
-            // RF50 / CU 50.1: el proyecto solo tiene dos estados de visibilidad.
+
             'estado_publicacion' => 'required|in:borrador,publicado',
             'imagenes' => 'nullable|array|max:15',
             'imagenes.*' => 'image|mimes:jpeg,png,webp,jpg|max:5120',

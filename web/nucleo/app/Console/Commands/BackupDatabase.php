@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
@@ -27,7 +28,6 @@ class BackupDatabase extends Command
             copy($dbPath, $path . '.sqlite');
             $this->info("Backup de SQLite creado: {$filename}.sqlite");
         } else {
-            // Asumimos MySQL
             $dbName = config('database.connections.mysql.database');
             $user = config('database.connections.mysql.username');
             $password = config('database.connections.mysql.password');

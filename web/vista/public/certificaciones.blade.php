@@ -1,6 +1,5 @@
 <x-app-layout>
     <div class="w-full bg-[#f5f3ec] min-h-screen pb-24">
-      <!-- Header -->
       <div class="bg-white border-b border-gray-200">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8 py-16">
           <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">MARCO TÉCNICO</p>
@@ -12,7 +11,6 @@
       </div>
 
       <div class="max-w-[1200px] mx-auto px-4 lg:px-8 mt-12">
-        {{-- CU 25.1 / CU 25.2: el documento solicitado no está disponible. --}}
         @if(session('doc_no_disponible'))
           <div class="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded font-medium text-sm mb-6">
             {{ session('doc_no_disponible') }}
@@ -46,9 +44,6 @@
                     </a>
                   @endif
 
-                  {{-- RF25: si el certificado no tiene documento, la opción no se muestra.
-                       CU 25.2 previsualiza en nueva pestaña; CU 25.1 descarga el archivo
-                       con un nombre seguro generado por el Controlador. --}}
                   @if($cert->archivo_pdf)
                     <a href="{{ Storage::url($cert->archivo_pdf) }}" target="_blank" rel="noopener"
                        class="flex items-center text-sm font-semibold text-[#1a1a1a] hover:underline">

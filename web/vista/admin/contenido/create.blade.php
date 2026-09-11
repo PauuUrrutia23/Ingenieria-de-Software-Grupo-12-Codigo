@@ -6,8 +6,6 @@
             @csrf
             <input type="hidden" name="seccion" value="{{ $seccion }}">
 
-            {{-- Cada sub-caso de RF43 nombra sus campos distinto y define cuáles son
-                 obligatorios (CU 43.2 a CU 43.5). El Controlador valida lo mismo. --}}
             @php
                 $etiquetaTitulo = [
                     'faq' => 'Pregunta',

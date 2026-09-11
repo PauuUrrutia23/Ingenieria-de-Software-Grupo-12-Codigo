@@ -1,12 +1,7 @@
 <x-app-layout>
-    {{-- RF27 / CU 27.1: la autenticación se presenta como Ventana Modal sobre la
-         interfaz pública, no como una página de formulario suelta. El modal nace
-         abierto porque el Visitante llegó aquí pidiendo autenticarse; cerrarlo lo
-         devuelve al inicio. --}}
     <div class="relative min-h-[70vh] bg-[#f5f3ec]"
          x-data="{ acceso: true, olvide: false }">
 
-        {{-- Telón de fondo: la interfaz pública sigue presente detrás del modal. --}}
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8 py-24 text-center">
             <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">ACCESO INTERNO</p>
             <h1 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] tracking-tight mb-4">Panel de Gestión</h1>
@@ -17,7 +12,6 @@
             </button>
         </div>
 
-        {{-- Ventana Modal de autenticación (RF27 / CU 27.1) --}}
         <div x-show="acceso" style="display:none;"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
@@ -53,8 +47,6 @@
                         {{ session('success') }}
                     </div>
                 @endif
-                {{-- CU 27.2 Excepción 3 / CU 33.1 Excepción 2: mensaje genérico, o el
-                     tiempo restante si la cuenta está bloqueada. --}}
                 @if ($errors->any())
                     <div class="bg-red-50 text-red-700 p-4 rounded-xl mb-6 text-sm font-medium border border-red-200">
                         {{ $errors->first() }}
@@ -74,7 +66,6 @@
                                class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300" placeholder="••••••••">
                     </div>
                     <div class="text-right">
-                        {{-- RF29 / CU 29.1 --}}
                         <button type="button" @click="acceso = false; olvide = true" class="text-sm font-semibold text-slate-600 hover:text-slate-900 hover:underline">¿Olvidó su contraseña?</button>
                     </div>
                     <div>
@@ -86,7 +77,6 @@
             </div>
         </div>
 
-        {{-- RF29 / CU 29.1 - Ventana Modal de recuperación de contraseña --}}
         <div x-show="olvide" style="display:none;"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"

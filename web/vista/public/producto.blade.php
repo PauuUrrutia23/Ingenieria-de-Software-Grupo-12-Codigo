@@ -1,6 +1,5 @@
 <x-app-layout>
     <div class="w-full bg-white">
-        <!-- Breadcrumbs -->
         <div class="border-b border-gray-200">
             <div class="max-w-[1200px] mx-auto px-4 lg:px-8 py-5">
                 <div class="text-[13px] font-medium text-[#666666] flex items-center space-x-2">
@@ -11,7 +10,6 @@
             </div>
         </div>
 
-        {{-- CU 10.1 Excepción 2: la URL de documentación no está disponible en BD. --}}
         @if(session('doc_no_disponible'))
             <div class="max-w-[1200px] mx-auto px-4 lg:px-8 pt-6">
                 <div class="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded font-medium text-sm">
@@ -20,11 +18,9 @@
             </div>
         @endif
 
-        <!-- Main Product Info -->
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8 py-14 lg:py-20">
             <div class="flex flex-col lg:flex-row gap-16">
 
-                <!-- Left: Images -->
                 <div class="w-full lg:w-1/2">
                     <div class="flex items-center justify-center text-[#99968f] text-xs font-medium tracking-widest uppercase bg-[#e8e6df] w-full aspect-[4/3] rounded-lg mb-4"
                          style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)">
@@ -37,7 +33,6 @@
                     </div>
                 </div>
 
-                <!-- Right: Details -->
                 <div class="w-full lg:w-1/2 pt-2">
                     <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-4">PRODUCTO</p>
                     <h1 class="text-3xl md:text-[40px] font-bold text-[#1a1a1a] mb-6 tracking-tight">Conectores metálicos</h1>
@@ -88,7 +83,6 @@
             </div>
         </div>
 
-        <!-- Usage Section -->
         <div class="bg-[#f5f3ec] py-24">
             <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
                 <h2 class="text-3xl font-bold text-[#1a1a1a] mb-12 tracking-tight">Dónde se usan</h2>
@@ -121,7 +115,6 @@
             </div>
         </div>
 
-        <!-- Technical Documentation CTA (RF10) -->
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8 py-24">
             <div class="bg-[#3a614b] rounded-xl p-10 md:p-16 flex flex-col md:flex-row items-center justify-between text-white relative overflow-hidden">
                 <div class="relative z-10 mb-8 md:mb-0 md:mr-8 w-full md:w-2/3">

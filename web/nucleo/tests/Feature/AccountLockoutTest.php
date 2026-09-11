@@ -14,7 +14,6 @@ class AccountLockoutTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** RF33 / CU33.1 - 5 intentos fallidos bloquean la cuenta 60 minutos y avisan por correo */
     public function test_account_locks_after_5_failed_attempts()
     {
         Mail::fake();
@@ -31,7 +30,6 @@ class AccountLockoutTest extends TestCase
         Mail::assertSent(CuentaBloqueadaMail::class);
     }
 
-    /** CU27.1 Excepción 2 - una cuenta bloqueada rechaza incluso la contraseña correcta */
     public function test_locked_account_rejects_correct_password()
     {
         $admin = Administrador::factory()->create([
@@ -46,7 +44,6 @@ class AccountLockoutTest extends TestCase
         $response->assertSessionHasErrors();
     }
 
-    /** CU27.1 - un bloqueo ya vencido se limpia y permite iniciar sesión de nuevo */
     public function test_expired_lockout_allows_login_again()
     {
         $admin = Administrador::factory()->create([

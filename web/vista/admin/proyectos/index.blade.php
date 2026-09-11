@@ -1,12 +1,10 @@
 <x-admin-layout>
     <x-slot name="header">Gestión de Proyectos</x-slot>
 
-    {{-- CU 48.3 / CU 34.3: listado del módulo con el estado de visibilidad de cada obra. --}}
     <div x-data="moduloProyectos()">
 
         <div class="flex items-center justify-between mb-8 -mt-2">
             <p class="text-slate-500 text-sm">Portafolio de obras de Ingecon.</p>
-            {{-- RF48 / CU 48.1: el alta se hace en Ventana Modal --}}
             <button type="button" @click="crear = true"
                     class="flex items-center gap-2 bg-slate-900 hover:bg-slate-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors">
                 <i data-lucide="plus" class="w-4 h-4"></i>
@@ -26,11 +24,9 @@
             </div>
         @endif
 
-        {{-- Grilla de tarjetas --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" role="list">
             @forelse($proyectos as $p)
             <article class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow" role="listitem">
-                {{-- Miniatura --}}
                 <div class="w-full h-40 bg-slate-100 overflow-hidden relative">
                     @if($p->imagenes->isNotEmpty())
                         <img src="{{ Storage::url($p->imagenes->first()->imagen) }}" alt="{{ $p->nombre_obra }}" class="w-full h-full object-cover">
@@ -46,10 +42,6 @@
 
                 <div class="p-5">
                     <div class="flex items-center gap-2 mb-2 flex-wrap">
-                        {{-- RF50 / CU 50.1: menú desplegable en la propia tarjeta.
-                             Publicado = visible al público, Borrador = oculto.
-                             El envío es inmediato al cambiar la selección; si se elige el
-                             mismo estado vigente el Controlador no genera transacción. --}}
                         <form action="{{ route('admin.proyectos.visibilidad', $p) }}" method="POST">
                             @csrf @method('PATCH')
                             <select name="estado_publicacion" onchange="this.form.submit()"
@@ -71,13 +63,11 @@
                     </p>
 
                     <div class="flex gap-2">
-                        {{-- RF49 / CU 49.1: formulario con datos precargados --}}
                         <a href="{{ route('admin.proyectos.edit', $p) }}"
                            class="flex-1 flex items-center justify-center gap-2 border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-slate-700 text-sm font-medium py-2 rounded-lg transition-colors">
                             <i data-lucide="pencil" class="w-4 h-4"></i>
                             Editar
                         </a>
-                        {{-- RF51 / CU 51.1: papelera + confirmación en Ventana Modal --}}
                         <button type="button"
                                 @click="abrirEliminar({{ $p->id_proyecto }}, @js($p->nombre_obra), {{ $p->imagenes->count() }})"
                                 aria-label="Eliminar {{ $p->nombre_obra }}"
@@ -88,7 +78,6 @@
                 </div>
             </article>
             @empty
-            {{-- CU 48.3 Excepción 2 / CU 34.3 Excepción 3 --}}
             <div class="col-span-full flex flex-col items-center justify-center py-20 text-center">
                 <i data-lucide="hard-hat" class="w-14 h-14 text-slate-300 mb-4"></i>
                 <p class="text-slate-500 font-medium mb-1">Aún no hay registros</p>
@@ -99,7 +88,6 @@
 
         <div class="mt-8">{{ $proyectos->links() }}</div>
 
-        {{-- RF48 / CU 48.1 - Registrar Proyecto (nace en Borrador) --}}
         <x-modal show="crear" titulo="Nuevo Proyecto" ancho="max-w-2xl">
             <form action="{{ route('admin.proyectos.store') }}" method="POST" enctype="multipart/form-data"
                   class="space-y-5" @submit="validarImagenes($event)">
@@ -172,7 +160,6 @@
             </form>
         </x-modal>
 
-        {{-- RF51 / CU 51.1 - Confirmación de eliminación permanente --}}
         <x-modal show="eliminar" titulo="Eliminar Proyecto" ancho="max-w-md">
             <p class="text-slate-700 mb-2">
                 ¿Confirma que desea eliminar <strong x-text="seleccionado.nombre"></strong>?
@@ -200,7 +187,6 @@
           seleccionado: { id: null, nombre: '', imagenes: 0 },
 
           init() {
-            // CU 48.1 Exc. 1-6: el formulario permanece abierto con lo ya ingresado.
             @if($errors->any() && old('_modal') === 'crear')
               this.crear = true;
             @endif
@@ -208,8 +194,6 @@
             this.$watch('eliminar', () => this.$nextTick(() => window.lucide && lucide.createIcons()));
           },
 
-          // CU 48.1 Excepciones 2 y 3: se avisa del límite antes de subir nada al servidor.
-          // El Controlador vuelve a validarlo de todas formas (nunca se confía en el cliente).
           validarImagenes(e) {
             const input = document.getElementById('pr-imagenes');
             const archivos = [...(input.files || [])];

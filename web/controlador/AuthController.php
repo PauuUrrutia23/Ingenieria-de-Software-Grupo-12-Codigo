@@ -12,17 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-/**
- * AuthController («Control») — Diagrama de Componentes: "Registro · Login · Sesión".
- *
- * Autenticación del Personal de Administración (RF27, RF32, RF33) y todo el ciclo
- * de contraseña: cambio estando autenticado (RF28) y recuperación por correo
- * (RF29-RF31).
- */
 class AuthController extends Controller
 {
-    // RNF06 / DS-51: minimo 8 caracteres, 1 mayuscula, 1 minuscula, 1 numero
-    // y 1 caracter especial. Se rechaza el registro o el cambio que no cumpla.
     private const REGLAS_PASSWORD = ['required', 'string', 'min:8', 'confirmed',
         'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[^a-zA-Z0-9]/'];
 
@@ -31,10 +22,6 @@ class AuthController extends Controller
         private NotificationService $notificaciones,
     ) {
     }
-
-    // ------------------------------------------------------------------
-    // RF27 / CU 27.1 - Autenticando Personal de Administración
-    // ------------------------------------------------------------------
 
     public function showLoginForm()
     {
@@ -58,8 +45,6 @@ class AuthController extends Controller
             return back()->withErrors(['correo' => 'Cuenta inactiva. Contacte al administrador jefe.']);
         }
 
-        // CU 27.1 Excepción 2 / CU 33.1 Excepción 2: si el bloqueo sigue activo se informa
-        // el tiempo restante y NO se reinicia el periodo de 60 minutos.
         if ($admin->bloqueado_hasta && $admin->bloqueado_hasta > Carbon::now()) {
             $minutos = max(1, Carbon::now()->diffInMinutes($admin->bloqueado_hasta));
 
@@ -68,18 +53,15 @@ class AuthController extends Controller
             ]);
         }
 
-        // Si el bloqueo expiró, lo limpiamos
         if ($admin->bloqueado_hasta && $admin->bloqueado_hasta <= Carbon::now()) {
             $this->db->update($admin, ['bloqueado_hasta' => null, 'intentos_fallidos' => 0]);
         }
 
         if (Hash::check($request->password, $admin->password_hash)) {
-            // Éxito
             $this->db->update($admin, ['intentos_fallidos' => 0]);
 
             Auth::login($admin);
 
-            // Registrar sesión
             $this->db->create(Sesion::class, [
                 'id_admin' => $admin->id_admin,
                 'token_hash' => hash('sha256', session()->getId()),
@@ -91,13 +73,11 @@ class AuthController extends Controller
             return redirect()->intended('/admin/dashboard');
         }
 
-        // Fallo — CU 27.2
         $admin->increment('intentos_fallidos');
 
         if ($admin->intentos_fallidos >= 5) {
             $this->db->update($admin, ['bloqueado_hasta' => Carbon::now()->addMinutes(60)]);
 
-            // CU 33.1 Excepciones 3 y 4: el bloqueo se aplica igual aunque el correo falle.
             $this->notificaciones->notificarBloqueoCuenta($admin);
 
             return back()->withErrors(['correo' => 'Cuenta bloqueada por 60 minutos debido a múltiples intentos fallidos.']);
@@ -105,10 +85,6 @@ class AuthController extends Controller
 
         return back()->withErrors(['correo' => 'Credenciales inválidas.']);
     }
-
-    // ------------------------------------------------------------------
-    // RF32 / CU 32.1 - Cerrando Sesión
-    // ------------------------------------------------------------------
 
     public function logout(Request $request)
     {
@@ -125,10 +101,6 @@ class AuthController extends Controller
 
         return redirect('/');
     }
-
-    // ------------------------------------------------------------------
-    // RF28 / CU 28.1-28.2 - Cambiando contraseña estando autenticado
-    // ------------------------------------------------------------------
 
     public function passwordEdit()
     {
@@ -155,10 +127,6 @@ class AuthController extends Controller
         return back()->with('success', 'Contraseña actualizada correctamente.');
     }
 
-    // ------------------------------------------------------------------
-    // RF29-RF31 / CU 29.1-31.2 - Recuperación de contraseña por correo
-    // ------------------------------------------------------------------
-
     public function sendResetLink(Request $request)
     {
         $request->validate(['correo' => ['required', 'email']]);
@@ -168,7 +136,6 @@ class AuthController extends Controller
         if ($admin) {
             $token = Str::random(64);
 
-            // CU 30.1 Excepción 3: la BD no permite generar/almacenar el Token de Sesión.
             try {
                 $this->db->create(RecuperacionPassword::class, [
                     'id_admin' => $admin->id_admin,
@@ -184,7 +151,6 @@ class AuthController extends Controller
                 ]);
             }
 
-            // CU 30.1 Excepción 4: el servicio de correo institucional no responde.
             try {
                 $this->notificaciones->notificarRecuperacionPassword($admin, $token);
             } catch (\Throwable $e) {
@@ -194,8 +160,6 @@ class AuthController extends Controller
             }
         }
 
-        // Mensaje generico a proposito: no revela si el correo esta registrado (mismo
-        // criterio de seguridad que CU 27.2).
         return back()->with('success', 'Si el correo ingresado corresponde a una cuenta, le enviamos un enlace de recuperación.');
     }
 

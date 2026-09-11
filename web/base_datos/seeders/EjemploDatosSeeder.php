@@ -10,11 +10,6 @@ use App\Models\Colaborador;
 use App\Models\Contenido;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Datos de ejemplo para que el sitio público no se vea vacío en desarrollo.
- * Sin fotografías reales: los Proyectos se muestran con el placeholder
- * "SIN IMAGEN" ya contemplado en las vistas (no requieren archivo).
- */
 class EjemploDatosSeeder extends Seeder
 {
     public function run()
@@ -76,16 +71,11 @@ class EjemploDatosSeeder extends Seeder
             }
         }
 
-        // RF10 / CU 10.1: la URL de la documentacion tecnica de Conectores Metalicos
-        // vive en BD para poder cambiarla sin tocar el codigo.
-        // PROVISIONAL: el valor definitivo lo tiene que confirmar Ingecon. El anterior
-        // (simpsonstrongtie.cl) ni siquiera resuelve en DNS; este si carga y al menos
-        // apunta a documentacion tecnica y no a la portada de un fabricante.
         if (Contenido::where('seccion', 'documentacion')->count() === 0) {
             Contenido::create([
                 'seccion' => 'documentacion',
                 'titulo' => 'Documentacion tecnica - Conectores Metalicos',
-                'enlace' => env('DOCS_CONECTORES_URL', 'https://www.strongtie.com/literature'),
+                'enlace' => env('DOCS_CONECTORES_URL', 'https://www.strongtie.com/products/connectors'),
                 'activo' => true,
                 'orden' => 0,
                 'id_admin' => $admin->id_admin,

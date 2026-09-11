@@ -1,7 +1,6 @@
 <x-admin-layout>
     <x-slot name="header">Colaboradores</x-slot>
 
-    {{-- CU 45.2 / CU 34.4: listado del módulo. RF45, RF46 y RF47 operan en Ventana Modal. --}}
     <div x-data="moduloColaboradores()">
 
         <div class="flex items-center justify-between mb-8 -mt-2">
@@ -28,7 +27,6 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5" role="list" aria-label="Listado de colaboradores">
             @forelse($colaboradores as $c)
             <article class="relative group bg-white rounded-xl p-5 shadow-sm border border-slate-100 text-center hover:shadow-md transition-shadow" role="listitem">
-                {{-- RF47 / CU 47.1: confirmación en Ventana Modal --}}
                 <button type="button"
                         @click="abrirEliminar({{ $c->id_colaborador }}, @js($c->nombre_comercial))"
                         aria-label="Eliminar {{ $c->nombre_comercial }}"
@@ -43,12 +41,10 @@
                         <img src="{{ Storage::url($c->logotipo) }}" alt="{{ $c->nombre_comercial }}" class="w-full h-full object-contain">
                     </div>
                     <p class="text-slate-900 font-semibold text-sm leading-snug line-clamp-2" title="{{ $c->nombre_comercial }}">{{ $c->nombre_comercial }}</p>
-                    {{-- RF46 / CU 46.1: formulario precargado en Ventana Modal --}}
                     <p class="text-xs text-slate-400 mt-1 group-hover:text-slate-600 transition-colors">Editar</p>
                 </button>
             </article>
             @empty
-            {{-- CU 45.2 Excepción 2 / CU 34.4 Excepción 3 --}}
             <div class="col-span-full flex flex-col items-center justify-center py-20 text-center">
                 <i data-lucide="handshake" class="w-14 h-14 text-slate-300 mb-4"></i>
                 <p class="text-slate-500 font-medium mb-1">Aún no hay registros</p>
@@ -59,7 +55,6 @@
 
         <div class="mt-8">{{ $colaboradores->links() }}</div>
 
-        {{-- RF45 / CU 45.1 - Registrar Colaborador --}}
         <x-modal show="crear" titulo="Nuevo Proveedor" ancho="max-w-md">
             <form action="{{ route('admin.colaboradores.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf
@@ -87,7 +82,6 @@
             </form>
         </x-modal>
 
-        {{-- RF46 / CU 46.1 - Editar Colaborador --}}
         <x-modal show="editar" titulo="Editar Proveedor" ancho="max-w-md">
             <form :action="'{{ url('admin/colaboradores') }}/' + seleccionado.id" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf @method('PUT')
@@ -114,7 +108,6 @@
             </form>
         </x-modal>
 
-        {{-- RF47 / CU 47.1 - Confirmación de eliminación --}}
         <x-modal show="eliminar" titulo="Eliminar Proveedor" ancho="max-w-md">
             <p class="text-slate-700 mb-6">
                 ¿Confirma que desea eliminar a <strong x-text="seleccionado.nombre"></strong>?
@@ -139,8 +132,6 @@
           seleccionado: { id: null, nombre: '', logo: '' },
 
           init() {
-            // Si el Controlador rechazó la validación, se reabre el mismo modal
-            // (CU 45.1 Exc. 1-3, CU 46.1 Exc. 3): el formulario permanece abierto.
             @if($errors->any() && old('_modal') === 'crear')
               this.crear = true;
             @endif

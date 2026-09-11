@@ -1,19 +1,3 @@
-{{--
-  Ventana Modal reutilizable del Panel de Gestión.
-
-  Varios requerimientos (RF26, RF39, RF44, RF45, RF46, RF48, RF49, RF51) piden
-  explícitamente que el formulario o la confirmación se presenten en una
-  "Ventana Modal", no en una página aparte. Este componente centraliza ese patrón.
-
-  Uso:
-    <div x-data="{ abierto: false }">
-      <button @click="abierto = true">Abrir</button>
-      <x-modal show="abierto" titulo="Nuevo registro"> ... </x-modal>
-    </div>
-
-  `show` es el nombre de la propiedad Alpine del contenedor padre que controla
-  la visibilidad; el componente la pone en false al cerrar.
---}}
 @props(['show', 'titulo' => '', 'ancho' => 'max-w-2xl'])
 
 <div x-show="{{ $show }}" style="display: none;"

@@ -1,12 +1,3 @@
-{{--
-  Resultados de la galería de proyectos.
-
-  Vive en un partial propio porque CU 21.1 exige que los filtros combinados
-  actualicen los resultados "dinámicamente, sin recargar": el controlador
-  devuelve solo este fragmento cuando la petición es AJAX, y Alpine reemplaza
-  el contenido de #resultados-proyectos con él.
---}}
-
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
   <span class="font-bold text-[#1a1a1a]">{{ $proyectos->total() }} {{ $proyectos->total() === 1 ? 'obra' : 'obras' }}</span>
   @if(request('q') || request('categoria') || request('region'))
@@ -16,9 +7,6 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
   @forelse($proyectos as $proyecto)
-    {{-- RF23 / CU 23.1: la tarjeta completa abre la Ventana Modal con la ficha
-         técnica. Los datos viajan en data-proyecto para que el modal funcione
-         igual después de un refresco AJAX de la grilla (delegación de eventos). --}}
     <button type="button"
             class="js-abrir-ficha text-left bg-white border border-[#e8e6df] rounded-lg overflow-hidden flex flex-col hover:shadow-lg hover:border-[#28533c] transition-all focus:outline-none focus:ring-2 focus:ring-[#28533c]"
             data-proyecto="{{ json_encode([
@@ -30,8 +18,6 @@
                 'imagenes'    => $proyecto->imagenes->map(fn ($i) => Storage::url($i->imagen))->values(),
             ], JSON_UNESCAPED_UNICODE) }}">
       @if($proyecto->imagenes->isNotEmpty())
-        {{-- CU 19.1 Excepción 4: si una miniatura no carga, se omite solo esa imagen
-             y la tarjeta sigue siendo utilizable. --}}
         <img src="{{ Storage::url($proyecto->imagenes->first()->imagen) }}"
              alt="{{ $proyecto->nombre_obra }}"
              class="w-full h-[240px] object-cover"
@@ -57,7 +43,6 @@
       </div>
     </button>
   @empty
-    {{-- CU 19.1 Exc. 3 / CU 20.1 Exc. 1 / CU 21.1 Exc. 1: sin coincidencias. --}}
     <div class="col-span-full text-center py-16 bg-white border border-[#e8e6df] rounded-lg">
       <p class="text-[#666666] mb-4">No se encontraron proyectos que cumplan todos los criterios.</p>
       <a href="/proyectos" class="text-sm font-bold text-[#28533c] hover:underline">Ver todos los proyectos</a>

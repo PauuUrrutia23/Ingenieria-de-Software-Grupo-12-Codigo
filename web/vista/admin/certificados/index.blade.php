@@ -1,7 +1,6 @@
 <x-admin-layout>
     <x-slot name="header">Certificados</x-slot>
 
-    {{-- CU 34.6: módulo de Certificados. RF26 (registrar) opera en Ventana Modal. --}}
     <div x-data="moduloCertificados()">
 
         <div class="flex items-center justify-between mb-8 -mt-2">
@@ -63,7 +62,6 @@
                         </td>
                     </tr>
                     @empty
-                    {{-- CU 34.6 Excepción 3 --}}
                     <tr><td colspan="5" class="px-6 py-16 text-center">
                         <div class="flex flex-col items-center">
                             <i data-lucide="shield-check" class="w-12 h-12 text-slate-300 mb-3"></i>
@@ -76,7 +74,6 @@
             <div class="px-6 py-4 border-t border-slate-100">{{ $certificados->links() }}</div>
         </div>
 
-        {{-- RF26 / CU 26.1 - Registrar Certificación en Ventana Modal --}}
         <x-modal show="crear" titulo="Nuevo Certificado" ancho="max-w-2xl">
             <form action="{{ route('admin.certificados.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf
@@ -126,7 +123,6 @@
             </form>
         </x-modal>
 
-        {{-- Confirmación de eliminación en Ventana Modal --}}
         <x-modal show="eliminar" titulo="Eliminar Certificado" ancho="max-w-md">
             <p class="text-slate-700 mb-6">
                 ¿Confirma que desea eliminar <strong x-text="seleccionado.nombre"></strong>?
@@ -150,7 +146,6 @@
           seleccionado: { id: null, nombre: '' },
 
           init() {
-            // CU 26.1 Exc. 1-4: el formulario permanece abierto con lo ya ingresado.
             @if($errors->any() && old('_modal') === 'crear')
               this.crear = true;
             @endif

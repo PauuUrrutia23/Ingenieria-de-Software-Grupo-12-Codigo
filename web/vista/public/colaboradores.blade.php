@@ -1,6 +1,5 @@
 <x-app-layout>
     <div class="w-full bg-[#f5f3ec] min-h-screen pb-24">
-      <!-- Header -->
       <div class="bg-white border-b border-gray-200">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8 py-16">
           <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">ALIANZAS</p>

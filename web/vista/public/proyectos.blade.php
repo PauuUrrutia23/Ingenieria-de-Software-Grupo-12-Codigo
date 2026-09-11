@@ -3,7 +3,6 @@
          x-data="galeriaProyectos()"
          @keydown.escape.window="cerrarFicha()">
 
-      <!-- Header -->
       <div class="bg-white border-b border-gray-200">
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8 py-16">
           <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">OBRAS EJECUTADAS</p>
@@ -15,7 +14,6 @@
       </div>
 
       <div class="max-w-[1200px] mx-auto px-4 lg:px-8 mt-12">
-        <!-- Filtros (RF19 texto + RF20 categoría + RF18 ubicación, combinables por RF21) -->
         <div class="bg-white p-6 rounded-lg border border-[#e8e6df] shadow-sm mb-8">
           <form id="filtros-proyectos" action="/proyectos" method="GET"
                 @submit.prevent="aplicarFiltros()"
@@ -75,18 +73,15 @@
             </div>
           </form>
 
-          <!-- CU 18.1 Exc. 1 / CU 21.1 Exc. 2: avisos del filtrado -->
           <p x-show="aviso" style="display:none;" x-text="aviso"
              class="mt-4 text-sm font-medium text-[#c66f4b]"></p>
         </div>
 
-        <!-- Resultados (reemplazados dinámicamente por RF21) -->
         <div id="resultados-proyectos" :class="cargando ? 'opacity-50 transition-opacity' : ''">
           @include('public.partials.proyectos-grid')
         </div>
       </div>
 
-      <!-- RF23 / CU 23.1 - Ventana Modal con especificaciones técnicas del proyecto -->
       <div x-show="fichaAbierta" style="display:none;"
            class="fixed inset-0 z-[80] flex items-center justify-center px-4 py-8">
         <div class="absolute inset-0 bg-black/60" @click="cerrarFicha()"></div>
@@ -99,7 +94,6 @@
             <i data-lucide="x" class="h-5 w-5"></i>
           </button>
 
-          <!-- Imágenes de la obra -->
           <template x-if="ficha.imagenes && ficha.imagenes.length">
             <img :src="ficha.imagenes[0]" :alt="ficha.nombre" class="w-full h-[280px] object-cover rounded-t-xl">
           </template>
@@ -124,7 +118,6 @@
             <h3 class="text-sm font-bold text-[#1a1a1a] uppercase tracking-wide mb-3">Descripción técnica</h3>
             <p class="text-[#4a4a4a] leading-relaxed whitespace-pre-wrap mb-8" x-text="ficha.descripcion"></p>
 
-            <!-- Galería completa de la obra -->
             <template x-if="ficha.imagenes && ficha.imagenes.length > 1">
               <div>
                 <h3 class="text-sm font-bold text-[#1a1a1a] uppercase tracking-wide mb-3">Registro fotográfico</h3>
@@ -148,12 +141,10 @@
           aviso: '',
           fichaAbierta: false,
           ficha: {},
-          // Permite cancelar una consulta previa si el visitante cambia un criterio
-          // mientras la anterior sigue en curso (CU 21.1, Excepción 3).
+
           _peticion: null,
 
           init() {
-            // Delegación de eventos: sigue funcionando tras reemplazar la grilla.
             document.getElementById('resultados-proyectos')
               .addEventListener('click', (e) => {
                 const card = e.target.closest('.js-abrir-ficha');
@@ -168,7 +159,6 @@
             this.$nextTick(() => window.lucide && lucide.createIcons());
           },
 
-          // CU 23.1: cerrar el modal no altera la posición en la galería.
           cerrarFicha() {
             this.fichaAbierta = false;
             document.body.style.overflow = '';
@@ -178,7 +168,6 @@
             const form = document.getElementById('filtros-proyectos');
             const params = new URLSearchParams(new FormData(form));
 
-            // CU 18.1 Excepción 1: "Aplicar Filtros" sin ningún criterio seleccionado.
             const sinCriterios = ![...params.values()].some(v => v.trim() !== '');
 
             if (this._peticion) this._peticion.abort();
@@ -203,8 +192,8 @@
                 this.aviso = 'Seleccione al menos un criterio para acotar la búsqueda.';
               }
             } catch (err) {
-              if (err.name === 'AbortError') return; // consulta reemplazada por otra más reciente
-              // CU 21.1 Excepción 2: se conserva el último resultado válido mostrado.
+              if (err.name === 'AbortError') return;
+
               this.aviso = 'El filtrado no está disponible temporalmente. Se mantienen los últimos resultados.';
             } finally {
               this.cargando = false;
