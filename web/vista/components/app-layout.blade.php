@@ -69,6 +69,12 @@
             <a href="/#contacto" class="bg-[#28533c] text-white px-6 py-2.5 rounded text-sm font-semibold hover:bg-[#1e402e] transition-colors ml-2">
               Contáctanos
             </a>
+
+            @guest
+            <a href="{{ route('login') }}" class="border border-[#28533c] text-[#28533c] px-4 py-2.5 rounded text-sm font-semibold hover:bg-[#28533c] hover:text-white transition-colors ml-2 flex items-center gap-1.5">
+              <i data-lucide="lock" class="h-4 w-4"></i> Acceso admin
+            </a>
+            @endguest
           </div>
 
           <div class="md:hidden flex items-center">
@@ -90,6 +96,11 @@
             <a href="/#contacto" @click="isMobileMenuOpen = false" class="block w-full text-center mt-4 bg-[#28533c] text-white px-5 py-3 rounded-md font-semibold">
               Contáctanos
             </a>
+            @guest
+            <a href="{{ route('login') }}" class="block w-full text-center mt-2 border border-[#28533c] text-[#28533c] px-5 py-3 rounded-md font-semibold">
+              Acceso admin
+            </a>
+            @endguest
         </div>
       </div>
     </nav>
