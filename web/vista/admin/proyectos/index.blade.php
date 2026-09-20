@@ -144,10 +144,12 @@
                     </label>
                     <label for="pr-imagenes" class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-300 hover:border-slate-400 bg-slate-50 rounded-xl p-6 cursor-pointer transition-colors text-center">
                         <i data-lucide="upload" class="w-8 h-8 text-slate-400"></i>
-                        <span class="text-sm text-slate-500">Haz clic para seleccionar imágenes</span>
-                        <span class="text-xs text-slate-400">JPG, PNG, WebP</span>
+                        <span class="text-sm" :class="resumenImagenes ? 'text-slate-700 font-medium' : 'text-slate-500'"
+                              x-text="resumenImagenes || 'Haz clic para seleccionar imágenes'"></span>
+                        <span class="text-xs text-slate-400" x-text="resumenImagenes ? 'Haz clic para elegir otras' : 'JPG, PNG, WebP'"></span>
                     </label>
-                    <input id="pr-imagenes" type="file" name="imagenes[]" multiple accept="image/jpeg,image/png,image/webp" class="sr-only">
+                    <input id="pr-imagenes" type="file" name="imagenes[]" multiple accept="image/jpeg,image/png,image/webp" class="sr-only"
+                           @change="resumirImagenes()">
                     <p x-show="errorImagenes" style="display:none;" x-text="errorImagenes" class="text-sm text-red-600 font-medium mt-2"></p>
                 </div>
 
@@ -184,6 +186,7 @@
           crear: false,
           eliminar: false,
           errorImagenes: '',
+          resumenImagenes: '',
           seleccionado: { id: null, nombre: '', imagenes: 0 },
 
           init() {
@@ -192,6 +195,18 @@
             @endif
             this.$watch('crear', () => this.$nextTick(() => window.lucide && lucide.createIcons()));
             this.$watch('eliminar', () => this.$nextTick(() => window.lucide && lucide.createIcons()));
+          },
+
+          resumirImagenes() {
+            const archivos = [...(document.getElementById('pr-imagenes').files || [])];
+
+            if (archivos.length === 0) {
+              this.resumenImagenes = '';
+            } else if (archivos.length === 1) {
+              this.resumenImagenes = archivos[0].name;
+            } else {
+              this.resumenImagenes = archivos.length + ' fotografías seleccionadas';
+            }
           },
 
           validarImagenes(e) {

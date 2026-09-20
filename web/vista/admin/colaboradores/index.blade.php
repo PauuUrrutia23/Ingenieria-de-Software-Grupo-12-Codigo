@@ -64,14 +64,19 @@
                     <input id="crear-nombre" type="text" name="nombre_comercial" value="{{ old('_modal') === 'crear' ? old('nombre_comercial') : '' }}"
                            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300" required>
                 </div>
-                <div>
+                <div x-data="{ nombreArchivo: '', vistaPrevia: '' }">
                     <label for="crear-logo" class="block text-sm font-semibold text-slate-700 mb-1.5">Logotipo</label>
                     <label for="crear-logo" class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-300 hover:border-slate-400 bg-slate-50 rounded-xl p-6 cursor-pointer transition-colors text-center">
-                        <i data-lucide="upload" class="w-7 h-7 text-slate-400"></i>
-                        <span class="text-sm text-slate-500">Haz clic para seleccionar el logotipo</span>
-                        <span class="text-xs text-slate-400">Máximo 500 KB (RNF17)</span>
+                        <span x-show="!vistaPrevia"><i data-lucide="upload" class="w-7 h-7 text-slate-400"></i></span>
+                        <img x-show="vistaPrevia" style="display:none;" :src="vistaPrevia" alt=""
+                             class="h-16 max-w-full object-contain">
+                        <span class="text-sm" :class="nombreArchivo ? 'text-slate-700 font-medium' : 'text-slate-500'"
+                              x-text="nombreArchivo || 'Haz clic para seleccionar el logotipo'"></span>
+                        <span class="text-xs text-slate-400" x-text="nombreArchivo ? 'Haz clic para elegir otro' : 'Máximo 500 KB (RNF17)'"></span>
                     </label>
-                    <input id="crear-logo" type="file" name="logotipo" accept="image/*" class="sr-only" required>
+                    <input id="crear-logo" type="file" name="logotipo" accept="image/*" class="sr-only" required
+                           @change="nombreArchivo = $event.target.files[0] ? $event.target.files[0].name : '';
+                                    vistaPrevia = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : ''">
                 </div>
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" @click="crear = false"

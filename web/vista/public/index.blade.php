@@ -215,15 +215,52 @@
         <div class="max-w-[1200px] mx-auto px-4 lg:px-8">
           <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">PROVEEDORES</p>
           <h2 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] tracking-tight mb-14">Proveedores estratégicos</h2>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-            @forelse($proveedores as $prov)
-              <div class="flex items-center justify-center bg-white w-full h-[80px] rounded border overflow-hidden p-2 shadow-sm">
-                  <img src="{{ Storage::url($prov->logotipo) }}" alt="{{ $prov->nombre_comercial }}" class="max-h-full max-w-full object-contain grayscale hover:grayscale-0 transition duration-300">
+          @php $grupos = $proveedores->chunk(4); @endphp
+
+          @if($grupos->isEmpty())
+            <div class="text-center text-gray-400">Pronto publicaremos nuestros proveedores oficiales.</div>
+          @else
+            <div x-data="carruselColaboradores({{ $grupos->count() }})">
+              <div class="relative">
+                <div class="overflow-hidden">
+                  <div class="flex transition-transform duration-500 ease-out" :style="`transform: translateX(-${actual * 100}%)`">
+                    @foreach($grupos as $grupo)
+                      <div class="w-full shrink-0 grid grid-cols-2 md:grid-cols-4 gap-6">
+                        @foreach($grupo as $prov)
+                          <div class="flex items-center justify-center bg-white w-full h-[80px] rounded border overflow-hidden p-2 shadow-sm">
+                            <img src="{{ Storage::url($prov->logotipo) }}" alt="{{ $prov->nombre_comercial }}" class="max-h-full max-w-full object-contain">
+                          </div>
+                        @endforeach
+                      </div>
+                    @endforeach
+                  </div>
+                </div>
+
+                @if($grupos->count() > 1)
+                  <button type="button" @click="anterior()" :disabled="actual === 0" aria-label="Ver colaboradores anteriores"
+                          class="absolute top-1/2 -translate-y-1/2 -left-3 md:-left-8 z-10 h-10 w-10 rounded-full bg-white border border-[#e8e6df] shadow-sm flex items-center justify-center text-[#28533c] transition-colors hover:bg-[#28533c] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#28533c]">
+                    <i data-lucide="chevron-left" class="h-5 w-5"></i>
+                  </button>
+                  <button type="button" @click="siguiente()" :disabled="actual === total - 1" aria-label="Ver siguientes colaboradores"
+                          class="absolute top-1/2 -translate-y-1/2 -right-3 md:-right-8 z-10 h-10 w-10 rounded-full bg-white border border-[#e8e6df] shadow-sm flex items-center justify-center text-[#28533c] transition-colors hover:bg-[#28533c] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#28533c]">
+                    <i data-lucide="chevron-right" class="h-5 w-5"></i>
+                  </button>
+                @endif
               </div>
-            @empty
-              <div class="col-span-4 text-center text-gray-400">Pronto publicaremos nuestros proveedores oficiales.</div>
-            @endforelse
-          </div>
+
+              @if($grupos->count() > 1)
+                <div class="mt-10 flex items-center justify-center gap-2">
+                  @foreach($grupos as $i => $grupo)
+                    <button type="button" @click="ir({{ $i }})"
+                            :aria-current="actual === {{ $i }} ? 'true' : 'false'"
+                            aria-label="Ver grupo {{ $i + 1 }} de {{ $grupos->count() }}"
+                            class="h-2.5 rounded-full transition-all duration-300"
+                            :class="actual === {{ $i }} ? 'w-8 bg-[#28533c]' : 'w-2.5 bg-[#d9d9d9] hover:bg-[#b5b5b5]'"></button>
+                  @endforeach
+                </div>
+              @endif
+            </div>
+          @endif
         </div>
       </section>
 
@@ -364,6 +401,28 @@
     </div>
 
     <script>
+      function carruselColaboradores(total) {
+        return {
+          actual: 0,
+          total: total,
+
+          ir(indice) {
+            if (indice === this.actual) {
+              return;
+            }
+            this.actual = indice;
+          },
+
+          anterior() {
+            this.ir(Math.max(0, this.actual - 1));
+          },
+
+          siguiente() {
+            this.ir(Math.min(this.total - 1, this.actual + 1));
+          },
+        };
+      }
+
       function formularioContacto() {
         return {
           campos: { nombre: '', apellido: '', email: '', mensaje: '' },
