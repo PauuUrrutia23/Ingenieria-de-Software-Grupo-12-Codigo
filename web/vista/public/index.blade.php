@@ -149,12 +149,15 @@
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             @forelse($proyectos_recientes as $proyecto)
-            <div class="border border-[#e8e6df] rounded-lg overflow-hidden flex flex-col bg-white">
-              @if($proyecto->imagenes->isNotEmpty())
-                  <img src="{{ Storage::url($proyecto->imagenes->first()->imagen) }}" alt="{{ $proyecto->nombre_obra }}" class="w-full h-[240px] object-cover">
-              @else
-                  <div class="flex items-center justify-center text-[#99968f] text-xs font-medium tracking-widest uppercase bg-[#e8e6df] w-full h-[240px]" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)">SIN IMAGEN</div>
-              @endif
+            <div class="group border border-[#e8e6df] rounded-lg overflow-hidden flex flex-col bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+              <div class="relative overflow-hidden">
+                @if($proyecto->imagenes->isNotEmpty())
+                    <img src="{{ Storage::url($proyecto->imagenes->first()->imagen) }}" alt="{{ $proyecto->nombre_obra }}" class="w-full h-[240px] object-cover transition-transform duration-500 group-hover:scale-105">
+                @else
+                    <div class="flex items-center justify-center text-[#99968f] text-xs font-medium tracking-widest uppercase bg-[#e8e6df] w-full h-[240px]" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)">SIN IMAGEN</div>
+                @endif
+                <div class="absolute inset-0 bg-white/0 transition-colors duration-300 group-hover:bg-white/25"></div>
+              </div>
               <div class="p-6 flex-grow flex flex-col">
                 <span class="inline-block bg-[#eaf0ec] text-[#28533c] text-[11px] font-bold px-3 py-1 rounded-full w-max mb-5 uppercase tracking-wide">
                   {{ $proyecto->categoria }}

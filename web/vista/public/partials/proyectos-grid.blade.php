@@ -8,7 +8,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
   @forelse($proyectos as $proyecto)
     <button type="button"
-            class="js-abrir-ficha text-left bg-white border border-[#e8e6df] rounded-lg overflow-hidden flex flex-col hover:shadow-lg hover:border-[#28533c] transition-all focus:outline-none focus:ring-2 focus:ring-[#28533c]"
+            class="js-abrir-ficha group text-left bg-white border border-[#e8e6df] rounded-lg overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-[#28533c] focus:outline-none focus:ring-2 focus:ring-[#28533c]"
             data-proyecto="{{ json_encode([
                 'nombre'      => $proyecto->nombre_obra,
                 'descripcion' => $proyecto->descripcion_tecnica,
@@ -17,14 +17,22 @@
                 'anio'        => $proyecto->anio_ejecucion,
                 'imagenes'    => $proyecto->imagenes->map(fn ($i) => Storage::url($i->imagen))->values(),
             ], JSON_UNESCAPED_UNICODE) }}">
-      @if($proyecto->imagenes->isNotEmpty())
-        <img src="{{ Storage::url($proyecto->imagenes->first()->imagen) }}"
-             alt="{{ $proyecto->nombre_obra }}"
-             class="w-full h-[240px] object-cover"
-             onerror="this.style.display='none'">
-      @else
-        <div class="flex items-center justify-center text-[#99968f] text-xs font-medium tracking-widest uppercase bg-[#e8e6df] w-full h-[240px]" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)">SIN IMAGEN</div>
-      @endif
+      <div class="relative overflow-hidden">
+        @if($proyecto->imagenes->isNotEmpty())
+          <img src="{{ Storage::url($proyecto->imagenes->first()->imagen) }}"
+               alt="{{ $proyecto->nombre_obra }}"
+               class="w-full h-[240px] object-cover transition-transform duration-500 group-hover:scale-105"
+               onerror="this.style.display='none'">
+        @else
+          <div class="flex items-center justify-center text-[#99968f] text-xs font-medium tracking-widest uppercase bg-[#e8e6df] w-full h-[240px]" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)">SIN IMAGEN</div>
+        @endif
+        <div class="absolute inset-0 bg-white/0 transition-colors duration-300 group-hover:bg-white/25"></div>
+        <span class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <span class="h-12 w-12 rounded-full bg-white/90 text-[#28533c] shadow-lg flex items-center justify-center">
+            <i data-lucide="plus" class="w-6 h-6"></i>
+          </span>
+        </span>
+      </div>
 
       <div class="p-6 flex-grow flex flex-col">
         <span class="inline-block bg-[#eaf0ec] text-[#28533c] text-[11px] font-bold px-3 py-1 rounded-full w-max mb-5 uppercase tracking-wide">
