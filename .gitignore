@@ -7,6 +7,11 @@
 /.zed
 .phpactor.json
 
+# Artefactos locales de la entrega del Incremento 3 (no forman parte del sistema, no se versionan)
+/.checkpoints_ing3
+/herramientas_entrega
+/entregas_incremento3
+
 # Archivos de entorno (web/nucleo/.env.example SI se versiona)
 web/nucleo/.env
 web/nucleo/.env.backup
