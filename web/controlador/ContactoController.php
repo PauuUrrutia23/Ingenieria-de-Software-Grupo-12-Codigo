@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Consulta;
 use App\Models\Visitante;
-use App\Rules\DominioCorreoValido;
+use App\Http\Requests\StoreConsultaRequest;
 use App\Services\NotificationService;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ContactoController extends Controller
 {
@@ -19,31 +19,22 @@ class ContactoController extends Controller
     ) {
     }
 
-    public function store(Request $request)
+    public function store(StoreConsultaRequest $request)
     {
-        $request->validate([
-            'nombre' => ['required', 'string', 'max:80', 'regex:/^[\pL\s]+$/u'],
-            'apellido' => ['nullable', 'string', 'max:80', 'regex:/^[\pL\s]+$/u'],
+        $datos = $request->validated();
 
-            'email' => ['required', 'email:rfc', 'max:150', new DominioCorreoValido()],
-
-            'mensaje' => ['required', 'string', 'min:10', 'max:1000'],
-            'acepta_terminos' => ['required', 'accepted'],
-        ], [
-            'nombre.regex' => 'El nombre solo puede contener letras y espacios.',
-            'apellido.regex' => 'El apellido solo puede contener letras y espacios.',
-            'mensaje.min' => 'El mensaje debe tener al menos 10 caracteres.',
-            'mensaje.max' => 'El mensaje no puede superar los 1000 caracteres.',
-            'email.email' => 'Ingrese un correo electrónico válido.',
-        ]);
-
-        $consultasRecientes = $this->db->query(Consulta::class)
-            ->whereHas('visitante', function ($q) use ($request) {
-                $q->where('email', $request->email);
-            })
-            ->where('estado', 'pendiente')
-            ->where('created_at', '>=', Carbon::now()->subDay())
-            ->count();
+        try {
+            $consultasRecientes = $this->db->query(Consulta::class)
+                ->whereHas('visitante', function ($q) use ($datos) {
+                    $q->where('email', $datos['email']);
+                })
+                ->where('estado', 'pendiente')
+                ->where('created_at', '>=', Carbon::now()->subDay())
+                ->count();
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withInput()->withErrors(['mensaje' => 'El envío no está disponible temporalmente. Intente nuevamente.']);
+        }
 
         if ($consultasRecientes >= self::LIMITE_CONSULTAS_24H) {
             return back()->withErrors([
@@ -52,18 +43,21 @@ class ContactoController extends Controller
         }
 
         try {
-            $visitante = $this->db->firstOrCreate(
-                Visitante::class,
-                ['email' => $request->email],
-                ['nombre' => $request->nombre, 'apellido' => $request->apellido]
-            );
-
-            $consulta = $this->db->create(Consulta::class, [
-                'id_visitante' => $visitante->id_visitante,
-                'mensaje' => $request->mensaje,
-                'estado' => 'pendiente',
-                'created_at' => Carbon::now(),
-            ]);
+            [$visitante, $consulta] = DB::transaction(function () use ($datos) {
+                $visitante = $this->db->firstOrCreate(
+                    Visitante::class,
+                    ['email' => $datos['email']],
+                    ['nombre' => $datos['nombre'], 'apellido' => $datos['apellido'] ?? null]
+                );
+                $consulta = $this->db->create(Consulta::class, [
+                    'id_visitante' => $visitante->id_visitante,
+                    'mensaje' => $datos['mensaje'],
+                    'estado' => 'pendiente',
+                    'notificacion_admin_pendiente' => true,
+                    'created_at' => Carbon::now(),
+                ]);
+                return [$visitante, $consulta];
+            });
         } catch (\Throwable $e) {
             report($e);
 
@@ -72,7 +66,12 @@ class ContactoController extends Controller
             ])->withInput();
         }
 
-        $registrada = $this->db->find(Consulta::class, $consulta->id_consulta);
+        try {
+            $registrada = $this->db->find(Consulta::class, $consulta->id_consulta);
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['mensaje' => 'No se pudo confirmar el envío. Intente nuevamente.']);
+        }
 
         if (!$registrada || $registrada->id_consulta !== $consulta->id_consulta) {
             return back()->withErrors([
@@ -80,10 +79,21 @@ class ContactoController extends Controller
             ])->withInput();
         }
 
-        $this->notificaciones->notificarConsultaRecibida($visitante->email, $consulta);
+        $confirmacionEnviada = $this->notificaciones->notificarConsultaRecibida($visitante->email, $consulta);
+        $alertaEnviada = $this->notificaciones->notificarNuevaConsultaAdministracion($consulta);
+        try {
+            $this->db->update($consulta, [
+                'notificacion_admin_pendiente' => !$alertaEnviada,
+                'notificacion_admin_ultimo_error' => $alertaEnviada ? null : 'Envío pendiente',
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return redirect('/#contacto')
-            ->with('contacto_success', 'Mensaje enviado correctamente. Le hemos enviado un correo de confirmación.')
+            ->with('contacto_success', $confirmacionEnviada
+                ? 'Consulta registrada y correo de confirmación enviado.'
+                : 'Consulta registrada, pero no fue posible enviar el correo de confirmación.')
             ->with('consulta_id', $registrada->id_consulta);
     }
 }

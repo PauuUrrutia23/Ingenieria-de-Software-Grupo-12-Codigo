@@ -1,12 +1,14 @@
-# Ingecon — Requisitos, Casos de Uso y Stack (Incremento 1 + 2)
+# Ingecon — Requisitos, Casos de Uso y Stack (Incrementos 1, 2 y 3)
+
+> **Alcance vigente:** Incrementos 1 + 2 + 3 — **55 Requerimientos Funcionales** (16 I1 + 23 I2 + 16 I3), 17 RNF.
+> **Obligatorios:** RF55 (Banner), CU27.2 (recuperación de contraseña) y CU40.2 (responsable de Consulta).
+> **RNF17:** logotipos ≤500 KB; fotografías/imágenes ≤2 MB; sólo JPG/JPEG/PNG. No se declaran válidos WebP ni MP4.
 
 > Consolidado a partir de: `Grupo 12 - Documento_0.docx`, `Grupo 12 - incremento1.docx`,
 > `Grupo 12 - Incremento 2.docx`, `Dimensión Técnica Ingecon_v1.2_mod.docx`.
-> Contiene **todo** lo que debe estar implementado para considerar la app "completa hasta el
-> Incremento 2": 38 de los 53 Requerimientos Funcionales (16 del Incremento 1 + 22 del
-> Incremento 2), los 17 Requerimientos No Funcionales, y los 64 Casos de Uso asociados con
-> sus excepciones (22 del Incremento 1 + 42 del Incremento 2, este último con varios RF
-> desglosados en sub-casos de uso según `Casos_de_Uso_Incremento_2_WIP.docx`).
+> Las secciones de casos de uso de Incrementos 1 y 2 conservan la especificación
+> histórica. La tabla de Incremento 3 y el estado de verificación se actualizan abajo.
+> El cierre exige además las comprobaciones manuales y de entorno del plan granular.
 
 ---
 
@@ -29,7 +31,7 @@
 **Prohibido explícitamente:** NoSQL, CMS/no-code (WordPress, Wix), microservicios, APIs de pago (Google Maps, SMTP comercial).
 
 **Reglas duras a respetar en el código:**
-- Imágenes de proyecto: máx. **15 por obra**, máx. **5 MB** cada una (RT-02, CU48.1).
+- Imágenes de proyecto: máx. **15 por obra**, máx. **2 MB** cada una, sólo JPG/JPEG/PNG (RT-02, CU48.1, RNF17).
 - Logotipos: máx. **500 KB**; Fotografías: máx. **2 MB** (RNF17).
 - Bloqueo de cuenta: **5 intentos fallidos → 60 min de bloqueo** + correo de aviso (RF33).
 - Consultas: máx. **5 consultas pendientes por visitante en 24 h** (CU 1.1, Excepción 3).
@@ -43,7 +45,7 @@
 
 - **Visitante**: usuario público sin autenticación.
 - **Administrador**: usuario interno autenticado, gestiona contenido/consultas.
-- **Administrador Jefe**: máximo privilegio, cuenta sembrada directo en BD, además crea/elimina cuentas de Administrador (fuera de alcance de Incremento 1-2, es Incremento 3+).
+- **Administrador Jefe**: máximo privilegio, cuenta sembrada directo en BD, además crea/elimina cuentas de Administrador (RF52/RF53 del Incremento 3, vigente).
 - **Personal de Administración (DS-04)**: término que agrupa a Administrador + Administrador Jefe.
 
 ---
@@ -69,11 +71,12 @@
 | **RF48** | Registrar un nuevo Proyecto (Nombre + Fotografías) en estado "Borrador" vía Formulario en Ventana Modal. |
 | **RF49** | Editar los detalles de un Proyecto existente (datos precargados en el Formulario). |
 
-## 3. Requerimientos Funcionales — Incremento 2 (22 RF, Prioridad 2)
+## 3. Requerimientos Funcionales — Incremento 2 (23 RF, Prioridad 2)
 
 | ID | Descripción |
 |---|---|
 | **RF02** | Permitir acceso al documento de Términos y Condiciones / Política de Privacidad desde enlace en el pie de página (nueva pestaña). |
+| **RF03** | Mostrar el enlace de ubicación vigente desde contenido persistido en el pie de página. |
 | **RF04** | Exigir aceptación de Términos y Condiciones (checkbox) para habilitar el envío del Formulario de Contacto. |
 | **RF05** | Solicitar confirmación de envío (Ventana Modal) antes de enviar el Formulario de Contacto. |
 | **RF08** | Permitir vaciar simultáneamente todos los campos del Formulario (botón "Limpiar"). |
@@ -285,7 +288,7 @@
 - **Dependencia:** CU 27.1
 - **Excepciones:**
   1. Nombre de Proyecto vacío → rechaza antes de tocar BD.
-  2. Imagen > 5 MB → rechaza.
+  2. Imagen > 2 MB → rechaza.
   3. Más de 15 imágenes adjuntas → bloquea, informa límite.
   4. Imagen con formato inválido o dañada → rechaza, pide formato válido.
   5. BD no puede almacenar proyecto/imagen → error, formulario abierto.
@@ -297,9 +300,9 @@
 - **Dependencia:** CU 27.1
 - **Excepciones:**
   1. Campos obligatorios incompletos → detiene, señala datos faltantes.
-  2. Foto > 5 MB → rechaza, pide imagen más liviana.
+  2. Foto > 2 MB → rechaza, pide imagen más liviana.
   3. Más de 15 fotografías → impide carga del excedente.
-  4. Archivo no es imagen válida / formato incompatible → descarta, pide JPG/PNG/WebP.
+  4. Archivo no es imagen válida / formato incompatible → descarta, pide JPG/JPEG/PNG.
   5. Inactividad > 2 horas en el panel → restringe acceso, pide reingresar credenciales.
   6. Tiempo de seguridad de la conexión caducado → remueve permisos temporales, redirige a inicio.
 
@@ -615,10 +618,34 @@
    `Administrador`, `Sesion`, `Recuperacion_Password`, `Proyecto`, `Imagen_Proyecto`,
    `Certificado`, `Colaborador`, `Contenido`. 3FN, sin atributos repetidos ni dependencias
    transitivas.
-2. **RF07** (correo automático de confirmación al Visitante) y **RF13, RF14, RF15, RF16,
-   RF17** (carrusel de colaboradores, FAQ, opiniones, fases industriales, video de fases) son
-   Prioridad 3/4 — **no** son parte de Incremento 1-2, quedan pendientes.
-3. El Administrador Jefe y la gestión de cuentas (CU 52.1, CU 53.1) tampoco son parte de
-   Incremento 1-2.
+2. **RF07** y **RF13–RF17** pertenecen al Incremento 3 vigente. Su implementación
+   se describe en la sección siguiente; las comprobaciones de entorno siguen pendientes.
+3. El Administrador Jefe y la gestión de cuentas (CU 52.1, CU 53.1) forman parte
+   del Incremento 3 vigente.
 4. Todos los flujos "Personal de Administración" dependen de **CU 27.1** (autenticación) como
    precondición transversal — implementar el middleware de auth de Laravel primero.
+## 8. Requerimientos Funcionales — Incremento 3 (16 RF)
+
+| ID | Implementación vigente |
+|---|---|
+| RF07 | Acuse de consulta al visitante tras persistirla; el resultado del envío se refleja en el mensaje. |
+| RF13 | Carrusel y nombres comerciales de colaboradores persistidos. |
+| RF14 | Preguntas frecuentes vigentes desde `Contenido`. |
+| RF15 | Opiniones vigentes desde `Contenido`. |
+| RF16 | Fases industriales vigentes agrupadas y ordenadas. |
+| RF17 | Galería de imágenes de cada fase y ampliación en modal. |
+| RF22 | Mapa Leaflet con marcadores de proyectos publicados con coordenadas. |
+| RF35 | Alerta por correo a administradores activos tras nueva consulta; estado pendiente persistente si falla. |
+| RF37 | Orden del historial comercial por fecha. |
+| RF38 | Búsqueda textual en el historial comercial. |
+| RF40 | Registro del último administrador responsable cuando cambia prioridad o estado de una consulta. |
+| RF42 | Exportación de consultas en CSV y XLSX. |
+| RF52 | Listado y alta de administradores restringidos al Administrador Jefe. |
+| RF53 | Eliminación transaccional de administrador con conservación de datos de negocio. |
+| RF54 | Productos y componentes persistidos, visibles en la portada. |
+| RF55 | Banner vigente y dinámico en la portada. |
+
+La matriz `MATRIZ_RF_TESTS_INCREMENTO3.md` registra la implementación, pruebas
+automatizadas y validaciones manuales de RF01–RF55. La suite Laravel y el build
+han pasado en SQLite local; el cierre de Incremento 3 **aún no se acredita** hasta
+verificar MySQL 5.6, navegadores requeridos y los cinco paquetes secuenciales.

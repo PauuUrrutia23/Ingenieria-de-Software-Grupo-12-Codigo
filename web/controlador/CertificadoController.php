@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Certificado;
 use App\Rules\PdfValido;
 use App\Services\StorageAdapter;
+use App\Support\Rnf17;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CertificadoController extends Controller
@@ -19,7 +21,11 @@ class CertificadoController extends Controller
 
     public function listadoPublico()
     {
-        $certificados = $this->db->query(Certificado::class)->where('estado', 'vigente')->orderBy('nombre')->get();
+        try {
+            $certificados = $this->db->query(Certificado::class)->where('estado', 'vigente')->orderBy('nombre')->get();
+        } catch (\Throwable $e) {
+            $certificados = collect();
+        }
 
         return view('public.certificaciones', compact('certificados'));
     }
@@ -40,6 +46,32 @@ class CertificadoController extends Controller
         return $this->storage->descargar($certificado->archivo_pdf, $nombreSeguro . '.pdf');
     }
 
+    /**
+     * RF25 / CU25 (Fase 20): preview inline del PDF de un certificado vigente.
+     * La vista pública debe apuntar aquí, no a Storage::url() directo.
+     */
+    public function preview(Certificado $certificado)
+    {
+        if ($certificado->estado !== 'vigente') {
+            return redirect()
+                ->route('public.certificaciones')
+                ->with('doc_no_disponible', 'El documento solicitado no está disponible por el momento.');
+        }
+
+        if (!$certificado->archivo_pdf || !$this->storage->existe($certificado->archivo_pdf)) {
+            return redirect()
+                ->route('public.certificaciones')
+                ->with('doc_no_disponible', 'El documento solicitado no está disponible por el momento.');
+        }
+
+        $nombreSeguro = Str::slug($certificado->nombre);
+        if ($nombreSeguro === '') {
+            $nombreSeguro = 'certificado-' . $certificado->id_certificado;
+        }
+
+        return $this->storage->responderInline($certificado->archivo_pdf, $nombreSeguro . '.pdf');
+    }
+
     public function index()
     {
         $certificados = $this->db->query(Certificado::class)->orderBy('id_certificado', 'desc')->paginate(15);
@@ -58,21 +90,31 @@ class CertificadoController extends Controller
             'descripcion' => 'nullable|string',
             'organismo' => 'required|string|max:120',
             'url_organismo' => 'nullable|url|max:300',
-            'imagen' => 'nullable|image|max:2048',
+            'imagen' => array_merge(['nullable'], Rnf17::reglasImagen()),
             'archivo_pdf' => ['nullable', 'file', 'max:5120', new PdfValido()],
         ]);
 
         $data['id_admin'] = Auth::id();
 
-        if ($request->hasFile('imagen')) {
-            $data['imagen'] = $this->storage->guardar($request->file('imagen'), 'certificados');
-            $data['tipo_mime'] = $request->file('imagen')->getMimeType();
+        $escritos = [];
+        try {
+            if ($request->hasFile('imagen')) {
+                $data['imagen'] = $this->storage->guardar($request->file('imagen'), 'certificados');
+                $escritos[] = $data['imagen'];
+                $data['tipo_mime'] = $request->file('imagen')->getMimeType();
+            }
+            if ($request->hasFile('archivo_pdf')) {
+                $data['archivo_pdf'] = $this->storage->guardar($request->file('archivo_pdf'), 'certificados_pdf');
+                $escritos[] = $data['archivo_pdf'];
+            }
+            DB::transaction(fn () => $this->db->create(Certificado::class, $data));
+        } catch (\Throwable $e) {
+            foreach ($escritos as $ruta) {
+                try { $this->storage->borrar($ruta); } catch (\Throwable $cleanupError) { report($cleanupError); }
+            }
+            report($e);
+            return back()->withInput()->withErrors(['archivo_pdf' => 'No se pudo crear el certificado.']);
         }
-        if ($request->hasFile('archivo_pdf')) {
-            $data['archivo_pdf'] = $this->storage->guardar($request->file('archivo_pdf'), 'certificados_pdf');
-        }
-
-        $this->db->create(Certificado::class, $data);
         return redirect()->route('admin.certificados.index')->with('success', 'Certificado creado.');
     }
 
@@ -89,27 +131,53 @@ class CertificadoController extends Controller
             'estado' => 'required|in:vigente,vencido,revocado',
             'organismo' => 'required|string|max:120',
             'url_organismo' => 'nullable|url|max:300',
-            'imagen' => 'nullable|image|max:2048',
+            'imagen' => array_merge(['nullable'], Rnf17::reglasImagen()),
             'archivo_pdf' => ['nullable', 'file', 'max:5120', new PdfValido()],
         ]);
 
-        if ($request->hasFile('imagen')) {
-            $data['imagen'] = $this->storage->reemplazar($certificado->imagen, $request->file('imagen'), 'certificados');
-            $data['tipo_mime'] = $request->file('imagen')->getMimeType();
+        $anteriores = [];
+        $nuevos = [];
+        try {
+            if ($request->hasFile('imagen')) {
+                $data['imagen'] = $this->storage->guardar($request->file('imagen'), 'certificados');
+                $nuevos[] = $data['imagen'];
+                $anteriores[] = $certificado->imagen;
+                $data['tipo_mime'] = $request->file('imagen')->getMimeType();
+            }
+            if ($request->hasFile('archivo_pdf')) {
+                $data['archivo_pdf'] = $this->storage->guardar($request->file('archivo_pdf'), 'certificados_pdf');
+                $nuevos[] = $data['archivo_pdf'];
+                $anteriores[] = $certificado->archivo_pdf;
+            }
+            DB::transaction(fn () => $this->db->update($certificado, $data));
+        } catch (\Throwable $e) {
+            foreach ($nuevos as $ruta) {
+                try { $this->storage->borrar($ruta); } catch (\Throwable $cleanupError) { report($cleanupError); }
+            }
+            report($e);
+            return back()->withInput()->withErrors(['archivo_pdf' => 'No se pudo actualizar el certificado.']);
         }
-        if ($request->hasFile('archivo_pdf')) {
-            $data['archivo_pdf'] = $this->storage->reemplazar($certificado->archivo_pdf, $request->file('archivo_pdf'), 'certificados_pdf');
+        foreach ($anteriores as $ruta) {
+            try { $this->storage->borrar($ruta); } catch (\Throwable $e) { report($e); }
         }
-
-        $this->db->update($certificado, $data);
         return redirect()->route('admin.certificados.index')->with('success', 'Certificado actualizado.');
     }
 
-    public function destroy(Certificado $certificado)
+    public function destroy(int $certificado)
     {
-        $this->storage->borrar($certificado->imagen);
-        $this->storage->borrar($certificado->archivo_pdf);
-        $this->db->delete($certificado);
+        try {
+            $registro = Certificado::query()->find($certificado);
+            if (!$registro) return redirect()->route('admin.certificados.index')
+                ->withErrors(['certificado' => 'El certificado ya no está disponible.']);
+            $rutas = [$registro->imagen, $registro->archivo_pdf];
+            DB::transaction(fn () => $this->db->delete($registro));
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['certificado' => 'No se pudo eliminar el certificado.']);
+        }
+        foreach ($rutas as $ruta) {
+            try { $this->storage->borrar($ruta); } catch (\Throwable $e) { report($e); }
+        }
         return redirect()->route('admin.certificados.index')->with('success', 'Certificado eliminado.');
     }
 }

@@ -24,7 +24,7 @@ class AdminAccessTest extends TestCase
             'activo' => true
         ]);
 
-        $response = $this->actingAs($admin)->get('/admin/dashboard');
+        $response = $this->loginAdmin($admin)->get('/admin/dashboard');
         $response->assertStatus(200);
     }
 }

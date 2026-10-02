@@ -19,7 +19,7 @@ class PasswordManagementTest extends TestCase
     {
         $admin = Administrador::factory()->create(['password_hash' => Hash::make('Actual123!')]);
 
-        $response = $this->actingAs($admin)->put('/admin/password', [
+        $response = $this->loginAdmin($admin)->put('/admin/password', [
             'password_actual' => 'Actual123!',
             'password' => 'Nueva123!',
             'password_confirmation' => 'Nueva123!',
@@ -33,7 +33,7 @@ class PasswordManagementTest extends TestCase
     {
         $admin = Administrador::factory()->create(['password_hash' => Hash::make('Actual123!')]);
 
-        $response = $this->actingAs($admin)->put('/admin/password', [
+        $response = $this->loginAdmin($admin)->put('/admin/password', [
             'password_actual' => 'Incorrecta1!',
             'password' => 'Nueva123!',
             'password_confirmation' => 'Nueva123!',
@@ -47,7 +47,7 @@ class PasswordManagementTest extends TestCase
     {
         $admin = Administrador::factory()->create(['password_hash' => Hash::make('Actual123!')]);
 
-        $response = $this->actingAs($admin)->put('/admin/password', [
+        $response = $this->loginAdmin($admin)->put('/admin/password', [
             'password_actual' => 'Actual123!',
             'password' => 'sinnumeros',
             'password_confirmation' => 'sinnumeros',

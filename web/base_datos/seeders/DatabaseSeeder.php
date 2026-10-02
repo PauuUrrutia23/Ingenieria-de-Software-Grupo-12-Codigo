@@ -11,6 +11,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminJefeSeeder::class,
             EjemploDatosSeeder::class,
+            ImagenesProyectoSeeder::class,
+            ProductoContenidoSeeder::class,
+            FasesIndustrialesSeeder::class,
+            ProductosPublicosSeeder::class,
+            BannerContenidoSeeder::class,
         ]);
     }
 }

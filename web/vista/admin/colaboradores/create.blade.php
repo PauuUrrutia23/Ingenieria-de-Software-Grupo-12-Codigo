@@ -1,10 +1,36 @@
 <x-admin-layout>
     <x-slot name="header">Nuevo Proveedor</x-slot>
-    @if($errors->any()) <div class="bg-red-50 text-red-600 p-4 rounded mb-4"><ul>@foreach($errors->all() as $err)<li>{{$err}}</li>@endforeach</ul></div> @endif
-    <form action="{{ route('admin.colaboradores.store') }}" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow max-w-2xl space-y-6">
+
+    <div class="mb-8 -mt-2">
+        <p class="ig-eyebrow mb-2">Alianzas</p>
+        <p class="text-mute text-sm">Alta de un colaborador desde una página independiente.</p>
+    </div>
+
+    @if($errors->any())
+        <div class="bg-paper-deep border border-line-strong text-wood-deep text-sm px-5 py-3 mb-6">
+            <ul class="list-disc list-inside space-y-1">@foreach($errors->all() as $err)<li>{{$err}}</li>@endforeach</ul>
+        </div>
+    @endif
+
+    <form action="{{ route('admin.colaboradores.store') }}" method="POST" enctype="multipart/form-data"
+          class="ig-card max-w-2xl p-6 space-y-6">
         @csrf
-        <div><label class="block font-bold mb-2">Nombre Comercial</label><input type="text" name="nombre_comercial" class="w-full border p-2" required></div>
-        <div><label class="block font-bold mb-2">Logotipo</label><input type="file" name="logotipo" accept="image/*" class="w-full border p-2" required></div>
-        <button type="submit" class="bg-[#28533c] text-white px-6 py-2 rounded font-bold">Guardar</button>
+
+        <div>
+            <label for="nombre-comercial" class="ig-label">Nombre Comercial</label>
+            <input id="nombre-comercial" type="text" name="nombre_comercial" value="{{ old('nombre_comercial') }}"
+                   class="ig-field-box" required>
+        </div>
+
+        <div>
+            <label for="logotipo" class="ig-label">Logotipo</label>
+            <input id="logotipo" type="file" name="logotipo" accept="image/jpeg,image/png" class="ig-field-box cursor-pointer" required>
+            <p class="ig-meta mt-2">Máximo 500 KB (RNF17).</p>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+            <button type="submit" class="ig-btn ig-btn-primary !py-2.5 !px-5">Guardar</button>
+            <a href="{{ route('admin.colaboradores.index') }}" class="ig-btn ig-btn-secondary !py-2.5 !px-5">Cancelar</a>
+        </div>
     </form>
 </x-admin-layout>

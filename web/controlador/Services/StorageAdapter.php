@@ -38,6 +38,20 @@ class StorageAdapter
         return Storage::disk(self::DISCO)->download($ruta, $nombreDescarga);
     }
 
+    /**
+     * RF25 (Fase 20): sirve el archivo inline (se abre en el navegador) con nombre
+     * seguro, en lugar de exponer Storage::url() como flujo principal de la vista.
+     */
+    public function responderInline(string $ruta, string $nombreSeguro)
+    {
+        $absoluta = Storage::disk(self::DISCO)->path($ruta);
+
+        return response()->file($absoluta, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $nombreSeguro . '"',
+        ]);
+    }
+
     public function url(string $ruta): string
     {
         return Storage::disk(self::DISCO)->url($ruta);

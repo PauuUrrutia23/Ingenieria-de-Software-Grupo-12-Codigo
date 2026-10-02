@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Support\Rnf17;
+use App\Support\CategoriasProyecto;
+use Illuminate\Validation\Rule;
 
 class UpdateProyectoRequest extends FormRequest
 {
@@ -16,11 +19,11 @@ class UpdateProyectoRequest extends FormRequest
             'latitud' => 'nullable|numeric|between:-90,90',
             'longitud' => 'nullable|numeric|between:-180,180',
             'anio_ejecucion' => 'required|integer|min:1990|max:' . (date('Y') + 1),
-            'categoria' => 'required|string|max:50',
+            'categoria' => ['required', Rule::in(CategoriasProyecto::valores())],
 
             'estado_publicacion' => 'required|in:borrador,publicado',
             'imagenes' => 'nullable|array|max:15',
-            'imagenes.*' => 'image|mimes:jpeg,png,webp,jpg|max:5120',
+            'imagenes.*' => Rnf17::reglasImagen(),
         ];
     }
 }

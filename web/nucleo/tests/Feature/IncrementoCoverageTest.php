@@ -23,7 +23,7 @@ class IncrementoCoverageTest extends TestCase
 
     public function test_gallery_exposes_technical_specs_for_the_modal()
     {
-        Proyecto::factory()->create([
+        $proyecto = Proyecto::factory()->create([
             'nombre_obra' => 'Galpon Industrial Coronel',
             'descripcion_tecnica' => 'Estructura de cerchas de pino radiata impregnado, luz libre de 25 metros.',
             'ubicacion_geografica' => 'Coronel',
@@ -36,9 +36,14 @@ class IncrementoCoverageTest extends TestCase
         $response->assertStatus(200);
 
         $response->assertSee('Galpon Industrial Coronel');
-        $response->assertSee('luz libre de 25 metros', false);
+        $response->assertSee('data-proyecto-id="'.$proyecto->id_proyecto.'"', false);
+        $response->assertDontSee('luz libre de 25 metros', false);
         $response->assertSee('Coronel');
         $response->assertSee('Ver especificaciones técnicas', false);
+
+        $this->get("/proyectos/{$proyecto->id_proyecto}/detalle")
+            ->assertStatus(200)
+            ->assertJsonPath('descripcion', 'Estructura de cerchas de pino radiata impregnado, luz libre de 25 metros.');
     }
 
     public function test_draft_project_technical_specs_are_not_exposed()
@@ -176,7 +181,7 @@ class IncrementoCoverageTest extends TestCase
         ]);
         \App\Models\ImagenProyecto::factory()->create(['id_proyecto' => $proyecto->id_proyecto]);
 
-        $this->actingAs($admin)
+        $this->loginAdmin($admin)
             ->patch(route('admin.proyectos.visibilidad', $proyecto), ['estado_publicacion' => 'publicado'])
             ->assertRedirect();
 
@@ -191,7 +196,7 @@ class IncrementoCoverageTest extends TestCase
             'id_admin' => $admin->id_admin,
         ]);
 
-        $this->actingAs($admin)
+        $this->loginAdmin($admin)
             ->patch(route('admin.proyectos.visibilidad', $proyecto), ['estado_publicacion' => 'publicado'])
             ->assertSessionHasErrors('estado_publicacion');
 
@@ -207,7 +212,7 @@ class IncrementoCoverageTest extends TestCase
         ]);
         $actualizadoAntes = $proyecto->updated_at;
 
-        $this->actingAs($admin)
+        $this->loginAdmin($admin)
             ->patch(route('admin.proyectos.visibilidad', $proyecto), ['estado_publicacion' => 'publicado']);
 
         $this->assertEquals($actualizadoAntes, $proyecto->fresh()->updated_at);
@@ -226,16 +231,18 @@ class IncrementoCoverageTest extends TestCase
         $this->assertEquals('borrador', $proyecto->fresh()->estado_publicacion);
     }
 
-    public function test_consulta_detail_is_available_in_the_listing_for_the_modal()
+    public function test_consulta_detail_is_loaded_fresh_for_the_modal()
     {
         $admin = $this->admin();
-        Consulta::factory()->create(['mensaje' => 'Quiero cotizar cerchas para una bodega.']);
+        $consulta = Consulta::factory()->create(['mensaje' => 'Quiero cotizar cerchas para una bodega.']);
 
-        $response = $this->actingAs($admin)->get('/admin/consultas');
+        $response = $this->loginAdmin($admin)->get('/admin/consultas');
 
         $response->assertStatus(200);
-        $response->assertSee('Quiero cotizar cerchas para una bodega.', false);
-        $response->assertSee('abrirDetalle(', false);
+        $response->assertDontSee('Quiero cotizar cerchas para una bodega.', false);
+        $response->assertSee('abrirDetalle('.$consulta->id_consulta.')', false);
+        $this->getJson(route('admin.consultas.detalle', $consulta->id_consulta))
+            ->assertOk()->assertJsonPath('mensaje', 'Quiero cotizar cerchas para una bodega.');
     }
 
     public function test_admin_updates_consulta_state_from_the_detail_modal()
@@ -243,7 +250,7 @@ class IncrementoCoverageTest extends TestCase
         $admin = $this->admin();
         $consulta = Consulta::factory()->create(['estado' => 'pendiente']);
 
-        $this->actingAs($admin)
+        $this->loginAdmin($admin)
             ->put(route('admin.consultas.update', $consulta), ['estado' => 'en_proceso'])
             ->assertRedirect();
 
@@ -257,7 +264,7 @@ class IncrementoCoverageTest extends TestCase
 
         $falso = UploadedFile::fake()->createWithContent('manual.pdf', 'MZ ejecutable, no es un PDF');
 
-        $response = $this->actingAs($admin)->post(route('admin.certificados.store'), [
+        $response = $this->loginAdmin($admin)->post(route('admin.certificados.store'), [
             'nombre' => 'Norma de prueba',
             'organismo' => 'Organismo de prueba',
             'archivo_pdf' => $falso,
@@ -277,7 +284,7 @@ class IncrementoCoverageTest extends TestCase
             "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF"
         );
 
-        $this->actingAs($admin)->post(route('admin.certificados.store'), [
+        $this->loginAdmin($admin)->post(route('admin.certificados.store'), [
             'nombre' => 'Norma de prueba valida',
             'organismo' => 'Organismo de prueba',
             'archivo_pdf' => $pdf,
@@ -375,7 +382,7 @@ class IncrementoCoverageTest extends TestCase
     {
         $admin = $this->admin();
 
-        $response = $this->actingAs($admin)->post(route('admin.contenido.store'), [
+        $response = $this->loginAdmin($admin)->post(route('admin.contenido.store'), [
             'seccion' => 'faq',
             'titulo' => '',
             'cuerpo' => '',
@@ -389,11 +396,11 @@ class IncrementoCoverageTest extends TestCase
     {
         $admin = $this->admin();
 
-        $this->actingAs($admin)
+        $this->loginAdmin($admin)
             ->post(route('admin.contenido.store'), ['seccion' => 'banner', 'cuerpo' => ''])
             ->assertSessionHasErrors('cuerpo');
 
-        $this->actingAs($admin)
+        $this->loginAdmin($admin)
             ->post(route('admin.contenido.store'), ['seccion' => 'banner', 'cuerpo' => 'Construimos en madera desde 1994.'])
             ->assertSessionHasNoErrors();
 
@@ -405,7 +412,7 @@ class IncrementoCoverageTest extends TestCase
         $admin = $this->admin();
 
         foreach (['fases_industriales', 'opiniones'] as $seccion) {
-            $this->actingAs($admin)
+            $this->loginAdmin($admin)
                 ->post(route('admin.contenido.store'), ['seccion' => $seccion, 'titulo' => '', 'cuerpo' => ''])
                 ->assertSessionHasErrors(['titulo', 'cuerpo']);
         }

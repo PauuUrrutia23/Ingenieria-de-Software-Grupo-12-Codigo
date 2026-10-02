@@ -1,10 +1,14 @@
-# Ingecon — Arquitectura, Modularidad y Plan de Trabajo (hasta Incremento 2)
+# Ingecon — Arquitectura e historial de implementación (Incrementos 1, 2 y 3)
+
+> **Alcance vigente:** Incrementos 1 + 2 + 3 — **55 Requerimientos Funcionales** (16 I1 + 23 I2 + 16 I3), 17 RNF.
+> **Obligatorios:** RF55 (Banner), CU27.2 (recuperación de contraseña) y CU40.2 (responsable de Consulta).
+> **RNF17:** logotipos ≤500 KB; fotografías/imágenes ≤2 MB; sólo JPG/JPEG/PNG. No se declaran válidos WebP ni MP4.
 
 > Complementa a [`REQUISITOS.md`](REQUISITOS.md) (fuente de verdad de RF/RNF/CU). Este
-> documento define **cómo** se construye: arquitectura, estructura de carpetas, modelo de
-> datos, módulos, flujo de trabajo Git y un plan de fases paso a paso — cada fase con sus
-> tareas técnicas, archivos a crear y **tests** — cubriendo el 100% de Incremento 1 + 2
-> (38 RF / 64 CU) sin saltarse nada.
+> documento conserva la arquitectura y el plan histórico de Incrementos 1 y 2.
+> La sección final describe el código actual de Incremento 3. El plan granular
+> de 120 fases rige la verificación de cierre; las fases históricas de este archivo
+> no constituyen evidencia de ejecución ni de pruebas.
 >
 > El diagrama de componentes (§1.1) y el modelo de datos (§3) están tomados directamente de
 > los diagramas oficiales del equipo: `Ingecon_Diagrama_Componentes_hosting_cPanel.drawio` y
@@ -113,10 +117,8 @@ Visitante ─┐                                      ┌─▶ OpenStreetMap (t
 | `StorageAdapter` | `app/Services/ImageUploadService.php` + filesystem `public` |
 | `DBRouterController` | Los **Models Eloquent** (`app/Models/*`) — el diagrama lo representa como un componente intermedio, en Laravel es transparente vía Eloquent, no requiere una clase propia |
 
-**Nota de alcance:** el diagrama es la arquitectura **completa del proyecto** (incluye
-`CrmController`/reportes y `Spatie Excel` que cubren RF42, Prioridad 3 — fuera de Incremento
-1-2). Se documenta igual para que la base de código ya calce con el destino final y no haya
-que refactorizar componentes en Incremento 3.
+**Nota de alcance:** el diagrama histórico menciona `CrmController`; el código vigente
+implementa RF42 en `AdminController` mediante Spatie Simple Excel.
 
 ---
 
@@ -168,7 +170,7 @@ app/
 │   ├── ConsultaLimiteService.php      # CU1.1 Excepción 3 (máx 5/24h)
 │   ├── PasswordPolicyService.php      # DS-51, CU28.2/CU31.2
 │   ├── PdfValidationService.php       # finfo — RNF04/06
-│   ├── ImageUploadService.php         # RNF17, límites 5MB/15 imgs
+│   ├── ImageUploadService.php         # RNF17, límites 2MB/15 imgs (JPG/JPEG/PNG)
 │   └── LoginAttemptService.php        # RF33, CU27.2, CU33.1
 ├── Mail/
 │   ├── ConsultaRecibidaAdmin.php      # CU34.2 / alerta a admin (RF35 fuera de alcance* ver nota)
@@ -403,7 +405,7 @@ dependen de M5 (todo Personal de Administración pasa por `CU 27.1`).
    (o `log` en local).
 3. Instalar Tailwind CSS + Alpine.js (`npm install -D tailwindcss postcss autoprefixer`,
    `npm install alpinejs`), configurar `tailwind.config.js` con los `content` paths de Blade.
-4. Instalar `spatie/simple-excel` (para RF42/exportación — Incremento 3, pero se deja listo).
+4. `spatie/simple-excel` está instalado y se usa en RF42/exportación.
 5. `php artisan storage:link`.
 6. Crear `layouts/app.blade.php` y `layouts/admin.blade.php` base (header, footer, slots).
 7. Configurar Pest o dejar PHPUnit (`php artisan test` corriendo el test de ejemplo).
@@ -521,8 +523,7 @@ dependen de M5 (todo Personal de Administración pasa por `CU 27.1`).
 
 ### Fase 7 — M6: Panel — Colaboradores y Proyectos (RF34,45,46,47,48,49,50,51 · CU34.1-34.6,45.1,45.2,46.1,47.1,48.1,48.2,48.3,49.1,50.1,51.1)
 1. `DashboardController@index` — Menú Lateral con los 5 accesos (RF34), respetando permisos
-   (CU34.1 Exc.1 — para Incremento 1-2 todo Personal de Administración ve todo; el filtrado
-   fino de permisos por rol es Incremento 3+, dejar el hook preparado).
+   (CU34.1 Exc.1; RF52/RF53 ya restringen la gestión de administradores al rol `admin_jefe`).
 2. `ColaboradorController`: `index` (CU34.4/45.2), `store` (CU45.1), `update` (CU46.1),
    `destroy` (CU47.1) — todo con `StoreColaboradorRequest` (nombre requerido, logotipo
    imagen ≤500KB).
@@ -531,7 +532,7 @@ dependen de M5 (todo Personal de Administración pasa por `CU 27.1`).
    toggle borrador/publicado = CU48.2 "Publicando"), `destroy` (CU51.1, borra imágenes del
    storage + registros).
 4. `ImageUploadService::guardar(UploadedFile[] $files, string $carpeta): array` — valida
-   ≤5MB c/u, ≤15 total, formatos JPG/PNG/WebP, revierte si ninguna se pudo procesar.
+   ≤2MB c/u, ≤15 total, formatos JPG/JPEG/PNG, revierte si ninguna se pudo procesar.
 5. Vistas admin con Ventanas Modal (Alpine) para cada Formulario (Colaborador, Proyecto),
    confirmación de eliminación en modal.
 - **Tests:**
@@ -539,7 +540,7 @@ dependen de M5 (todo Personal de Administración pasa por `CU 27.1`).
     de BD, sesión expirada).
   - CU46.1: edición precarga datos correctamente; 4 excepciones.
   - CU47.1: eliminación exitosa + colaborador ya eliminado (idempotencia) + fallo BD.
-  - CU48.1: registro como borrador + las 7 excepciones (nombre vacío, imagen >5MB, >15
+  - CU48.1: registro como borrador + las 7 excepciones (nombre vacío, imagen >2MB, >15
     imágenes, formato inválido, fallo BD, ninguna imagen procesable, sesión expirada).
   - CU48.2/CU50.1: publicar/despublicar cambia visibilidad; verificar que solo `publicado`
     aparece en la galería pública (test de integración cruzando M3 + M6).
@@ -604,14 +605,56 @@ Antes de dar por "completo hasta Incremento 2":
 - [ ] Las 42 CU de Incremento 2 tienen al menos un test por excepción documentada.
 - [ ] Los 17 RNF están verificados (ver Fase 9).
 - [ ] `php artisan migrate:fresh --seed` reconstruye la BD desde cero sin intervención manual.
-- [ ] Ningún RF de Prioridad 3/4 (RF07, RF13-17, RF52-53) fue implementado a costa de tiempo
-      de Incremento 1-2 (alcance cerrado, no "de una vez ya que estamos").
+- [ ] Validar RF07, RF13–RF17 y RF52–RF53 como parte del Incremento 3 vigente.
 - [ ] `git log` muestra commits de los 6 integrantes con trazabilidad por módulo/CU.
 
 ---
 
 ## 9. Próximo paso sugerido
 
-Empezar por **Fase 0 + Fase 1** (setup + modelo de datos) — es la base de la que dependen
-todos los módulos y permite que el equipo se reparta M1-M4 (públicos, sin dependencias entre
-sí) en paralelo apenas esté lista la Fase 1.
+**Siguiente paso vigente:** completar las verificaciones de entorno y reconstruir
+los checkpoints secuenciales exigidos por el plan granular antes de distribuir paquetes.
+# Política de eliminación de administradores (RF53)
+
+El Administrador Jefe no puede eliminarse a sí mismo ni eliminar otra cuenta
+`admin_jefe`. La eliminación de una cuenta `admin` se realiza en una única
+transacción: se cierran y eliminan sus sesiones; se invalidan sus enlaces de
+recuperación; las consultas que la tenían como responsable pasan a
+`Sin responsable`; y las autorías de proyectos, certificados, contenidos,
+colaboradores y productos se reasignan al Administrador Jefe que ejecuta la
+acción. Los datos de negocio permanecen disponibles. Si falla cualquier paso,
+la transacción se revierte y la cuenta se conserva.
+# Estado implementado del Incremento 3 (02-10-2026)
+
+El núcleo Laravel permanece en `web/nucleo`; los controladores están en
+`web/controlador`, modelos y migraciones en `web/base_datos`, y vistas en
+`web/vista`. La descripción histórica que sigue documenta el diseño original;
+esta sección registra la implementación actual. La regresión automatizada
+SQLite y el build están verdes; MySQL 5.6, navegadores y paquetes secuenciales
+siguen pendientes de verificación.
+
+- `Producto` y `ComponenteProducto` almacenan los artículos públicos y sus
+  componentes. `ProductoAdminController` permite alta y edición; la portada
+  obtiene los productos y el banner vigente mediante `InstitucionalCtrl`.
+- `CheckAdminSession` valida la sesión persistida antes de cada ruta privada.
+  `CheckAdminJefe` protege las rutas de administración de cuentas.
+- La relación `consultas.id_admin_responsable` admite `NULL` al eliminar un
+  administrador. `AdminGestionController` aplica la política transaccional de
+  reasignación documentada más abajo.
+- `ContactoController` registra la consulta antes de intentar los correos.
+  `NotificationService` devuelve el resultado del acuse y de la alerta a los
+  administradores activos; una alerta fallida deja un indicador persistente.
+- La galería de proyectos obtiene detalles vigentes por endpoint JSON y usa
+  Leaflet para representar obras publicadas con coordenadas. El mapa conserva
+  los filtros de la galería.
+- La gestión de proyectos ofrece alta con categorías canónicas y coordenadas,
+  además de edición en modal con datos recién consultados. La escritura de
+  proyecto e imágenes se realiza dentro de una transacción; los archivos nuevos
+  se retiran si falla la operación.
+- El módulo comercial pagina 10 consultas, filtra texto del mensaje, ordena
+  por fecha y exporta todas las consultas en CSV o XLSX mediante Spatie Simple
+  Excel. La edición de estado y prioridad asigna al último administrador que
+  efectúa un cambio real dentro de una transacción.
+- Los archivos de `Contenido` se guardan antes de la transacción de BD y se
+  retiran si ésta falla. En edición, el archivo antiguo se elimina solo después
+  de confirmar la actualización.

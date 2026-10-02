@@ -6,8 +6,11 @@ use App\Models\Colaborador;
 use App\Models\Consulta;
 use App\Models\Contenido;
 use App\Services\StorageAdapter;
+use App\Support\Rnf17;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class AdminController extends Controller
 {
@@ -35,16 +38,29 @@ class AdminController extends Controller
 
     public function colaboradoresStore(Request $request)
     {
+        // DS-67 / FASE 15: se recortan espacios de borde y se valida; no se
+        // reescribe la cadena (se conservan nombres de marca tal cual llegan).
+        $request->merge(['nombre_comercial' => trim((string) $request->input('nombre_comercial'))]);
+
         $data = $request->validate([
-            'nombre_comercial' => 'required|string|max:120',
-            'logotipo' => 'required|image|max:500',
+            'nombre_comercial' => ['required', 'string', 'max:100', 'regex:/^[\p{Lu}]/u'],
+            'logotipo' => array_merge(['required'], Rnf17::reglasLogo()),
         ]);
 
-        $data['id_admin'] = Auth::id();
-        $data['logotipo'] = $this->storage->guardar($request->file('logotipo'), 'colaboradores');
-        $data['tipo_mime'] = $request->file('logotipo')->getMimeType();
-
-        $this->db->create(Colaborador::class, $data);
+        $ruta = null;
+        try {
+            $data['id_admin'] = Auth::id();
+            $ruta = $this->storage->guardar($request->file('logotipo'), 'colaboradores');
+            $data['logotipo'] = $ruta;
+            $data['tipo_mime'] = $request->file('logotipo')->getMimeType();
+            $this->db->create(Colaborador::class, $data);
+        } catch (\Throwable $e) {
+            if ($ruta) {
+                try { $this->storage->borrar($ruta); } catch (\Throwable $cleanupError) { report($cleanupError); }
+            }
+            report($e);
+            return back()->withInput()->withErrors(['logotipo' => 'No se pudo crear el colaborador.']);
+        }
         return redirect()->route('admin.colaboradores.index')->with('success', 'Proveedor creado.');
     }
 
@@ -53,26 +69,81 @@ class AdminController extends Controller
         return view('admin.colaboradores.edit', compact('colaborador'));
     }
 
-    public function colaboradoresUpdate(Request $request, Colaborador $colaborador)
+    public function colaboradoresDetalle(int $colaborador)
     {
+        try {
+            $registro = $this->db->query(Colaborador::class)->find($colaborador);
+            if (!$registro) return response()->json(['message' => 'El colaborador ya no está disponible.'], 410);
+            return response()->json([
+                'id' => $registro->id_colaborador,
+                'nombre' => $registro->nombre_comercial,
+                'logo' => $this->storage->existe($registro->logotipo)
+                    ? $this->storage->url($registro->logotipo) : null,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'El colaborador no está disponible temporalmente.'], 503);
+        }
+    }
+
+    public function colaboradoresUpdate(Request $request, int $colaboradore)
+    {
+        // DS-67 / FASE 15: trim de bordes sin reescribir la marca; validación coherente.
+        $request->merge(['nombre_comercial' => trim((string) $request->input('nombre_comercial'))]);
+
         $data = $request->validate([
-            'nombre_comercial' => 'required|string|max:120',
-            'logotipo' => 'nullable|image|max:500',
+            'nombre_comercial' => ['required', 'string', 'max:100', 'regex:/^[\p{Lu}]/u'],
+            'logotipo' => array_merge(['nullable'], Rnf17::reglasLogo()),
         ]);
 
-        if ($request->hasFile('logotipo')) {
-            $data['logotipo'] = $this->storage->reemplazar($colaborador->logotipo, $request->file('logotipo'), 'colaboradores');
-            $data['tipo_mime'] = $request->file('logotipo')->getMimeType();
+        try {
+            $colaborador = Colaborador::query()->find($colaboradore);
+        } catch (\Throwable $e) {
+            return back()->withErrors(['colaborador' => 'No se pudo cargar el colaborador.']);
+        }
+        if (!$colaborador) {
+            return redirect()->route('admin.colaboradores.index')
+                ->withErrors(['colaborador' => 'El colaborador ya no está disponible.']);
         }
 
-        $this->db->update($colaborador, $data);
+        $logoAnterior = $colaborador->logotipo;
+        $logoNuevo = null;
+        try {
+            if ($request->hasFile('logotipo')) {
+                $logoNuevo = $this->storage->guardar($request->file('logotipo'), 'colaboradores');
+                $data['logotipo'] = $logoNuevo;
+                $data['tipo_mime'] = $request->file('logotipo')->getMimeType();
+            }
+            DB::transaction(fn () => $this->db->update($colaborador, $data));
+        } catch (\Throwable $e) {
+            if ($logoNuevo) {
+                try { $this->storage->borrar($logoNuevo); } catch (\Throwable $cleanupError) { report($cleanupError); }
+            }
+            report($e);
+            return back()->withInput()->withErrors(['colaborador' => 'No se pudo actualizar el colaborador.']);
+        }
+        if ($logoNuevo && $logoAnterior) {
+            try { $this->storage->borrar($logoAnterior); } catch (\Throwable $e) { report($e); }
+        }
         return redirect()->route('admin.colaboradores.index')->with('success', 'Proveedor actualizado.');
     }
 
-    public function colaboradoresDestroy(Colaborador $colaborador)
+    public function colaboradoresDestroy(int $colaboradore)
     {
-        $this->storage->borrar($colaborador->logotipo);
-        $this->db->delete($colaborador);
+        try {
+            $registro = Colaborador::query()->find($colaboradore);
+            if (!$registro) return redirect()->route('admin.colaboradores.index')
+                ->withErrors(['colaborador' => 'El colaborador ya no está disponible.']);
+            $logo = $registro->logotipo;
+            DB::transaction(fn () => $this->db->delete($registro));
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['colaborador' => 'No se pudo eliminar el colaborador.']);
+        }
+        try {
+            $this->storage->borrar($logo);
+        } catch (\Throwable $e) {
+            report($e);
+        }
         return redirect()->route('admin.colaboradores.index')->with('success', 'Proveedor eliminado.');
     }
 
@@ -99,7 +170,7 @@ class AdminController extends Controller
         return [
             'titulo' => [isset($obligatorios['titulo']) ? 'required' : 'nullable', 'string', 'max:200'],
             'cuerpo' => [isset($obligatorios['cuerpo']) ? 'required' : 'nullable', 'string'],
-            'archivo' => ['nullable', 'file', 'mimes:jpeg,png,webp,jpg,mp4', 'max:5120'],
+            'archivo' => array_merge(['nullable'], Rnf17::reglasImagen()),
         ];
     }
 
@@ -154,12 +225,21 @@ class AdminController extends Controller
         $data['activo'] = true;
         $data['orden'] = $data['orden'] ?? 0;
 
-        if ($request->hasFile('archivo')) {
-            $data['archivo'] = $this->storage->guardar($request->file('archivo'), 'contenido');
-            $data['tipo_mime'] = $request->file('archivo')->getMimeType();
+        $rutaNueva = null;
+        try {
+            if ($request->hasFile('archivo')) {
+                $rutaNueva = $this->storage->guardar($request->file('archivo'), 'contenido');
+                $data['archivo'] = $rutaNueva;
+                $data['tipo_mime'] = $request->file('archivo')->getMimeType();
+            }
+            DB::transaction(fn () => $this->db->create(Contenido::class, $data));
+        } catch (\Throwable $e) {
+            if ($rutaNueva) {
+                try { $this->storage->borrar($rutaNueva); } catch (\Throwable $cleanupError) { report($cleanupError); }
+            }
+            report($e);
+            return back()->withInput()->withErrors(['contenido' => 'No se pudo crear el contenido. Intente nuevamente.']);
         }
-
-        $this->db->create(Contenido::class, $data);
 
         return redirect()->route('admin.contenido.index', ['seccion' => $data['seccion']])
             ->with('success', 'Contenido agregado correctamente.');
@@ -181,36 +261,161 @@ class AdminController extends Controller
             $this->contenidoAtributos($contenido->seccion)
         );
 
-        if ($request->hasFile('archivo')) {
-            $data['archivo'] = $this->storage->reemplazar($contenido->archivo, $request->file('archivo'), 'contenido');
-            $data['tipo_mime'] = $request->file('archivo')->getMimeType();
+        $rutaNueva = null;
+        $rutaAnterior = $contenido->archivo;
+        try {
+            if ($request->hasFile('archivo')) {
+                $rutaNueva = $this->storage->guardar($request->file('archivo'), 'contenido');
+                $data['archivo'] = $rutaNueva;
+                $data['tipo_mime'] = $request->file('archivo')->getMimeType();
+            }
+            DB::transaction(fn () => $this->db->update($contenido, $data));
+        } catch (\Throwable $e) {
+            if ($rutaNueva) {
+                try { $this->storage->borrar($rutaNueva); } catch (\Throwable $cleanupError) { report($cleanupError); }
+            }
+            report($e);
+            return back()->withInput()->withErrors(['contenido' => 'No se pudo actualizar el contenido. Intente nuevamente.']);
         }
-
-        $this->db->update($contenido, $data);
+        if ($rutaNueva && $rutaAnterior) {
+            try { $this->storage->borrar($rutaAnterior); } catch (\Throwable $e) { report($e); }
+        }
 
         return redirect()->route('admin.contenido.index', ['seccion' => $contenido->seccion])
             ->with('success', 'Contenido actualizado correctamente.');
     }
 
-    public function contenidoDestroy(Contenido $contenido)
+    public function contenidoDestroy(int $contenido)
     {
-        $seccion = $contenido->seccion;
-
-        $this->storage->borrar($contenido->archivo);
-        $this->db->delete($contenido);
+        try {
+            $registro = Contenido::query()->find($contenido);
+            if (!$registro) {
+                return redirect()->route('admin.contenido.index')
+                    ->withErrors(['contenido' => 'El contenido ya no está disponible.']);
+            }
+            $seccion = $registro->seccion;
+            $archivo = $registro->archivo;
+            DB::transaction(fn () => $this->db->delete($registro));
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['contenido' => 'No se pudo eliminar el contenido.']);
+        }
+        try {
+            $this->storage->borrar($archivo);
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return redirect()->route('admin.contenido.index', ['seccion' => $seccion])
             ->with('success', 'Contenido eliminado correctamente.');
     }
 
-    public function consultasIndex()
+    public function consultasIndex(Request $request)
     {
-        $consultas = $this->db->query(Consulta::class)
-            ->with(['visitante', 'adminResponsable'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $orden = $request->query('orden') === 'asc' ? 'asc' : 'desc';
+        $q = trim((string) $request->query('q', ''));
+        $q = mb_substr($q, 0, 200);
 
-        return view('admin.consultas.index', compact('consultas'));
+        $consulta = $this->db->query(Consulta::class)
+            ->with(['visitante', 'adminResponsable'])
+            ->when($q !== '', fn ($query) => $query->where('mensaje', 'like', '%' . $q . '%'))
+            ->orderBy('created_at', $orden)
+            ->orderBy('id_consulta', $orden);
+        $consultas = $consulta->paginate(10)->withQueryString();
+
+        if ($consultas->total() > 0 && $consultas->currentPage() > $consultas->lastPage()) {
+            return redirect()->route('admin.consultas.index', [
+                'q' => $q,
+                'orden' => $orden,
+                'page' => $consultas->lastPage(),
+            ]);
+        }
+
+        return view('admin.consultas.index', compact('consultas', 'orden', 'q'));
+    }
+
+    public function consultasDetalle(int $consulta)
+    {
+        try {
+            $registro = $this->db->query(Consulta::class)
+                ->where('id_consulta', $consulta)
+                ->with(['visitante', 'adminResponsable'])
+                ->first();
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'El detalle no está disponible temporalmente.'], 503);
+        }
+
+        if (!$registro) {
+            return response()->json(['message' => 'Esta consulta ya no está disponible.'], 410);
+        }
+
+        return response()->json([
+            'id' => $registro->id_consulta,
+            'fecha' => $registro->created_at?->format('d/m/Y H:i'),
+            'nombre' => trim(($registro->visitante?->nombre ?? '') . ' ' . ($registro->visitante?->apellido ?? '')),
+            'email' => $registro->visitante?->email,
+            'mensaje' => $registro->mensaje,
+            'estado' => $registro->estado,
+            'prioridad' => $registro->prioridad,
+            'responsable' => $registro->adminResponsable?->correo,
+            'notificacion_pendiente' => $registro->notificacion_admin_pendiente,
+        ]);
+    }
+
+    public function consultasExportar(string $formato)
+    {
+        if (!in_array($formato, ['csv', 'xlsx'], true)) {
+            abort(404);
+        }
+
+        try {
+            $consultas = $this->db->query(Consulta::class)
+                ->with(['visitante', 'adminResponsable'])
+                ->orderBy('created_at')
+                ->orderBy('id_consulta')
+                ->get();
+            if ($consultas->isEmpty()) {
+                return back()->withErrors(['exportar' => 'No hay consultas para exportar.']);
+            }
+
+            $directorio = storage_path('app/exports');
+            if (!is_dir($directorio) && !mkdir($directorio, 0755, true) && !is_dir($directorio)) {
+                throw new \RuntimeException('No se pudo preparar la exportación.');
+            }
+            $ruta = $directorio . DIRECTORY_SEPARATOR . 'consultas-' . bin2hex(random_bytes(8)) . '.' . $formato;
+            $escritor = SimpleExcelWriter::create($ruta);
+            try {
+                foreach ($consultas as $consulta) {
+                    $escritor->addRow([
+                        'ID' => $consulta->id_consulta,
+                        'Fecha' => $consulta->created_at?->format('Y-m-d H:i:s'),
+                        'Nombre' => $this->textoSeguroExportacion(trim(($consulta->visitante?->nombre ?? '') . ' ' . ($consulta->visitante?->apellido ?? ''))),
+                        'Correo' => $this->textoSeguroExportacion($consulta->visitante?->email),
+                        'Mensaje' => $this->textoSeguroExportacion($consulta->mensaje),
+                        'Estado' => $consulta->estado,
+                        'Prioridad' => $consulta->prioridad,
+                        'Responsable' => $this->textoSeguroExportacion($consulta->adminResponsable?->correo ?? 'Sin responsable'),
+                    ]);
+                }
+            } finally {
+                $escritor->close();
+            }
+
+            return response()->download($ruta, 'consultas-ingecon.' . $formato)
+                ->deleteFileAfterSend(true);
+        } catch (\Throwable $e) {
+            if (isset($ruta) && is_file($ruta)) {
+                @unlink($ruta);
+            }
+            report($e);
+            return back()->withErrors(['exportar' => 'La exportación no está disponible temporalmente.']);
+        }
+    }
+
+    private function textoSeguroExportacion(?string $valor): string
+    {
+        $texto = (string) $valor;
+        return preg_match('/^\s*[=+\-@]/u', $texto) ? "'" . $texto : $texto;
     }
 
     public function consultasShow(Consulta $consulta)
@@ -226,21 +431,35 @@ class AdminController extends Controller
             'prioridad' => 'nullable|in:baja,media,alta'
         ]);
 
-        $cambios = ['estado' => $request->estado, 'prioridad' => $request->prioridad];
-
-        if ($request->estado != 'pendiente' && !$consulta->id_admin_responsable) {
-            $cambios['id_admin_responsable'] = Auth::id();
-        }
-
-        $consulta->fill($cambios);
-        if (!$consulta->isDirty()) {
-            return back();
-        }
-
         try {
-            $this->db->update($consulta, $cambios);
+            $cambioReal = DB::transaction(function () use ($request, $consulta) {
+                $actual = Consulta::query()->whereKey($consulta->id_consulta)->lockForUpdate()->first();
+                if (!$actual) {
+                    return null;
+                }
+
+                $prioridadNueva = $request->prioridad ?: null;
+                if ($actual->estado === $request->estado && $actual->prioridad === $prioridadNueva) {
+                    return false;
+                }
+
+                $this->db->update($actual, [
+                    'estado' => $request->estado,
+                    'prioridad' => $prioridadNueva,
+                    'id_admin_responsable' => Auth::id(),
+                ]);
+                return true;
+            });
         } catch (\Throwable $e) {
             return back()->withErrors(['estado' => 'No se pudo actualizar el estado de la consulta.']);
+        }
+
+        if ($cambioReal === null) {
+            return redirect()->route('admin.consultas.index')
+                ->withErrors(['estado' => 'La consulta ya no está disponible.']);
+        }
+        if (!$cambioReal) {
+            return back();
         }
 
         return back()->with('success', 'Estado de la consulta actualizado.');

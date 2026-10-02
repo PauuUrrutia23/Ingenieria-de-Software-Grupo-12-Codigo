@@ -4,6 +4,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Administrador;
+use Illuminate\Support\Facades\Hash;
 
 class AuthTest extends TestCase
 {
@@ -19,7 +20,7 @@ class AuthTest extends TestCase
     {
         $admin = Administrador::create([
             'correo' => 'test@ingecon.cl',
-            'password_hash' => bcrypt('password123'),
+            'password_hash' => Hash::make('password123'),
             'rol' => 'admin_jefe',
             'activo' => true
         ]);
@@ -37,7 +38,7 @@ class AuthTest extends TestCase
     {
         $admin = Administrador::create([
             'correo' => 'test2@ingecon.cl',
-            'password_hash' => bcrypt('password123'),
+            'password_hash' => Hash::make('password123'),
             'rol' => 'admin_jefe',
             'activo' => true
         ]);
