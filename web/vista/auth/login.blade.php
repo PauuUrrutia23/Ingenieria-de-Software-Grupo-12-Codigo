@@ -1,113 +1,195 @@
 <x-app-layout>
-    <div class="relative min-h-[70vh] bg-[#f5f3ec]"
-         x-data="{ acceso: true, olvide: false }">
+    <div x-data="{ acceso: true, olvide: false }">
 
-        <div class="max-w-[1200px] mx-auto px-4 lg:px-8 py-24 text-center">
-            <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">ACCESO INTERNO</p>
-            <h1 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] tracking-tight mb-4">Panel de Gestión</h1>
-            <p class="text-[#666666] mb-8">Área exclusiva del Personal de Administración de Ingecon.</p>
-            <button type="button" @click="acceso = true"
-                    class="bg-slate-900 text-white px-8 py-3.5 rounded-xl text-sm font-semibold hover:bg-slate-700 transition-colors">
-                Iniciar sesión
-            </button>
-        </div>
+        {{-- ============================================================
+             Hero de acceso: 50% imagen arquitectónica (plano, no foto)
+             / 50% formulario (sheet derecho, abierto por defecto).
+             El nav fijo es transparente sobre esta zona oscura.
+             ============================================================ --}}
+        <section data-ig-hero-overlay
+                 class="relative min-h-screen bg-carbon ig-blueprint overflow-hidden">
 
+            {{-- Media mitad derecha: estructura de plano en filete fino --}}
+            <div class="absolute inset-y-0 right-0 w-full lg:w-1/2 pointer-events-none" aria-hidden="true">
+                <svg class="absolute inset-0 w-full h-full opacity-60"
+                     viewBox="0 0 640 520" fill="none" preserveAspectRatio="xMidYMid slice">
+                    {{-- Eje y luces de la cercha --}}
+                    <line x1="40" y1="140" x2="600" y2="140" stroke="rgba(217,185,143,0.30)" stroke-width="1"/>
+                    <line x1="40" y1="300" x2="600" y2="300" stroke="rgba(217,185,143,0.30)" stroke-width="1"/>
+                    {{-- Ala superior en zigzag --}}
+                    <path d="M40 220 L120 140 L200 220 L280 140 L360 220 L440 140 L520 220 L600 140"
+                          stroke="rgba(255,255,255,0.35)" stroke-width="1" fill="none"/>
+                    {{-- Almenas verticales --}}
+                    <line x1="120" y1="140" x2="120" y2="300" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+                    <line x1="280" y1="140" x2="280" y2="300" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+                    <line x1="440" y1="140" x2="440" y2="300" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+                    <line x1="600" y1="140" x2="600" y2="300" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+                    {{-- Apoyos --}}
+                    <path d="M40 300 L40 420 M600 300 L600 420" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+                    <path d="M20 420 L60 420 M580 420 L620 420" stroke="rgba(217,185,143,0.40)" stroke-width="1"/>
+                    {{-- Cotas --}}
+                    <line x1="40" y1="360" x2="600" y2="360" stroke="rgba(255,255,255,0.14)" stroke-width="1" stroke-dasharray="2 6"/>
+                    <circle cx="120" cy="140" r="3" stroke="rgba(217,185,143,0.55)" stroke-width="1" fill="none"/>
+                    <circle cx="280" cy="140" r="3" stroke="rgba(217,185,143,0.55)" stroke-width="1" fill="none"/>
+                    <circle cx="440" cy="140" r="3" stroke="rgba(217,185,143,0.55)" stroke-width="1" fill="none"/>
+                    <circle cx="600" cy="140" r="3" stroke="rgba(217,185,143,0.55)" stroke-width="1" fill="none"/>
+                    {{-- Marco de croquis --}}
+                    <rect x="40" y="60" width="560" height="400" stroke="rgba(255,255,255,0.10)" stroke-width="1" fill="none"/>
+                    <text x="46" y="82" fill="rgba(255,255,255,0.35)" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="2">E-01 · CERCHA</text>
+                    <text x="46" y="452" fill="rgba(255,255,255,0.35)" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="2">ESC. 1:50</text>
+                </svg>
+                {{-- Wordmark sobre el plano --}}
+                <p class="absolute bottom-8 right-8 ig-meta !text-white/40">Plano de taller · Ingecon</p>
+            </div>
+
+            {{-- Columna de contenido (mitad izquierda en desktop) --}}
+            <div class="relative ig-container min-h-screen flex items-center">
+                <div class="max-w-xl w-full pt-32 pb-24">
+                    <p class="ig-eyebrow ig-eyebrow-on-dark mb-6">Acceso interno</p>
+                    <h1 class="ig-h-display text-white mb-5">Panel de Gestión</h1>
+                    <p class="ig-lede !text-white/65 mb-10">
+                        Área exclusiva del Personal de Administración de Ingecon.
+                    </p>
+                    <button type="button" @click="acceso = true"
+                            class="ig-btn ig-btn-hero">
+                        <span class="ig-btn-label">
+                            Iniciar sesión
+                            <i data-lucide="arrow-right" class="ig-btn-arrow h-4 w-4"></i>
+                        </span>
+                    </button>
+                    <p class="mt-12 ig-meta !text-white/40">
+                        Industrialización de la madera · desde 1994
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        {{-- ============================================================
+             Modal de acceso — sheet derecho (50% en desktop,
+             formulario completo en móvil, con el plano de fondo).
+             ============================================================ --}}
         <div x-show="acceso" style="display:none;"
-             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
-             class="fixed inset-0 z-[80] flex items-center justify-center px-4 py-8"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-[80]"
              @keydown.escape.window="acceso = false"
              role="dialog" aria-modal="true" aria-labelledby="acceso-titulo">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="acceso = false" aria-hidden="true"></div>
+
+            <div class="absolute inset-0 bg-carbon/60 backdrop-blur-[2px]" @click="acceso = false" aria-hidden="true"></div>
 
             <div @click.stop
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 class="relative max-w-md w-full bg-white p-8 rounded-2xl shadow-2xl">
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="translate-x-8 opacity-0"
+                 x-transition:enter-end="translate-x-0 opacity-100"
+                 class="relative h-full w-full lg:w-[50%] bg-surface border-l border-line overflow-y-auto">
 
                 <button type="button" @click="acceso = false" aria-label="Cerrar ventana de acceso"
-                        class="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
+                        class="absolute top-5 right-5 p-2 text-mute hover:text-carbon transition-colors">
+                    <i data-lucide="x" class="h-5 w-5"></i>
                 </button>
 
-                <div class="text-center mb-8">
-                    <div class="mx-auto w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center mb-4">
-                        <i data-lucide="lock" class="h-6 w-6 text-white"></i>
+                <div class="min-h-full flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-16">
+                    <p class="ig-eyebrow mb-6">Acceso interno</p>
+                    <h2 id="acceso-titulo" class="ig-h-section mb-2">Acceso al Panel</h2>
+                    <p class="text-sm text-mute mb-10">Ingrese sus credenciales de administración.</p>
+
+                    @if (session('success'))
+                        <div class="mb-8 border border-[#3f6b4a]/40 bg-[#f0f5f1] px-4 py-3 text-sm font-medium text-[#33573d]" role="status">
+                            <span class="flex items-start gap-2">
+                                <i data-lucide="check-circle-2" class="h-4 w-4 mt-0.5 shrink-0"></i>
+                                {{ session('success') }}
+                            </span>
+                        </div>
+                    @endif
+                    @if ($errors->any())
+                        <div class="mb-8 border border-[#b4403f]/40 bg-[#f8f1f0] px-4 py-3 text-sm font-medium text-[#8c2f2f]" role="alert">
+                            <span class="flex items-start gap-2">
+                                <i data-lucide="alert-triangle" class="h-4 w-4 mt-0.5 shrink-0"></i>
+                                {{ $errors->first() }}
+                            </span>
+                        </div>
+                    @endif
+
+                    <form class="space-y-7" action="/login" method="POST">
+                        @csrf
+                        <div>
+                            <label for="correo" class="ig-label">Correo Electrónico</label>
+                            <input id="correo" name="correo" type="email" value="{{ old('correo') }}" required
+                                   class="ig-input" placeholder="admin@ingecon.cl" autocomplete="username">
+                        </div>
+                        <div>
+                            <label for="password" class="ig-label">Contraseña</label>
+                            <input id="password" name="password" type="password" required
+                                   class="ig-input" placeholder="••••••••" autocomplete="current-password">
+                        </div>
+                        <div class="flex items-center justify-between gap-4 pt-1">
+                            <button type="button" @click="acceso = false; olvide = true"
+                                    class="text-xs font-medium tracking-[0.08em] text-wood-deep hover:text-carbon transition-colors">
+                                ¿Olvidó su contraseña?
+                            </button>
+                            <button type="submit" class="ig-btn ig-btn-primary">
+                                Iniciar Sesión
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="mt-14 pt-8 border-t border-line">
+                        <p class="ig-meta">Soporte · Personal de Administración</p>
                     </div>
-                    <h2 id="acceso-titulo" class="text-2xl font-bold text-slate-900">Acceso al Panel</h2>
-                    <p class="mt-2 text-sm text-slate-500">Ingrese sus credenciales de administración</p>
                 </div>
-
-                @if (session('success'))
-                    <div class="bg-emerald-50 text-emerald-800 p-4 rounded-xl mb-6 text-sm font-medium border border-emerald-200">
-                        {{ session('success') }}
-                    </div>
-                @endif
-                @if ($errors->any())
-                    <div class="bg-red-50 text-red-700 p-4 rounded-xl mb-6 text-sm font-medium border border-red-200">
-                        {{ $errors->first() }}
-                    </div>
-                @endif
-
-                <form class="space-y-5" action="/login" method="POST">
-                    @csrf
-                    <div>
-                        <label for="correo" class="block text-sm font-semibold text-slate-700 mb-1.5">Correo Electrónico</label>
-                        <input id="correo" name="correo" type="email" value="{{ old('correo') }}" required
-                               class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300" placeholder="admin@ingecon.cl">
-                    </div>
-                    <div>
-                        <label for="password" class="block text-sm font-semibold text-slate-700 mb-1.5">Contraseña</label>
-                        <input id="password" name="password" type="password" required
-                               class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300" placeholder="••••••••">
-                    </div>
-                    <div class="text-right">
-                        <button type="button" @click="acceso = false; olvide = true" class="text-sm font-semibold text-slate-600 hover:text-slate-900 hover:underline">¿Olvidó su contraseña?</button>
-                    </div>
-                    <div>
-                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold px-8 py-2.5 rounded-lg transition-colors">
-                            Iniciar Sesión
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
 
+        {{-- ============================================================
+             Modal de recuperación — mismo lenguaje visual.
+             aria-labelledby="recuperar-titulo" es aserción de test.
+             ============================================================ --}}
         <div x-show="olvide" style="display:none;"
-             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
-             class="fixed inset-0 z-[80] flex items-center justify-center px-4"
+             class="fixed inset-0 z-[80]"
              @keydown.escape.window="olvide = false"
              role="dialog" aria-modal="true" aria-labelledby="recuperar-titulo">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="olvide = false" aria-hidden="true"></div>
+
+            <div class="absolute inset-0 bg-carbon/60 backdrop-blur-[2px]" @click="olvide = false" aria-hidden="true"></div>
 
             <div @click.stop
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 class="relative max-w-md w-full bg-white p-8 rounded-2xl shadow-2xl">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 id="recuperar-titulo" class="text-xl font-bold text-slate-900">Recuperar contraseña</h3>
-                    <button type="button" @click="olvide = false; acceso = true" aria-label="Cerrar"
-                            class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
-                        <i data-lucide="x" class="h-5 w-5"></i>
-                    </button>
+                 class="relative h-full w-full lg:w-[50%] bg-surface border-l border-line overflow-y-auto flex flex-col justify-center">
+
+                <div class="px-6 sm:px-12 lg:px-16 py-16">
+                    <div class="flex items-start justify-between gap-4 mb-2">
+                        <p class="ig-eyebrow">Recuperación</p>
+                        <button type="button" @click="olvide = false; acceso = true" aria-label="Cerrar"
+                                class="p-2 text-mute hover:text-carbon transition-colors">
+                            <i data-lucide="x" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                    <h3 id="recuperar-titulo" class="ig-h-section mb-2">Recuperar contraseña</h3>
+                    <p class="text-sm text-mute mb-10 max-w-sm">
+                        Ingrese su correo institucional y le enviaremos un enlace para restablecer su contraseña.
+                    </p>
+
+                    <form action="{{ route('password.email') }}" method="POST" class="space-y-7">
+                        @csrf
+                        <div>
+                            <label for="correo-recuperacion" class="ig-label">Correo institucional</label>
+                            <input id="correo-recuperacion" name="correo" type="email" required
+                                   class="ig-input" placeholder="admin@ingecon.cl" autocomplete="username">
+                        </div>
+                        <button type="submit" class="w-full ig-btn ig-btn-primary">
+                            Enviar enlace de recuperación
+                        </button>
+                    </form>
+
+                    <p class="mt-10 text-xs text-mute font-light">
+                        El enlace vence en 60 minutos y solo puede usarse una vez.
+                    </p>
                 </div>
-                <p class="text-sm text-slate-500 mb-5">Ingrese su correo institucional y le enviaremos un enlace para restablecer su contraseña.</p>
-                <form action="{{ route('password.email') }}" method="POST" class="space-y-4">
-                    @csrf
-                    <label for="correo-recuperacion" class="sr-only">Correo institucional</label>
-                    <input id="correo-recuperacion" type="email" name="correo" required
-                           class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300" placeholder="admin@ingecon.cl">
-                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold px-8 py-2.5 rounded-lg transition-colors">
-                        Enviar enlace de recuperación
-                    </button>
-                </form>
             </div>
         </div>
     </div>

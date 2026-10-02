@@ -1,57 +1,90 @@
-<x-app-layout>
-    <div class="w-full bg-[#f5f3ec] min-h-screen pb-24"
+<x-app-layout titulo="Proyectos ejecutados — Ingecon"
+              descripcion="Obras entregadas a constructoras, inmobiliarias y clientes industriales: viviendas industrializadas, galpones y terminaciones de madera.">
+    <div class="w-full bg-paper min-h-screen"
          x-data="galeriaProyectos()"
          @keydown.escape.window="cerrarFicha()">
 
-      <div class="bg-white border-b border-gray-200">
-        <div class="max-w-[1200px] mx-auto px-4 lg:px-8 py-16">
-          <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">OBRAS EJECUTADAS</p>
-          <h1 class="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-6 tracking-tight">Nuestros proyectos</h1>
-          <p class="text-lg text-[#666666] max-w-2xl leading-relaxed">
-            Obras entregadas a constructoras, inmobiliarias y clientes industriales a lo largo del país.
-          </p>
-        </div>
-      </div>
+      @php $hayFiltros = (bool) (request('q') || request('categoria') || request('region')); @endphp
 
-      <div class="max-w-[1200px] mx-auto px-4 lg:px-8 mt-12">
-        <div class="bg-white p-6 rounded-lg border border-[#e8e6df] shadow-sm mb-8">
+      {{-- ========================= MASTHEAD =========================
+           Sin hero: la página nace bajo el navbar fijo (pt-32) y el nav
+           arranca sólido porque esta vista no declara overlay. --}}
+      <section class="bg-carbon text-white ig-blueprint pt-32 pb-16 md:pt-36 md:pb-20 border-b border-white/10">
+        <div class="ig-container">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-end">
+            <div class="lg:col-span-8 ig-reveal">
+              <p class="ig-eyebrow ig-eyebrow-on-dark mb-7">Obras ejecutadas</p>
+              <h1 class="ig-h-display text-white mb-7">Nuestros proyectos</h1>
+              <p class="ig-lede max-w-2xl text-white/60">
+                Obras entregadas a constructoras, inmobiliarias y clientes industriales
+                a lo largo del país.
+              </p>
+            </div>
+            <div class="lg:col-span-4 ig-reveal ig-d2">
+              <dl class="border-t border-white/12">
+                <div class="flex items-baseline justify-between gap-6 py-4 border-b border-white/12">
+                  <dt class="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-white/45">Galería</dt>
+                  <dd class="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-wood">Completa</dd>
+                </div>
+                <div class="flex items-baseline justify-between gap-6 py-4 border-b border-white/12">
+                  <dt class="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-white/45">Líneas</dt>
+                  <dd class="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-white/70">Construcción · Industrial · Terminaciones</dd>
+                </div>
+                <div class="flex items-baseline justify-between gap-6 py-4 border-b border-white/12">
+                  <dt class="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-white/45">Cobertura</dt>
+                  <dd class="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-white/70">Nacional</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {{-- ========================= FILTROS ========================= --}}
+      <section class="bg-surface border-b border-line ig-reveal ig-d2">
+        <div class="ig-container py-10 md:py-12">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-9">
+            <p class="ig-eyebrow mb-0">Acotar la búsqueda</p>
+            @if($hayFiltros)
+              <span class="ig-link-ghost"><i data-lucide="filter" class="h-3.5 w-3.5 text-wood-deep"></i> Filtro activo</span>
+            @else
+              <span class="ig-meta">Sin filtros aplicados</span>
+            @endif
+          </div>
+
           <form id="filtros-proyectos" action="/proyectos" method="GET"
                 @submit.prevent="aplicarFiltros()"
-                class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
+                class="grid grid-cols-1 md:grid-cols-12 gap-x-8 gap-y-9 items-end">
             <div class="md:col-span-5">
-              <label for="filtro-q" class="block text-sm font-bold text-[#1a1a1a] mb-2">Buscar por nombre o ubicación</label>
+              <label for="filtro-q" class="ig-label">Buscar por nombre o ubicación</label>
               <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
-                </div>
+                <i data-lucide="search" class="h-4 w-4 absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none text-mute"></i>
                 <input
                   id="filtro-q"
                   type="text"
                   name="q"
                   value="{{ request('q') }}"
                   placeholder="Ej. galpón, Los Ángeles"
-                  class="w-full pl-11 border border-gray-300 rounded px-4 py-3 focus:ring-2 focus:ring-[#28533c] outline-none text-[#1a1a1a]"
+                  class="ig-input pl-7"
                 />
               </div>
             </div>
             <div class="md:col-span-3">
-              <label for="filtro-categoria" class="block text-sm font-bold text-[#1a1a1a] mb-2">Línea de producto</label>
+              <label for="filtro-categoria" class="ig-label">Línea de producto</label>
               <div class="relative">
-                <select id="filtro-categoria" name="categoria" class="w-full appearance-none border border-gray-300 rounded pl-4 pr-10 py-3 focus:ring-2 focus:ring-[#28533c] outline-none bg-white text-[#1a1a1a]">
+                <select id="filtro-categoria" name="categoria" class="ig-select appearance-none pr-7">
                   <option value="">Todas</option>
                   <option value="construccion" {{ request('categoria') == 'construccion' ? 'selected' : '' }}>Construcción</option>
                   <option value="industrial" {{ request('categoria') == 'industrial' ? 'selected' : '' }}>Industrial</option>
                   <option value="terminaciones" {{ request('categoria') == 'terminaciones' ? 'selected' : '' }}>Terminaciones</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <i data-lucide="chevron-down" class="h-4 w-4 text-gray-500"></i>
-                </div>
+                <i data-lucide="chevron-down" class="h-3.5 w-3.5 absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-mute"></i>
               </div>
             </div>
             <div class="md:col-span-2">
-              <label for="filtro-region" class="block text-sm font-bold text-[#1a1a1a] mb-2">Región</label>
+              <label for="filtro-region" class="ig-label">Región</label>
               <div class="relative">
-                <select id="filtro-region" name="region" class="w-full appearance-none border border-gray-300 rounded pl-4 pr-10 py-3 focus:ring-2 focus:ring-[#28533c] outline-none bg-white text-[#1a1a1a]">
+                <select id="filtro-region" name="region" class="ig-select appearance-none pr-7">
                   <option value="">Todas</option>
                   @if(isset($regiones))
                     @foreach($regiones as $r)
@@ -59,13 +92,11 @@
                     @endforeach
                   @endif
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <i data-lucide="chevron-down" class="h-4 w-4 text-gray-500"></i>
-                </div>
+                <i data-lucide="chevron-down" class="h-3.5 w-3.5 absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-mute"></i>
               </div>
             </div>
             <div class="md:col-span-2">
-              <button type="submit" class="w-full bg-[#28533c] text-white px-4 py-3 rounded text-sm font-semibold hover:bg-[#1e402e] transition-colors disabled:opacity-60"
+              <button type="submit" class="ig-btn ig-btn-primary w-full"
                       :disabled="cargando">
                 <span x-show="!cargando">Aplicar Filtros</span>
                 <span x-show="cargando" style="display:none;">Buscando…</span>
@@ -74,61 +105,83 @@
           </form>
 
           <p x-show="aviso" style="display:none;" x-text="aviso"
-             class="mt-4 text-sm font-medium text-[#c66f4b]"></p>
+             class="mt-8 mb-0 text-xs font-normal leading-relaxed tracking-wide text-[#8c2f2f]"></p>
         </div>
+      </section>
 
-        <div id="resultados-proyectos" :class="cargando ? 'opacity-50 transition-opacity' : ''">
-          @include('public.partials.proyectos-grid')
+      {{-- ====================== RESULTADOS ======================
+           Este nodo se reemplaza por completo con innerHTML al filtrar, así
+           que su contenido (el partial) no usa revelados por scroll: el
+           observer de resources/js/app.js sólo corre al cargar. --}}
+      <section class="bg-paper ig-section-tight">
+        <div class="ig-container">
+          <div id="resultados-proyectos" :class="cargando ? 'opacity-50 transition-opacity' : ''">
+            @include('public.partials.proyectos-grid')
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div x-show="fichaAbierta" style="display:none;"
-           class="fixed inset-0 z-[80] flex items-center justify-center px-4 py-8">
-        <div class="absolute inset-0 bg-black/60" @click="cerrarFicha()"></div>
+      {{-- ======================== FICHA ======================== --}}
+      <div x-show="fichaAbierta" x-cloak style="display:none;"
+           class="fixed inset-0 z-[80] flex items-center justify-center p-4 md:p-8">
+        <div class="absolute inset-0 bg-carbon/85 backdrop-blur-sm" @click="cerrarFicha()"></div>
 
-        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-full overflow-y-auto"
+        <div class="relative bg-surface border border-line w-full max-w-4xl max-h-full overflow-y-auto"
              role="dialog" aria-modal="true" aria-labelledby="ficha-titulo">
 
           <button type="button" @click="cerrarFicha()" aria-label="Cerrar ficha técnica"
-                  class="absolute top-4 right-4 z-10 bg-white/90 rounded-full p-2 text-gray-500 hover:text-[#1a1a1a] shadow">
+                  class="absolute top-0 right-0 z-10 h-11 w-11 bg-surface border-b border-l border-line flex items-center justify-center text-mute hover:text-carbon hover:border-wood transition-colors">
             <i data-lucide="x" class="h-5 w-5"></i>
           </button>
 
-          <template x-if="ficha.imagenes && ficha.imagenes.length">
-            <img :src="ficha.imagenes[0]" :alt="ficha.nombre" class="w-full h-[280px] object-cover rounded-t-xl">
-          </template>
-
-          <div class="p-8">
-            <span class="inline-block bg-[#eaf0ec] text-[#28533c] text-[11px] font-bold px-3 py-1 rounded-full w-max mb-4 uppercase tracking-wide"
-                  x-text="ficha.categoria"></span>
-
-            <h2 id="ficha-titulo" class="text-3xl font-bold text-[#1a1a1a] mb-2 tracking-tight" x-text="ficha.nombre"></h2>
-
-            <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#666666] mb-6 pb-6 border-b border-[#e8e6df]">
-              <span class="flex items-center">
-                <i data-lucide="map-pin" class="w-4 h-4 mr-1.5 opacity-60"></i>
-                <span x-text="ficha.ubicacion"></span>
-              </span>
-              <span class="flex items-center">
-                <i data-lucide="calendar" class="w-4 h-4 mr-1.5 opacity-60"></i>
-                <span x-text="ficha.anio"></span>
-              </span>
+          <div class="grid grid-cols-1 lg:grid-cols-12">
+            <div class="lg:col-span-5">
+              <template x-if="ficha.imagenes && ficha.imagenes.length">
+                <img :src="ficha.imagenes[0]" :alt="ficha.nombre"
+                     class="w-full h-64 md:h-80 lg:h-full min-h-full object-cover"
+                     onerror="this.style.display='none'">
+              </template>
+              <template x-if="!ficha.imagenes || !ficha.imagenes.length">
+                <div class="relative w-full h-64 md:h-80 lg:h-full min-h-full">
+                  <span class="ig-plate"><span class="ig-plate-label">Sin fotografía</span></span>
+                </div>
+              </template>
             </div>
 
-            <h3 class="text-sm font-bold text-[#1a1a1a] uppercase tracking-wide mb-3">Descripción técnica</h3>
-            <p class="text-[#4a4a4a] leading-relaxed whitespace-pre-wrap mb-8" x-text="ficha.descripcion"></p>
+            <div class="lg:col-span-7 p-8 md:p-12">
+              <p class="font-mono text-[0.6875rem] uppercase tracking-[0.22em] text-wood-deep mb-5"
+                 x-text="ficha.categoria"></p>
 
-            <template x-if="ficha.imagenes && ficha.imagenes.length > 1">
-              <div>
-                <h3 class="text-sm font-bold text-[#1a1a1a] uppercase tracking-wide mb-3">Registro fotográfico</h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <template x-for="(img, i) in ficha.imagenes.slice(1)" :key="i">
-                    <img :src="img" :alt="ficha.nombre" class="w-full h-28 object-cover rounded border border-[#e8e6df]"
-                         onerror="this.style.display='none'">
-                  </template>
+              <h2 id="ficha-titulo" class="font-display text-3xl md:text-4xl font-light tracking-tight mb-6"
+                  x-text="ficha.nombre"></h2>
+
+              <dl class="grid grid-cols-2 gap-x-6 gap-y-5 mb-9 pb-9 border-b border-line">
+                <div>
+                  <dt class="ig-meta mb-1.5">Ubicación</dt>
+                  <dd class="text-sm font-light text-mute-deep" x-text="ficha.ubicacion"></dd>
                 </div>
-              </div>
-            </template>
+                <div>
+                  <dt class="ig-meta mb-1.5">Año de ejecución</dt>
+                  <dd class="text-sm font-light text-mute-deep" x-text="ficha.anio"></dd>
+                </div>
+              </dl>
+
+              <h3 class="ig-meta mb-4 text-carbon">Descripción técnica</h3>
+              <p class="text-mute-deep font-light leading-relaxed whitespace-pre-wrap mb-10"
+                 x-text="ficha.descripcion"></p>
+
+              <template x-if="ficha.imagenes && ficha.imagenes.length > 1">
+                <div>
+                  <h3 class="ig-meta mb-4">Registro fotográfico</h3>
+                  <div class="grid grid-cols-3 gap-px bg-line">
+                    <template x-for="(img, i) in ficha.imagenes.slice(1)" :key="i">
+                      <img :src="img" :alt="ficha.nombre" class="w-full h-24 object-cover bg-surface"
+                           onerror="this.style.display='none'">
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
           </div>
         </div>
       </div>
@@ -187,6 +240,7 @@
               document.getElementById('resultados-proyectos').innerHTML = await resp.text();
               history.replaceState(null, '', url);
               if (window.lucide) lucide.createIcons();
+              if (window.igRefrescarContenidoDinamico) window.igRefrescarContenidoDinamico(document.getElementById('resultados-proyectos'));
 
               if (sinCriterios) {
                 this.aviso = 'Seleccione al menos un criterio para acotar la búsqueda.';

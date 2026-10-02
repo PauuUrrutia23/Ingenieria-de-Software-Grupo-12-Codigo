@@ -6,6 +6,7 @@ use App\Models\Colaborador;
 use App\Models\Consulta;
 use App\Models\Contenido;
 use App\Services\StorageAdapter;
+use App\Support\Rnf17;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,9 +36,13 @@ class AdminController extends Controller
 
     public function colaboradoresStore(Request $request)
     {
+        // DS-67 / FASE 15: se recortan espacios de borde y se valida; no se
+        // reescribe la cadena (se conservan nombres de marca tal cual llegan).
+        $request->merge(['nombre_comercial' => trim((string) $request->input('nombre_comercial'))]);
+
         $data = $request->validate([
-            'nombre_comercial' => 'required|string|max:120',
-            'logotipo' => 'required|image|max:500',
+            'nombre_comercial' => ['required', 'string', 'max:100', 'regex:/^[\p{Lu}]/u'],
+            'logotipo' => array_merge(['required'], Rnf17::reglasLogo()),
         ]);
 
         $data['id_admin'] = Auth::id();
@@ -55,9 +60,12 @@ class AdminController extends Controller
 
     public function colaboradoresUpdate(Request $request, Colaborador $colaborador)
     {
+        // DS-67 / FASE 15: trim de bordes sin reescribir la marca; validación coherente.
+        $request->merge(['nombre_comercial' => trim((string) $request->input('nombre_comercial'))]);
+
         $data = $request->validate([
-            'nombre_comercial' => 'required|string|max:120',
-            'logotipo' => 'nullable|image|max:500',
+            'nombre_comercial' => ['required', 'string', 'max:100', 'regex:/^[\p{Lu}]/u'],
+            'logotipo' => array_merge(['nullable'], Rnf17::reglasLogo()),
         ]);
 
         if ($request->hasFile('logotipo')) {

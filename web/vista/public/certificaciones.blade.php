@@ -1,66 +1,116 @@
-<x-app-layout>
-    <div class="w-full bg-[#f5f3ec] min-h-screen pb-24">
-      <div class="bg-white border-b border-gray-200">
-        <div class="max-w-[1200px] mx-auto px-4 lg:px-8 py-16">
-          <p class="text-[#c66f4b] font-bold text-xs tracking-[0.15em] uppercase mb-3">MARCO TÉCNICO</p>
-          <h1 class="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-6 tracking-tight">Certificaciones vigentes</h1>
-          <p class="text-lg text-[#666666] max-w-2xl leading-relaxed">
-            Normativa chilena y respaldo de organismos certificadores para cada producto y proceso.
-          </p>
+<x-app-layout titulo="Certificaciones — Ingecon">
+
+    {{-- ===================== BANDA DE APERTURA (oscura) ===================== --}}
+    <section class="bg-carbon text-white ig-blueprint pt-32 pb-16 lg:pt-40 lg:pb-24 border-b border-carbon">
+        <div class="ig-container">
+            <div class="max-w-3xl ig-reveal">
+                <p class="ig-eyebrow ig-eyebrow-on-dark mb-6">Marco técnico</p>
+                <h1 class="ig-h-display mb-8 !text-white">
+                    Certificaciones <span class="font-normal text-wood-light">vigentes</span>
+                </h1>
+                <p class="ig-lede !text-white/60">
+                    Normativa chilena y respaldo de organismos certificadores para cada
+                    producto y proceso.
+                </p>
+            </div>
         </div>
-      </div>
+    </section>
 
-      <div class="max-w-[1200px] mx-auto px-4 lg:px-8 mt-12">
-        @if(session('doc_no_disponible'))
-          <div class="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded font-medium text-sm mb-6">
-            {{ session('doc_no_disponible') }}
-          </div>
-        @endif
+    {{-- ========================== REGISTRO DE CERTIFICADOS ========================== --}}
+    <section class="ig-section bg-surface">
+        <div class="ig-container">
 
-        @if($certificados->isEmpty())
-          <div class="bg-white border border-[#e8e6df] rounded-lg p-16 text-center text-[#666666]">
-            Aún no hay certificaciones publicadas.
-          </div>
-        @else
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach($certificados as $cert)
-              <div class="bg-white rounded-lg border border-[#e8e6df] shadow-sm p-8 flex flex-col">
-                <div class="w-14 h-14 bg-[#f5f3ec] rounded flex items-center justify-center mb-6 overflow-hidden">
-                  @if($cert->imagen)
-                    <img src="{{ Storage::url($cert->imagen) }}" alt="{{ $cert->nombre }}" class="w-full h-full object-contain p-1.5">
-                  @else
-                    <i data-lucide="shield-check" class="h-7 w-7 text-[#28533c]"></i>
-                  @endif
+            @if(session('doc_no_disponible'))
+                <div class="ig-reveal flex items-start gap-4 border border-line border-l-2 !border-l-wood bg-paper px-5 py-4 mb-14">
+                    <i data-lucide="info" class="h-5 w-5 shrink-0 mt-0.5 text-wood-deep"></i>
+                    <p class="text-mute-deep font-light text-sm leading-relaxed">{{ session('doc_no_disponible') }}</p>
                 </div>
-                <h3 class="text-xl font-bold text-[#1a1a1a] mb-3">{{ $cert->nombre }}</h3>
-                <p class="text-sm text-[#666666] leading-relaxed mb-6 flex-grow">{{ $cert->descripcion }}</p>
+            @endif
 
-                <div class="pt-4 border-t border-[#e8e6df] space-y-2">
-                  @if($cert->organismo)
-                    <a href="{{ $cert->url_organismo ?: '#' }}" target="_blank" rel="noopener"
-                       class="flex items-center text-sm font-semibold text-[#28533c] hover:underline">
-                      <i data-lucide="external-link" class="h-4 w-4 mr-2"></i>
-                      {{ $cert->organismo }}
-                    </a>
-                  @endif
-
-                  @if($cert->archivo_pdf)
-                    <a href="{{ Storage::url($cert->archivo_pdf) }}" target="_blank" rel="noopener"
-                       class="flex items-center text-sm font-semibold text-[#1a1a1a] hover:underline">
-                      <i data-lucide="file-text" class="h-4 w-4 mr-2"></i>
-                      Ver certificado (PDF)
-                    </a>
-                    <a href="{{ route('public.certificaciones.descargar', $cert) }}"
-                       class="flex items-center text-sm font-semibold text-[#28533c] hover:underline">
-                      <i data-lucide="download" class="h-4 w-4 mr-2"></i>
-                      Descargar certificado
-                    </a>
-                  @endif
+            @if($certificados->isEmpty())
+                <div class="ig-reveal ig-card px-8 py-20 text-center">
+                    <div class="mx-auto mb-6 h-14 w-14 border border-line-strong flex items-center justify-center bg-paper-deep">
+                        <i data-lucide="shield-check" class="h-6 w-6 text-mute"></i>
+                    </div>
+                    <p class="ig-lede">Aún no hay certificaciones publicadas.</p>
                 </div>
-              </div>
-            @endforeach
-          </div>
-        @endif
-      </div>
-    </div>
+            @else
+                <div class="border-t border-line">
+                    @foreach($certificados as $cert)
+                        @php
+                            $estado = $cert->estado ?? 'vigente';
+                            $claseEstado = match ($estado) {
+                                'vigente' => 'ig-badge-ok',
+                                'vencido' => 'ig-badge-warn',
+                                default    => 'ig-badge-mute',
+                            };
+                        @endphp
+                        <article class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 items-start border-b border-line py-10 lg:py-12 ig-reveal ig-d{{ min($loop->index + 1, 4) }}">
+
+                            {{-- Marco gráfico: sello del organismo o icono --}}
+                            <div class="md:col-span-3 flex md:block items-center gap-5">
+                                <div class="relative shrink-0 aspect-square w-20 md:w-full bg-paper-deep border border-line overflow-hidden">
+                                    @if($cert->imagen)
+                                        <img src="{{ Storage::url($cert->imagen) }}"
+                                             alt="{{ $cert->nombre }}" loading="lazy"
+                                             class="absolute inset-0 w-full h-full object-contain p-2.5">
+                                    @else
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <i data-lucide="shield-check" class="h-8 w-8 text-wood-deep"></i>
+                                        </div>
+                                    @endif
+                                </div>
+                                <span class="md:hidden ig-meta !text-wood-deep">
+                                    {{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
+                                </span>
+                            </div>
+
+                            {{-- Cuerpo credencial --}}
+                            <div class="md:col-span-9">
+                                <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3 mb-3">
+                                    <div class="flex items-baseline gap-4">
+                                        <span class="hidden md:block ig-meta !text-wood-deep">
+                                            {{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
+                                        </span>
+                                        <h3 class="font-display text-2xl md:text-[1.75rem] font-light tracking-tight text-carbon">
+                                            {{ $cert->nombre }}
+                                        </h3>
+                                    </div>
+                                    <span class="ig-badge {{ $claseEstado }}">{{ $estado }}</span>
+                                </div>
+
+                                @if($cert->organismo)
+                                    <a href="{{ $cert->url_organismo ?: '#' }}" target="_blank" rel="noopener"
+                                       class="ig-link-ghost !normal-case !tracking-normal !text-sm mb-5 text-mute-deep">
+                                        <i data-lucide="badge-check" class="h-4 w-4 text-wood-deep"></i>
+                                        {{ $cert->organismo }}
+                                        <i data-lucide="external-link" class="h-3.5 w-3.5"></i>
+                                    </a>
+                                @endif
+
+                                <p class="text-mute font-light leading-relaxed max-w-3xl mb-7">{{ $cert->descripcion }}</p>
+
+                                <div class="flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-line pt-5">
+                                    @if($cert->created_at)
+                                        <span class="ig-meta">Emitido {{ $cert->created_at->format('m/Y') }}</span>
+                                    @endif
+
+                                    @if($cert->archivo_pdf)
+                                        <a href="{{ Storage::url($cert->archivo_pdf) }}" target="_blank" rel="noopener"
+                                           class="ig-link-ghost">
+                                            <i data-lucide="file-text" class="h-4 w-4"></i> Ver certificado (PDF)
+                                        </a>
+                                        <a href="{{ route('public.certificaciones.descargar', $cert) }}"
+                                           class="ig-link-ghost">
+                                            <i data-lucide="download" class="h-4 w-4"></i> Descargar certificado
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </section>
 </x-app-layout>

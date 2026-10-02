@@ -1,10 +1,14 @@
 # Ingecon — Arquitectura, Modularidad y Plan de Trabajo (hasta Incremento 2)
 
+> **Alcance vigente:** Incrementos 1 + 2 + 3 — **55 Requerimientos Funcionales** (16 I1 + 23 I2 + 16 I3), 17 RNF.
+> **Obligatorios:** RF55 (Banner), CU27.2 (recuperación de contraseña) y CU40.2 (responsable de Consulta).
+> **RNF17:** logotipos ≤500 KB; fotografías/imágenes ≤2 MB; sólo JPG/JPEG/PNG. No se declaran válidos WebP ni MP4.
+
 > Complementa a [`REQUISITOS.md`](REQUISITOS.md) (fuente de verdad de RF/RNF/CU). Este
 > documento define **cómo** se construye: arquitectura, estructura de carpetas, modelo de
 > datos, módulos, flujo de trabajo Git y un plan de fases paso a paso — cada fase con sus
 > tareas técnicas, archivos a crear y **tests** — cubriendo el 100% de Incremento 1 + 2
-> (38 RF / 64 CU) sin saltarse nada.
+> (55 RF: 16 Incremento 1 + 23 Incremento 2 + 16 Incremento 3) sin saltarse nada.
 >
 > El diagrama de componentes (§1.1) y el modelo de datos (§3) están tomados directamente de
 > los diagramas oficiales del equipo: `Ingecon_Diagrama_Componentes_hosting_cPanel.drawio` y
@@ -168,7 +172,7 @@ app/
 │   ├── ConsultaLimiteService.php      # CU1.1 Excepción 3 (máx 5/24h)
 │   ├── PasswordPolicyService.php      # DS-51, CU28.2/CU31.2
 │   ├── PdfValidationService.php       # finfo — RNF04/06
-│   ├── ImageUploadService.php         # RNF17, límites 5MB/15 imgs
+│   ├── ImageUploadService.php         # RNF17, límites 2MB/15 imgs (JPG/JPEG/PNG)
 │   └── LoginAttemptService.php        # RF33, CU27.2, CU33.1
 ├── Mail/
 │   ├── ConsultaRecibidaAdmin.php      # CU34.2 / alerta a admin (RF35 fuera de alcance* ver nota)
@@ -522,7 +526,7 @@ dependen de M5 (todo Personal de Administración pasa por `CU 27.1`).
 ### Fase 7 — M6: Panel — Colaboradores y Proyectos (RF34,45,46,47,48,49,50,51 · CU34.1-34.6,45.1,45.2,46.1,47.1,48.1,48.2,48.3,49.1,50.1,51.1)
 1. `DashboardController@index` — Menú Lateral con los 5 accesos (RF34), respetando permisos
    (CU34.1 Exc.1 — para Incremento 1-2 todo Personal de Administración ve todo; el filtrado
-   fino de permisos por rol es Incremento 3+, dejar el hook preparado).
+   fino de permisos por rol es Incremento 3 (RF52/RF53, vigente), dejar el hook preparado).
 2. `ColaboradorController`: `index` (CU34.4/45.2), `store` (CU45.1), `update` (CU46.1),
    `destroy` (CU47.1) — todo con `StoreColaboradorRequest` (nombre requerido, logotipo
    imagen ≤500KB).
@@ -531,7 +535,7 @@ dependen de M5 (todo Personal de Administración pasa por `CU 27.1`).
    toggle borrador/publicado = CU48.2 "Publicando"), `destroy` (CU51.1, borra imágenes del
    storage + registros).
 4. `ImageUploadService::guardar(UploadedFile[] $files, string $carpeta): array` — valida
-   ≤5MB c/u, ≤15 total, formatos JPG/PNG/WebP, revierte si ninguna se pudo procesar.
+   ≤2MB c/u, ≤15 total, formatos JPG/JPEG/PNG, revierte si ninguna se pudo procesar.
 5. Vistas admin con Ventanas Modal (Alpine) para cada Formulario (Colaborador, Proyecto),
    confirmación de eliminación en modal.
 - **Tests:**
@@ -539,7 +543,7 @@ dependen de M5 (todo Personal de Administración pasa por `CU 27.1`).
     de BD, sesión expirada).
   - CU46.1: edición precarga datos correctamente; 4 excepciones.
   - CU47.1: eliminación exitosa + colaborador ya eliminado (idempotencia) + fallo BD.
-  - CU48.1: registro como borrador + las 7 excepciones (nombre vacío, imagen >5MB, >15
+  - CU48.1: registro como borrador + las 7 excepciones (nombre vacío, imagen >2MB, >15
     imágenes, formato inválido, fallo BD, ninguna imagen procesable, sesión expirada).
   - CU48.2/CU50.1: publicar/despublicar cambia visibilidad; verificar que solo `publicado`
     aparece en la galería pública (test de integración cruzando M3 + M6).

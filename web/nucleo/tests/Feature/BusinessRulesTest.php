@@ -68,7 +68,7 @@ class BusinessRulesTest extends TestCase
         $admin = Administrador::factory()->create();
         Consulta::factory()->count(15)->create();
 
-        $response = $this->actingAs($admin)->get('/admin/consultas');
+        $response = $this->loginAdmin($admin)->get('/admin/consultas');
 
         $response->assertStatus(200);
         $response->assertViewHas('consultas', function ($consultas) {
@@ -82,7 +82,7 @@ class BusinessRulesTest extends TestCase
         $admin = Administrador::factory()->create();
         $logoGrande = UploadedFile::fake()->image('logo.png')->size(600);
 
-        $response = $this->actingAs($admin)->post('/admin/colaboradores', [
+        $response = $this->loginAdmin($admin)->post('/admin/colaboradores', [
             'nombre_comercial' => 'Proveedor Test',
             'logotipo' => $logoGrande,
         ]);
@@ -100,7 +100,7 @@ class BusinessRulesTest extends TestCase
             $imagenes[] = UploadedFile::fake()->image("foto{$i}.jpg");
         }
 
-        $response = $this->actingAs($admin)->post('/admin/proyectos', [
+        $response = $this->loginAdmin($admin)->post('/admin/proyectos', [
             'nombre_obra' => 'Proyecto con demasiadas fotos',
             'descripcion_tecnica' => 'Descripción técnica de prueba suficientemente larga.',
             'region' => 'Metropolitana',

@@ -22,6 +22,7 @@ class Administrador extends Authenticatable implements \Illuminate\Contracts\Aut
     public function recuperaciones() { return $this->hasMany(RecuperacionPassword::class, 'id_admin', 'id_admin'); }
     public function colaboradores() { return $this->hasMany(Colaborador::class, 'id_admin', 'id_admin'); }
     public function proyectos() { return $this->hasMany(Proyecto::class, 'id_admin', 'id_admin'); }
+    public function productos() { return $this->hasMany(Producto::class, 'id_admin', 'id_admin'); }
     public function consultasResponsable() { return $this->hasMany(Consulta::class, 'id_admin_responsable', 'id_admin'); }
     public function certificados() { return $this->hasMany(Certificado::class, 'id_admin', 'id_admin'); }
     public function contenidos() { return $this->hasMany(Contenido::class, 'id_admin', 'id_admin'); }

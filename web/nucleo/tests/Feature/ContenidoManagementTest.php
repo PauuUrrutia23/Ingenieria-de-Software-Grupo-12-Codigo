@@ -22,7 +22,7 @@ class ContenidoManagementTest extends TestCase
     {
         $admin = Administrador::factory()->create();
 
-        $response = $this->actingAs($admin)->post('/admin/contenido', [
+        $response = $this->loginAdmin($admin)->post('/admin/contenido', [
             'seccion' => 'faq',
             'titulo' => '¿Hacen despachos a regiones?',
             'cuerpo' => 'Sí, despachamos a nivel nacional desde nuestras 3 plantas.',
@@ -43,7 +43,7 @@ class ContenidoManagementTest extends TestCase
             'orden' => 0, 'activo' => true, 'id_admin' => $admin->id_admin,
         ]);
 
-        $response = $this->actingAs($admin)->put("/admin/contenido/{$contenido->id_contenido}", [
+        $response = $this->loginAdmin($admin)->put("/admin/contenido/{$contenido->id_contenido}", [
             'titulo' => 'Pregunta editada',
             'cuerpo' => 'Respuesta editada',
         ]);
@@ -60,7 +60,7 @@ class ContenidoManagementTest extends TestCase
             'orden' => 0, 'activo' => true, 'id_admin' => $admin->id_admin,
         ]);
 
-        $response = $this->actingAs($admin)->delete("/admin/contenido/{$contenido->id_contenido}");
+        $response = $this->loginAdmin($admin)->delete("/admin/contenido/{$contenido->id_contenido}");
 
         $response->assertRedirect();
         $this->assertDatabaseMissing('contenidos', ['id_contenido' => $contenido->id_contenido]);

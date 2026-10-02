@@ -1,5 +1,9 @@
 # Ingecon — Requisitos, Casos de Uso y Stack (Incremento 1 + 2)
 
+> **Alcance vigente:** Incrementos 1 + 2 + 3 — **55 Requerimientos Funcionales** (16 I1 + 23 I2 + 16 I3), 17 RNF.
+> **Obligatorios:** RF55 (Banner), CU27.2 (recuperación de contraseña) y CU40.2 (responsable de Consulta).
+> **RNF17:** logotipos ≤500 KB; fotografías/imágenes ≤2 MB; sólo JPG/JPEG/PNG. No se declaran válidos WebP ni MP4.
+
 > Consolidado a partir de: `Grupo 12 - Documento_0.docx`, `Grupo 12 - incremento1.docx`,
 > `Grupo 12 - Incremento 2.docx`, `Dimensión Técnica Ingecon_v1.2_mod.docx`.
 > Contiene **todo** lo que debe estar implementado para considerar la app "completa hasta el
@@ -29,7 +33,7 @@
 **Prohibido explícitamente:** NoSQL, CMS/no-code (WordPress, Wix), microservicios, APIs de pago (Google Maps, SMTP comercial).
 
 **Reglas duras a respetar en el código:**
-- Imágenes de proyecto: máx. **15 por obra**, máx. **5 MB** cada una (RT-02, CU48.1).
+- Imágenes de proyecto: máx. **15 por obra**, máx. **2 MB** cada una, sólo JPG/JPEG/PNG (RT-02, CU48.1, RNF17).
 - Logotipos: máx. **500 KB**; Fotografías: máx. **2 MB** (RNF17).
 - Bloqueo de cuenta: **5 intentos fallidos → 60 min de bloqueo** + correo de aviso (RF33).
 - Consultas: máx. **5 consultas pendientes por visitante en 24 h** (CU 1.1, Excepción 3).
@@ -43,7 +47,7 @@
 
 - **Visitante**: usuario público sin autenticación.
 - **Administrador**: usuario interno autenticado, gestiona contenido/consultas.
-- **Administrador Jefe**: máximo privilegio, cuenta sembrada directo en BD, además crea/elimina cuentas de Administrador (fuera de alcance de Incremento 1-2, es Incremento 3+).
+- **Administrador Jefe**: máximo privilegio, cuenta sembrada directo en BD, además crea/elimina cuentas de Administrador (RF52/RF53 del Incremento 3, vigente).
 - **Personal de Administración (DS-04)**: término que agrupa a Administrador + Administrador Jefe.
 
 ---
@@ -285,7 +289,7 @@
 - **Dependencia:** CU 27.1
 - **Excepciones:**
   1. Nombre de Proyecto vacío → rechaza antes de tocar BD.
-  2. Imagen > 5 MB → rechaza.
+  2. Imagen > 2 MB → rechaza.
   3. Más de 15 imágenes adjuntas → bloquea, informa límite.
   4. Imagen con formato inválido o dañada → rechaza, pide formato válido.
   5. BD no puede almacenar proyecto/imagen → error, formulario abierto.
@@ -297,9 +301,9 @@
 - **Dependencia:** CU 27.1
 - **Excepciones:**
   1. Campos obligatorios incompletos → detiene, señala datos faltantes.
-  2. Foto > 5 MB → rechaza, pide imagen más liviana.
+  2. Foto > 2 MB → rechaza, pide imagen más liviana.
   3. Más de 15 fotografías → impide carga del excedente.
-  4. Archivo no es imagen válida / formato incompatible → descarta, pide JPG/PNG/WebP.
+  4. Archivo no es imagen válida / formato incompatible → descarta, pide JPG/JPEG/PNG.
   5. Inactividad > 2 horas en el panel → restringe acceso, pide reingresar credenciales.
   6. Tiempo de seguridad de la conexión caducado → remueve permisos temporales, redirige a inicio.
 

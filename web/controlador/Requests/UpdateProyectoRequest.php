@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Support\Rnf17;
 
 class UpdateProyectoRequest extends FormRequest
 {
@@ -20,7 +21,7 @@ class UpdateProyectoRequest extends FormRequest
 
             'estado_publicacion' => 'required|in:borrador,publicado',
             'imagenes' => 'nullable|array|max:15',
-            'imagenes.*' => 'image|mimes:jpeg,png,webp,jpg|max:5120',
+            'imagenes.*' => Rnf17::reglasImagen(),
         ];
     }
 }

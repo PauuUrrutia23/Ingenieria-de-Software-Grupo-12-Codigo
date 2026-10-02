@@ -1,63 +1,156 @@
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-  <span class="font-bold text-[#1a1a1a]">{{ $proyectos->total() }} {{ $proyectos->total() === 1 ? 'obra' : 'obras' }}</span>
+@php
+    // El nodo contenedor de este fragmento se reemplaza por completo con
+    // innerHTML al filtrar, así que aquí no se usan clases de revelado por
+    // scroll: el observer de resources/js/app.js sólo corre al cargar la
+    // página y dejaría las obras invisibles tras un filtro.
+    $colecciones = $proyectos->getCollection()->chunk(3);
+@endphp
+
+{{-- ============ CONTADOR / METADATOS (mono) ============ --}}
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-line">
+  @if($proyectos->total() > 0)
+    <p class="ig-meta mb-0">
+      {{ $proyectos->total() }} {{ $proyectos->total() === 1 ? 'obra' : 'obras' }}
+      <span class="text-line-strong">/</span>
+      mostrando {{ $proyectos->firstItem() }}–{{ $proyectos->lastItem() }} en esta página
+    </p>
+  @else
+    <p class="ig-meta mb-0">Sin resultados</p>
+  @endif
+
   @if(request('q') || request('categoria') || request('region'))
-    <a href="/proyectos" class="text-sm font-medium text-gray-500 hover:text-[#1a1a1a]">Limpiar filtros</a>
+    <a href="/proyectos" class="ig-link-ghost shrink-0">
+      <i data-lucide="x" class="h-3.5 w-3.5"></i> Limpiar filtros
+    </a>
   @endif
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-  @forelse($proyectos as $proyecto)
-    <button type="button"
-            class="js-abrir-ficha group text-left bg-white border border-[#e8e6df] rounded-lg overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-[#28533c] focus:outline-none focus:ring-2 focus:ring-[#28533c]"
-            data-proyecto="{{ json_encode([
-                'nombre'      => $proyecto->nombre_obra,
-                'descripcion' => $proyecto->descripcion_tecnica,
-                'ubicacion'   => $proyecto->ubicacion_geografica,
-                'categoria'   => $proyecto->categoria,
-                'anio'        => $proyecto->anio_ejecucion,
-                'imagenes'    => $proyecto->imagenes->map(fn ($i) => Storage::url($i->imagen))->values(),
-            ], JSON_UNESCAPED_UNICODE) }}">
-      <div class="relative overflow-hidden">
+{{-- ============ GALERÍA EDITORIAL ============
+     Bandas de tres obras: una destacada (7/12) y dos secundarias (5/12)
+     apiladas, con proporciones distintas. La última banda puede traer
+     una o dos obras y se recompone.
+--}}
+@forelse($colecciones as $bloque)
+  @php
+    $total_bloque = $bloque->count();
+    $columnas_destacado = $total_bloque === 1 ? 'lg:col-span-12' : 'lg:col-span-7';
+    $alto_secundaria = $total_bloque === 2 ? 'h-[280px] md:h-[320px] lg:h-[420px]' : 'h-[280px] sm:h-[300px] lg:h-[202px]';
+  @endphp
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
+    @foreach($bloque->take(1) as $proyecto)
+      <button type="button"
+              class="js-abrir-ficha group ig-shot {{ $columnas_destacado }} h-[280px] md:h-[320px] lg:h-[420px] w-full text-left focus-visible:outline-offset-[-4px]"
+              data-proyecto="{{ json_encode([
+                  'nombre'      => $proyecto->nombre_obra,
+                  'descripcion' => $proyecto->descripcion_tecnica,
+                  'ubicacion'   => $proyecto->ubicacion_geografica,
+                  'categoria'   => $proyecto->categoria,
+                  'anio'        => $proyecto->anio_ejecucion,
+                  'imagenes'    => $proyecto->imagenes->map(fn ($i) => Storage::url($i->imagen))->values(),
+              ], JSON_UNESCAPED_UNICODE) }}">
         @if($proyecto->imagenes->isNotEmpty())
           <img src="{{ Storage::url($proyecto->imagenes->first()->imagen) }}"
-               alt="{{ $proyecto->nombre_obra }}"
-               class="w-full h-[240px] object-cover transition-transform duration-500 group-hover:scale-105"
+               alt="{{ $proyecto->nombre_obra }}" loading="lazy"
                onerror="this.style.display='none'">
         @else
-          <div class="flex items-center justify-center text-[#99968f] text-xs font-medium tracking-widest uppercase bg-[#e8e6df] w-full h-[240px]" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)">SIN IMAGEN</div>
+          <span class="ig-plate"><span class="ig-plate-label">Sin fotografía</span></span>
         @endif
-        <div class="absolute inset-0 bg-white/0 transition-colors duration-300 group-hover:bg-white/25"></div>
-        <span class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <span class="h-12 w-12 rounded-full bg-white/90 text-[#28533c] shadow-lg flex items-center justify-center">
-            <i data-lucide="plus" class="w-6 h-6"></i>
-          </span>
-        </span>
-      </div>
 
-      <div class="p-6 flex-grow flex flex-col">
-        <span class="inline-block bg-[#eaf0ec] text-[#28533c] text-[11px] font-bold px-3 py-1 rounded-full w-max mb-5 uppercase tracking-wide">
-          {{ $proyecto->categoria }}
-        </span>
-        <h3 class="text-xl font-bold text-[#1a1a1a] mb-8 uppercase">{{ $proyecto->nombre_obra }}</h3>
-        <div class="mt-auto flex justify-between items-center text-sm text-[#666666]">
-          <span class="flex items-center">
-            <i data-lucide="map-pin" class="w-4 h-4 mr-1.5 opacity-60"></i> {{ $proyecto->ubicacion_geografica }}
+        <span class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-carbon/95 via-carbon/55 to-transparent"></span>
+        <span class="ig-shot-veil"></span>
+
+        <span class="absolute inset-x-0 bottom-0 p-6 md:p-8 flex flex-col items-start">
+          <span class="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-wood-light mb-3">{{ $proyecto->categoria }}</span>
+          <span class="font-display text-2xl md:text-3xl lg:text-4xl font-light tracking-tight text-white mb-3">{{ $proyecto->nombre_obra }}</span>
+          <span class="font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-white/65">
+            {{ $proyecto->ubicacion_geografica }} <span class="text-white/35">·</span> {{ $proyecto->anio_ejecucion }}
           </span>
-          <span class="font-medium">{{ $proyecto->anio_ejecucion }}</span>
+          <span class="mt-5 inline-flex items-center gap-2.5 font-mono text-[0.625rem] uppercase tracking-[0.16em] text-white/85
+                       opacity-0 -translate-y-1 transition-all duration-500
+                       lg:group-hover:opacity-100 lg:group-hover:translate-y-0">
+            <span class="h-px w-6 bg-wood transition-all duration-500 lg:group-hover:w-10"></span>
+            Ver especificaciones técnicas
+          </span>
+        </span>
+      </button>
+    @endforeach
+
+    @if($total_bloque > 1)
+      <div class="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+        @foreach($bloque->slice(1) as $proyecto)
+          <button type="button"
+                  class="js-abrir-ficha group ig-shot {{ $alto_secundaria }} w-full text-left focus-visible:outline-offset-[-4px]"
+                  data-proyecto="{{ json_encode([
+                      'nombre'      => $proyecto->nombre_obra,
+                      'descripcion' => $proyecto->descripcion_tecnica,
+                      'ubicacion'   => $proyecto->ubicacion_geografica,
+                      'categoria'   => $proyecto->categoria,
+                      'anio'        => $proyecto->anio_ejecucion,
+                      'imagenes'    => $proyecto->imagenes->map(fn ($i) => Storage::url($i->imagen))->values(),
+                  ], JSON_UNESCAPED_UNICODE) }}">
+            @if($proyecto->imagenes->isNotEmpty())
+              <img src="{{ Storage::url($proyecto->imagenes->first()->imagen) }}"
+                   alt="{{ $proyecto->nombre_obra }}" loading="lazy"
+                   onerror="this.style.display='none'">
+            @else
+              <span class="ig-plate"><span class="ig-plate-label">Sin fotografía</span></span>
+            @endif
+
+            <span class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-carbon/95 via-carbon/55 to-transparent"></span>
+            <span class="ig-shot-veil"></span>
+
+            <span class="absolute inset-x-0 bottom-0 p-6 flex flex-col items-start">
+              <span class="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-wood-light mb-2.5">{{ $proyecto->categoria }}</span>
+              <span class="font-display text-xl lg:text-2xl font-light tracking-tight text-white mb-2.5">{{ $proyecto->nombre_obra }}</span>
+              <span class="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-white/65">
+                {{ $proyecto->ubicacion_geografica }} <span class="text-white/35">·</span> {{ $proyecto->anio_ejecucion }}
+              </span>
+              <span class="mt-4 inline-flex items-center gap-2.5 font-mono text-[0.625rem] uppercase tracking-[0.16em] text-white/85
+                           opacity-0 -translate-y-1 transition-all duration-500
+                           lg:group-hover:opacity-100 lg:group-hover:translate-y-0">
+                <span class="h-px w-6 bg-wood transition-all duration-500 lg:group-hover:w-10"></span>
+                Ver especificaciones técnicas
+              </span>
+            </span>
+          </button>
+        @endforeach
+      </div>
+    @endif
+  </div>
+@empty
+  {{-- ============ SIN RESULTADOS (estado diseñado) ============ --}}
+  <div class="border border-line bg-surface">
+    <div class="grid grid-cols-1 lg:grid-cols-12">
+      <div class="lg:col-span-4 relative min-h-[200px]">
+        <span class="ig-plate"><span class="ig-plate-label">Banco sin coincidencias</span></span>
+      </div>
+      <div class="lg:col-span-8 p-8 md:p-12">
+        <p class="font-mono text-[0.6875rem] uppercase tracking-[0.22em] text-wood-deep mb-5">00 resultados</p>
+        <h3 class="font-display text-2xl md:text-3xl font-light tracking-tight mb-4">Ninguna obra coincide</h3>
+        <p class="ig-lede mb-9">No se encontraron proyectos que cumplan todos los criterios.</p>
+        <div class="flex flex-wrap items-center gap-x-8 gap-y-4">
+          <a href="/proyectos" class="ig-btn ig-btn-primary">Ver todas las obras</a>
+          <a href="/proyectos" class="ig-link-ghost"><i data-lucide="rotate-ccw" class="h-3.5 w-3.5"></i> Limpiar filtros</a>
         </div>
-        <span class="mt-4 text-sm font-bold text-[#28533c] flex items-center">
-          Ver especificaciones técnicas <i data-lucide="arrow-right" class="ml-1 w-4 h-4"></i>
-        </span>
       </div>
-    </button>
-  @empty
-    <div class="col-span-full text-center py-16 bg-white border border-[#e8e6df] rounded-lg">
-      <p class="text-[#666666] mb-4">No se encontraron proyectos que cumplan todos los criterios.</p>
-      <a href="/proyectos" class="text-sm font-bold text-[#28533c] hover:underline">Ver todos los proyectos</a>
     </div>
-  @endforelse
-</div>
+  </div>
+@endforelse
 
-<div class="flex justify-center space-x-2">
-  {{ $proyectos->withQueryString()->links() }}
-</div>
+{{-- ============ PAGINACIÓN ============ --}}
+@if($proyectos->hasPages())
+  <nav class="mt-14 border-t border-line pt-8 flex flex-col sm:flex-row items-center justify-between gap-5"
+       aria-label="Paginación de obras">
+    <p class="ig-meta mb-0">Página {{ $proyectos->currentPage() }} de {{ $proyectos->lastPage() }}</p>
+    <div class="flex flex-wrap items-center justify-center gap-2
+                [&_svg]:h-4 [&_svg]:w-4
+                [&_a]:rounded-none [&_a]:border-line-strong [&_a]:text-mute-deep
+                [&_[aria-current]]:rounded-none [&_[aria-current]]:border-carbon
+                [&_[aria-current]]:bg-carbon [&_[aria-current]]:text-white">
+      {{ $proyectos->withQueryString()->links() }}
+    </div>
+  </nav>
+@else
+  <p class="mt-14 border-t border-line pt-8 ig-meta mb-0">Fin del registro de obras</p>
+@endif

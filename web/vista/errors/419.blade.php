@@ -1,15 +1,12 @@
 <x-app-layout>
-    <div class="flex items-center justify-center min-h-[60vh] bg-gray-50">
-        <div class="text-center max-w-lg px-6">
-            <p class="text-2xl font-semibold text-gray-700 mb-6">La página estuvo abierta demasiado tiempo</p>
-            <p class="text-gray-500 mb-8">
-                Por seguridad, el formulario caduca tras un periodo de inactividad.
-                Vuelva a abrirlo e ingrese los datos nuevamente.
-            </p>
-            <a href="{{ url()->previous() }}"
-               class="bg-[#28533c] text-white px-6 py-3 rounded font-bold hover:bg-[#1e402e] transition">
-                Volver a intentarlo
-            </a>
+    <div class="min-h-[75vh] bg-paper flex items-center justify-center pt-24 pb-16 px-4">
+        <div class="text-center max-w-xl">
+            <p class="font-mono text-[6rem] leading-none font-normal tracking-tight text-carbon md:text-[8rem]">419</p>
+            <span class="block w-16 h-px bg-wood mx-auto my-10" aria-hidden="true"></span>
+            <h1 class="font-display text-2xl md:text-3xl font-light tracking-tight mb-10">
+                La página estuvo abierta demasiado tiempo
+            </h1>
+            <a href="{{ url()->previous() }}" class="ig-btn ig-btn-primary">Volver a intentarlo</a>
         </div>
     </div>
 </x-app-layout>

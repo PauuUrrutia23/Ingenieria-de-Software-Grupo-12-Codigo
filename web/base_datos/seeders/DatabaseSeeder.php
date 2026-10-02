@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminJefeSeeder::class,
             EjemploDatosSeeder::class,
+            ImagenesProyectoSeeder::class,
         ]);
     }
 }

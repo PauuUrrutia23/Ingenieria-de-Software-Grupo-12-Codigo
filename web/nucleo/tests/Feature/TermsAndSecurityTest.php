@@ -45,7 +45,7 @@ class TermsAndSecurityTest extends TestCase
 
         $admin = \App\Models\Administrador::factory()->create();
         $consulta = \App\Models\Consulta::first();
-        $response = $this->actingAs($admin)->get("/admin/consultas/{$consulta->id_consulta}");
+        $response = $this->loginAdmin($admin)->get("/admin/consultas/{$consulta->id_consulta}");
 
         $response->assertStatus(200);
         $response->assertDontSee('<script>alert(1)</script>', false);
