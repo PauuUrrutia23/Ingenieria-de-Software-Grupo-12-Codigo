@@ -38,7 +38,7 @@
             </table>
         </div>
 
-        <x-modal show="crear" titulo="Agregar administrador" ancho="max-w-md">
+        <x-modal show="crear" titulo="Agregar administrador" ancho="max-w-md" :errores="old('_modal') === 'crear'">
             <form action="{{ route('admin.administradores.store') }}" method="POST" class="space-y-5">
                 @csrf
                 <input type="hidden" name="_modal" value="crear">

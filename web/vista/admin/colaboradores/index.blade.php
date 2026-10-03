@@ -61,7 +61,7 @@
 
         <div class="mt-8">{{ $colaboradores->links() }}</div>
 
-        <x-modal show="crear" titulo="Agregar Colaborador" ancho="max-w-md">
+        <x-modal show="crear" titulo="Agregar Colaborador" ancho="max-w-md" :errores="old('_modal') === 'crear'">
             <form action="{{ route('admin.colaboradores.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf
                 <input type="hidden" name="_modal" value="crear">
@@ -93,7 +93,7 @@
             </form>
         </x-modal>
 
-        <x-modal show="editar" titulo="Editar Colaborador" ancho="max-w-md">
+        <x-modal show="editar" titulo="Editar Colaborador" ancho="max-w-md" :errores="old('_modal') === 'editar'">
             <form :action="'{{ url('admin/colaboradores') }}/' + seleccionado.id" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf @method('PUT')
                 <input type="hidden" name="_modal" value="editar">

@@ -30,7 +30,7 @@
             @endforelse
         </div>
 
-        <x-modal show="crear" titulo="Agregar producto" ancho="max-w-2xl">
+        <x-modal show="crear" titulo="Agregar producto" ancho="max-w-2xl" :errores="old('formulario_producto') === 'crear'">
             <form action="{{ route('admin.productos.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf
                 <input type="hidden" name="formulario_producto" value="crear">
@@ -48,7 +48,7 @@
             </form>
         </x-modal>
 
-        <x-modal show="editar" titulo="Editar producto" ancho="max-w-2xl">
+        <x-modal show="editar" titulo="Editar producto" ancho="max-w-2xl" :errores="old('formulario_producto') === 'editar'">
             <form :action="`{{ url('admin/productos') }}/${producto.id}`" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf @method('PUT')
                 <input type="hidden" name="formulario_producto" value="editar">

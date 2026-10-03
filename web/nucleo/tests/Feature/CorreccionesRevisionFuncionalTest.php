@@ -80,6 +80,22 @@ class CorreccionesRevisionFuncionalTest extends TestCase
             ->assertSee('El enlace de recuperación no es válido o ya expiró.');
     }
 
+    /** CU 52.1 Exc. 1: si el formulario se reabre tras un rechazo, el error se muestra dentro de la Ventana Modal. */
+    public function test_error_de_validacion_se_muestra_dentro_del_modal()
+    {
+        $jefe = Administrador::factory()->create(['rol' => 'admin_jefe']);
+        $this->loginAdmin($jefe)
+            ->from('/admin/administradores')
+            ->post('/admin/administradores', [
+                '_modal' => 'crear', 'correo' => 'nuevo@ingecon.cl', 'password' => 'clave123', 'password_confirmation' => 'clave123',
+            ])->assertSessionHasErrors('password');
+
+        $html = $this->get('/admin/administradores')->assertStatus(200)->getContent();
+        $modal = substr($html, strpos($html, 'Agregar administrador</h3>'));
+        $this->assertStringContainsString('role="alert"', substr($modal, 0, 3000));
+        $this->assertStringContainsString('No se pudo guardar:', substr($modal, 0, 3000));
+    }
+
     /** CU 52.1 Exc. 2: el correo no institucional tiene un mensaje claro. */
     public function test_correo_no_institucional_tiene_mensaje_claro()
     {

@@ -77,7 +77,7 @@
             <div class="border-t border-line px-6 py-4">{{ $certificados->links() }}</div>
         </div>
 
-        <x-modal show="crear" titulo="Nuevo Certificado" ancho="max-w-2xl">
+        <x-modal show="crear" titulo="Nuevo Certificado" ancho="max-w-2xl" :errores="old('_modal') === 'crear'">
             <form action="{{ route('admin.certificados.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf
                 <input type="hidden" name="_modal" value="crear">

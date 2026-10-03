@@ -1,4 +1,4 @@
-@props(['show', 'titulo' => '', 'ancho' => 'max-w-2xl'])
+@props(['show', 'titulo' => '', 'ancho' => 'max-w-2xl', 'errores' => false])
 
 <div x-show="{{ $show }}" style="display: none;"
      x-transition:enter="transition ease-out duration-200"
@@ -36,6 +36,18 @@
         </div>
 
         <div class="px-5 sm:px-7 py-5 sm:py-6">
+            {{-- Errores de validación dentro del modal: si el formulario se reabre tras un rechazo,
+                 el mensaje queda a la vista y no detrás del fondo oscuro. --}}
+            @if($errores && $errors->any())
+                <div role="alert" style="border: 1px solid #b4403f; background: #fbeeee; color: #8a2b2b; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.875rem; line-height: 1.5;">
+                    <p style="font-weight: 600; margin-bottom: 0.25rem;">No se pudo guardar:</p>
+                    <ul style="list-style: disc; padding-left: 1.25rem; margin: 0;">
+                        @foreach($errors->all() as $mensaje)
+                            <li>{{ $mensaje }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             {{ $slot }}
         </div>
     </div>

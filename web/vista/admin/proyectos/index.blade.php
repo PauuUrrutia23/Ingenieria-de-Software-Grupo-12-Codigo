@@ -92,7 +92,7 @@
 
         <div class="mt-8">{{ $proyectos->links() }}</div>
 
-        <x-modal show="crear" titulo="Nuevo Proyecto" ancho="max-w-2xl">
+        <x-modal show="crear" titulo="Nuevo Proyecto" ancho="max-w-2xl" :errores="old('_modal') === 'crear'">
             <form action="{{ route('admin.proyectos.store') }}" method="POST" enctype="multipart/form-data"
                   class="space-y-5" @submit="validarImagenes($event)">
                 @csrf
@@ -162,7 +162,7 @@
             </form>
         </x-modal>
 
-        <x-modal show="editar" titulo="Editar Info del Proyecto" ancho="max-w-2xl">
+        <x-modal show="editar" titulo="Editar Info del Proyecto" ancho="max-w-2xl" :errores="old('_modal') === 'editar'">
             <form :action="'{{ url('admin/proyectos') }}/' + editado.id" method="POST" enctype="multipart/form-data" class="space-y-5" @submit="validarImagenesEdicion($event)">
                 @csrf @method('PUT')
                 <input type="hidden" name="_modal" value="editar">
