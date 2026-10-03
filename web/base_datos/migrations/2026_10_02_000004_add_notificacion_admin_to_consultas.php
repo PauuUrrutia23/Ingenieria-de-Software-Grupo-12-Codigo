@@ -6,10 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Fase 11 — RF35: estado persistente del aviso administrativo. Se añade a la
-     * propia tabla de consultas en lugar de una tabla separada (decisión del plan).
-     */
     public function up()
     {
         Schema::table('consultas', function (Blueprint $table) {

@@ -45,7 +45,6 @@ class TermsAndSecurityTest extends TestCase
 
         $admin = \App\Models\Administrador::factory()->create();
         $consulta = \App\Models\Consulta::first();
-        // RF39: el mensaje se lee en la Ventana Modal del Módulo comercial, que lo pinta con x-text (texto plano).
         $this->loginAdmin($admin)->get('/admin/consultas')
             ->assertStatus(200)
             ->assertDontSee('<script>alert(1)</script>', false)

@@ -173,13 +173,10 @@ class ProyectoController extends Controller
     {
         $data = $request->validated();
         $data['id_admin'] = Auth::id();
-        // RF48 (Fase 22): la vista no decide el estado; todo alta nace en Borrador,
-        // aunque el request traiga un valor manipulable de estado_publicacion.
+        // Todo proyecto nuevo nace como borrador.
         $data['estado_publicacion'] = 'borrador';
 
-        // Fase 24 (RF48): alta consistente. Proyecto + imágenes en una transacción; si
-        // una imagen falla, se hace rollback de BD y se borran los archivos ya escritos,
-        // para no dejar proyectos huérfanos ni mitades.
+        // Si falla una imagen se revierte todo y se borran los archivos ya guardados.
         $archivosEscritos = [];
 
         try {
@@ -243,7 +240,7 @@ class ProyectoController extends Controller
 
     public function update(UpdateProyectoRequest $request, Proyecto $proyecto)
     {
-        // RF49 (Fase 25): no se puede superar 15 sumando las existentes + las nuevas.
+        // Máximo 15 imágenes contando las que ya tiene.
         $nuevas = $request->hasFile('imagenes') ? count($request->file('imagenes')) : 0;
         $totalImagenes = $proyecto->imagenes()->count() + $nuevas;
         if ($totalImagenes > 15) {

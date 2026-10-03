@@ -78,9 +78,7 @@ class AuthController extends Controller
 
             Auth::login($admin);
 
-            // RF27: la sesión Laravel se regenera primero; la autoridad es la fila
-            // "sesiones", ligada a un token aleatorio guardado en datos de sesión
-            // (que sí persisten entre peticiones), no al id de sesión volátil.
+            // La sesión válida es la fila en "sesiones", ligada a un token guardado en la sesión de Laravel.
             $request->session()->regenerate();
 
             $token = Str::random(48);
@@ -121,7 +119,6 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        // CU32.1: cerrar únicamente la sesión actual, no todas las del administrador.
         $token = $request->session()->get('sesion_ingecon');
 
         if (Auth::check() && $token !== null) {
@@ -131,7 +128,6 @@ class AuthController extends Controller
                     ->where('token_hash', hash('sha256', $token))
                     ->update(['estado' => 'cerrada']);
             } catch (\Throwable $e) {
-                // No exponer SQL: se invalida el acceso local por seguridad y se registra.
                 report($e);
             }
         }

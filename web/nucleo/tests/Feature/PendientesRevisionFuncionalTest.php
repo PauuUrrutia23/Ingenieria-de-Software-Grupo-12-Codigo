@@ -12,10 +12,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Pendientes resueltos tras la revisión funcional: enlaces administrables (RF03/RF10), región predefinida
- * (RF18), exportación según el total (RF42) y terminología "Colaborador" (RF45-47).
- */
 class PendientesRevisionFuncionalTest extends TestCase
 {
     use RefreshDatabase;

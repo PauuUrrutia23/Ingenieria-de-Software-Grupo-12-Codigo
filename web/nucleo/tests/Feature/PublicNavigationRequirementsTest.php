@@ -9,10 +9,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * RF02 / CU2.1 — FASE 16: la URL vigente de Términos se resuelve desde BD
- * (Contenido 'terminos', último activo) sin depender de una URL hardcodeada.
- */
 class PublicNavigationRequirementsTest extends TestCase
 {
     use RefreshDatabase;
@@ -85,8 +81,6 @@ class PublicNavigationRequirementsTest extends TestCase
             ->assertViewHas('terminosUrl', null);
     }
 
-    // --- FASE 17: footer conectado al flujo dinámico (sin '#' silencioso) ---
-
     public function test_footer_terminos_abre_en_nuevapestana()
     {
         $this->get('/')->assertStatus(200)->assertSee('target="_blank"', false);
@@ -102,12 +96,9 @@ class PublicNavigationRequirementsTest extends TestCase
 
     public function test_footer_sin_documento_apunta_a_la_pagina_terminos_sin_hastago()
     {
-        // Sin documento configurado, el enlace usa la página interna (route('terminos')), no '#'.
         $esperado = 'href="' . route('terminos') . '"';
         $this->get('/')->assertStatus(200)->assertSee($esperado, false);
     }
-
-    // --- FASE 27: RF03 enlace de ubicación (Google Maps) resuelto desde BD ---
 
     private function ubicacion(?string $enlace, bool $activo): Contenido
     {
@@ -140,8 +131,6 @@ class PublicNavigationRequirementsTest extends TestCase
 
         $this->get('/')->assertStatus(200)->assertViewHas('ubicacionUrl', null);
     }
-
-    // --- FASE 28: RF03 mostrar ubicación en el footer ---
 
     public function test_footer_muestra_ubicacion_en_nueva_pestanha()
     {

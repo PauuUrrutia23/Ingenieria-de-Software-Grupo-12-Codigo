@@ -9,7 +9,6 @@
                 </div>
 
                 <div class="bg-surface border border-line">
-                    {{-- Filete de acento: madera sobre carbón, filo recto --}}
                     <div class="h-1 bg-carbon">
                         <div class="h-1 w-1/4 bg-wood"></div>
                     </div>

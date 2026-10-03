@@ -5,18 +5,9 @@ namespace Database\Seeders;
 use App\Models\Proyecto;
 use Illuminate\Database\Seeder;
 
-/**
- * RF22 — coordenadas de ejemplo para el Mapa Interactivo de proyectos.
- *
- * Completa Latitud y Longitud con el centro aproximado de la comuna de cada proyecto, solo cuando
- * el proyecto aún no las tiene. Son referencias para visualizar el mapa: la ubicación exacta de cada
- * obra se ajusta desde el Panel de Gestión (Editar proyecto → Latitud / Longitud).
- *
- * Idempotente: nunca sobrescribe coordenadas ya registradas.
- */
+// Coordenadas aproximadas (centro de la comuna), solo de ejemplo para el mapa.
 class CoordenadasProyectosSeeder extends Seeder
 {
-    /** Centro aproximado de comunas con obras de ejemplo (comuna en minúsculas => [latitud, longitud]). */
     private const COMUNAS = [
         'melipilla' => [-33.6891, -71.2153],
         'los ángeles' => [-37.4697, -72.3537],

@@ -1,6 +1,5 @@
 <x-app-layout titulo="Certificaciones — Ingecon">
 
-    {{-- ===================== BANDA DE APERTURA (oscura) ===================== --}}
     <section class="bg-carbon text-white ig-blueprint pt-32 pb-16 lg:pt-40 lg:pb-24 border-b border-carbon">
         <div class="ig-container">
             <div class="max-w-3xl ig-reveal">
@@ -16,7 +15,6 @@
         </div>
     </section>
 
-    {{-- ========================== REGISTRO DE CERTIFICADOS ========================== --}}
     <section class="ig-section bg-surface">
         <div class="ig-container">
 
@@ -47,7 +45,6 @@
                         @endphp
                         <article class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 items-start border-b border-line py-10 lg:py-12 ig-reveal ig-d{{ min($loop->index + 1, 4) }}">
 
-                            {{-- Marco gráfico: sello del organismo o icono --}}
                             <div class="md:col-span-3 flex md:block items-center gap-5">
                                 <div class="relative shrink-0 aspect-square w-20 md:w-full bg-paper-deep border border-line overflow-hidden">
                                     @if($cert->imagen)
@@ -65,7 +62,6 @@
                                 </span>
                             </div>
 
-                            {{-- Cuerpo credencial --}}
                             <div class="md:col-span-9">
                                 <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3 mb-3">
                                     <div class="flex items-baseline gap-4">

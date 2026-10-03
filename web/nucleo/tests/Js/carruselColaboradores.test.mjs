@@ -3,7 +3,6 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import test from 'node:test';
 
-// Se ejercita la función que ejecuta la vista, sin duplicar su implementación.
 const vista = readFileSync(new URL('../../../vista/public/index.blade.php', import.meta.url), 'utf8');
 const inicio = vista.indexOf('function carruselColaboradores(total) {');
 const fin = vista.indexOf('function formularioContacto()', inicio);

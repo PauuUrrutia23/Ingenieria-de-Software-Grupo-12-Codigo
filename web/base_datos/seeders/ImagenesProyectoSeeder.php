@@ -6,14 +6,7 @@ use App\Models\ImagenProyecto;
 use App\Models\Proyecto;
 use Illuminate\Database\Seeder;
 
-/**
- * Restaura las imágenes de obra de los proyectos de ejemplo.
- *
- * `migrate:fresh` limpia la tabla pero NO los archivos en storage/app/public/proyectos,
- * que ya existen en el repositorio de trabajo. Esta siembra vuelve a enlazar las filas
- * con esos archivos. Idempotente: sólo actúa si la tabla está vacía (tras un fresh) y
- * resuelve cada proyecto por nombre, no por id, para sobrevivir al reinicio de autoinc.
- */
+// migrate:fresh vacía la tabla pero no borra los archivos de storage: aquí se vuelven a enlazar.
 class ImagenesProyectoSeeder extends Seeder
 {
     public function run(): void

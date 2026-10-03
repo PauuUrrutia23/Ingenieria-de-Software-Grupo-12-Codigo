@@ -6,7 +6,6 @@ use App\Models\Administrador;
 use App\Models\Contenido;
 use Illuminate\Database\Seeder;
 
-/** Conserva el banner existente como contenido editable si aún no hay uno en BD. */
 class BannerContenidoSeeder extends Seeder
 {
     public function run(): void

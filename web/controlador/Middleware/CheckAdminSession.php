@@ -21,10 +21,7 @@ class CheckAdminSession
             return redirect('/login')->withErrors(['Su cuenta ha sido desactivada.']);
         }
 
-        // RF27/RF32: la autoridad es la fila "sesiones". Se resuelve por el token
-        // guardado en datos de sesión (persiste entre peticiones) y se exige que la
-        // fila activa pertenezca al admin autenticado. Sin token o sin fila vigente,
-        // se cierra la sesión local y se expulsa al panel.
+        // El token de la sesión debe tener una fila activa en "sesiones" para este administrador.
         $token = $request->session()->get('sesion_ingecon');
 
         $sesionVigente = $token !== null && Sesion::where('id_admin', $admin->id_admin)

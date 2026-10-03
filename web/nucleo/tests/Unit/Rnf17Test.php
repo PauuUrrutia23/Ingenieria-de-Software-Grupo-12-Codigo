@@ -7,9 +7,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
-/**
- * FASE 12 — la fuente única RNF17 fija límites y formatos sin tocar aún controladores.
- */
 class Rnf17Test extends TestCase
 {
     public function test_constantes_vigentes()
@@ -39,7 +36,7 @@ class Rnf17Test extends TestCase
 
     public function test_reglas_rechazan_imagen_mayor_a_2mb()
     {
-        $grande = UploadedFile::fake()->image('obra.jpg')->size(2100); // kB
+        $grande = UploadedFile::fake()->image('obra.jpg')->size(2100);
 
         $this->assertTrue(Validator::make(['a' => $grande], ['a' => Rnf17::reglasImagen()])->fails());
     }

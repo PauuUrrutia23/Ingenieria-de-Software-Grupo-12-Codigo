@@ -35,7 +35,6 @@
 
     <div x-data="{ navMovil: false }" class="lg:flex min-h-screen">
 
-        {{-- Barra superior: sólo móvil --}}
         <header class="lg:hidden sticky top-0 z-40 flex items-center justify-between gap-4 bg-surface/95 backdrop-blur-md border-b border-line px-4 py-3">
             <a href="/admin/dashboard" class="flex items-baseline gap-1.5 font-display text-lg tracking-[0.28em] text-carbon">
                 INGECON<span class="text-wood-deep">.</span>
@@ -47,13 +46,9 @@
             </button>
         </header>
 
-        {{-- Velo del menú móvil --}}
         <div x-show="navMovil" x-cloak @click="navMovil = false" style="display: none;"
              class="fixed inset-0 z-[45] bg-carbon/55 backdrop-blur-[2px] lg:hidden" aria-hidden="true"></div>
 
-        {{-- Costado de navegación: cajón fuera de línea en móvil, fijo en escritorio.
-             Se usan variantes max-lg: para que el estado de Alpine nunca compita
-             con la posición en escritorio (class swapping entre breakpoints falla). --}}
         <aside id="nav-lateral"
                :class="navMovil ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full max-lg:invisible'"
                class="fixed lg:sticky top-0 left-0 z-50 lg:z-auto h-screen w-[17.5rem] shrink-0
@@ -117,7 +112,6 @@
             </div>
         </aside>
 
-        {{-- Contenido --}}
         <main class="flex-1 min-w-0">
             <div class="max-w-6xl px-5 sm:px-8 lg:px-10 py-8 lg:py-12">
                 <header class="mb-8 lg:mb-10">

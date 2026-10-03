@@ -1,7 +1,6 @@
 <x-app-layout>
     <div class="bg-paper pt-32 pb-24">
 
-        {{-- Encabezado del documento --}}
         <header class="ig-container mb-16">
             <p class="ig-eyebrow mb-6">Marco legal</p>
             <h1 class="ig-h-display max-w-4xl mb-8">Términos, Condiciones y Política de Privacidad</h1>
@@ -14,7 +13,6 @@
 
         <div class="ig-rule" aria-hidden="true"></div>
 
-        {{-- Cuerpo: 5 secciones, texto íntegro, sólo tipografía nueva --}}
         <article class="ig-container max-w-[80rem]">
             <div class="grid grid-cols-12 gap-x-8">
                 <div class="col-span-12 md:col-start-2 md:col-span-10 lg:col-start-2 lg:col-span-8">

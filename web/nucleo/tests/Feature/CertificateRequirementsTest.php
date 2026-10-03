@@ -8,9 +8,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * FASE 20 — RF25: endpoint de preview inline del PDF, en reemplazo de Storage::url().
- */
 class CertificateRequirementsTest extends TestCase
 {
     use RefreshDatabase;

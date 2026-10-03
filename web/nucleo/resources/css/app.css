@@ -1,20 +1,8 @@
-/* ============================================================
-   INGECON — Sistema de diseño "Madera + Acero"
-   Capa visual sobre Tailwind 4 (CSS-first, sin tailwind.config).
-   No toca lógica: sólo tokens, base, componentes y motion.
-   ============================================================ */
-
 @import "tailwindcss";
 
 @source "../../../vista/**/*.blade.php";
 
-/* ------------------------------------------------------------
-   1. TOKENES
-   Paleta: carbón (acero oscuro), madera (acento), papel (base
-   cálida), superficie. El verde institucional #28533c queda fuera.
-   Madera #B88A58 no se usa como texto sobre papel (2,8:1); para
-   texto fino existe --color-wood-deep (4,6:1 AA).
-   ------------------------------------------------------------ */
+/* Tokens */
 @theme {
     --color-carbon: #111315;
     --color-steel: #2c2f33;
@@ -44,9 +32,7 @@
     --container-site: 80rem;
 }
 
-/* ------------------------------------------------------------
-   2. BASE
-   ------------------------------------------------------------ */
+/* Base */
 @layer base {
     html {
         scroll-behavior: smooth;
@@ -71,7 +57,6 @@
         overflow-wrap: anywhere;
     }
 
-    /* Foco visible en todo (la referencia no lo tenía). */
     :focus-visible {
         outline: 2px solid var(--color-wood);
         outline-offset: 3px;
@@ -84,12 +69,9 @@
 
     img { -webkit-user-drag: none; }
 
-    /* Alpine: oculta lo marcado con x-cloak antes de arrancar. */
     [x-cloak] { display: none !important; }
 
-    /* Guarda anti-desborde: los hijos de grid/flex arrancan con
-       min-width:auto, así que una palabra larga ensancha la pista y
-       empuja el layout fuera del viewport (visto en /terminos a 320px). */
+    /* Evita que palabras largas desborden grid/flex en pantallas angostas. */
     main :is(div, section, article, h1, h2, h3, h4, p, li, td) { min-width: 0; }
     ::-webkit-scrollbar { width: 10px; height: 10px; }
     ::-webkit-scrollbar-track { background: var(--color-paper-deep); }
@@ -97,11 +79,8 @@
     ::-webkit-scrollbar-thumb:hover { background: var(--color-wood); }
 }
 
-/* ------------------------------------------------------------
-   3. UTILIDADES DE ESTRUCTURA
-   ------------------------------------------------------------ */
+/* Estructura */
 @layer components {
-    /* Ancho editorial consistente. */
     .ig-container {
         width: 100%;
         max-width: var(--container-site);
@@ -112,18 +91,15 @@
         .ig-container { padding-inline: 3rem; }
     }
 
-    /* Respiración de sección (jerarquía, no desperdicio). */
     .ig-section { padding-block: var(--spacing-section); }
     .ig-section-tight { padding-block: clamp(3rem, 5vw, 5rem); }
 
-    /* Filete de separación fino, estilo plano técnico. */
     .ig-rule {
         height: 1px;
         background-color: var(--color-line);
         border: 0;
     }
 
-    /* Etiqueta superior: madera, mayúsculas, tracking amplio. */
     .ig-eyebrow {
         display: inline-flex;
         align-items: center;
@@ -143,7 +119,6 @@
     }
     .ig-eyebrow-on-dark { color: var(--color-wood); }
 
-    /* Metadato en mono: precisión de ingeniería. */
     .ig-meta {
         font-family: var(--font-mono);
         font-size: 0.6875rem;
@@ -173,11 +148,7 @@
     }
 }
 
-/* ------------------------------------------------------------
-   4. BOTONES
-   Primario: carbón → madera. Secundario: filete fino.
-   Hero: borde blanco translúcido con línea que se dibuja.
-   ------------------------------------------------------------ */
+/* Botones */
 @layer components {
     .ig-btn {
         display: inline-flex;
@@ -217,7 +188,6 @@
         background-color: color-mix(in srgb, var(--color-carbon) 4%, transparent);
     }
 
-    /* CTA sobre imagen oscura. */
     .ig-btn-hero {
         position: relative;
         overflow: hidden;
@@ -243,7 +213,6 @@
         transition: transform 300ms var(--ease-steel);
     }
     .ig-btn-hero:hover .ig-btn-arrow { transform: translateX(4px); }
-    /* Línea de madera que se dibuja de izquierda a derecha. */
     .ig-btn-hero::after {
         content: "";
         position: absolute;
@@ -258,7 +227,6 @@
     }
     .ig-btn-hero:hover::after { transform: scaleX(1); }
 
-    /* Enlace con subrayado que cambia gris → madera. */
     .ig-link-underline {
         font-size: 0.75rem;
         font-weight: 500;
@@ -290,11 +258,7 @@
     .ig-link-ghost:hover svg { transform: translateX(4px); }
 }
 
-/* ------------------------------------------------------------
-   5. FORMULARIOS
-   Minimalistas: sólo filete inferior, foco madera. Con label
-   real y error propio (la referencia usaba sólo placeholder).
-   ------------------------------------------------------------ */
+/* Formularios */
 @layer components {
     .ig-label {
         display: block;
@@ -338,7 +302,6 @@
         cursor: not-allowed;
     }
 
-    /* Caja para tablas/admin: filete completo, fondo superficie. */
     .ig-field-box {
         width: 100%;
         background-color: var(--color-surface);
@@ -369,10 +332,7 @@
     .ig-field-box-invalid { border-color: #b4403f; }
 }
 
-/* ------------------------------------------------------------
-   6. SUPERFICIES
-   Cards de filo recto (esquinas rectas = acero cortado).
-   ------------------------------------------------------------ */
+/* Superficies */
 @layer components {
     .ig-card {
         background-color: var(--color-surface);
@@ -417,7 +377,6 @@
         color: var(--color-mute);
     }
 
-    /* Marco fotográfico: zoom lento al hover, sin deformar. */
     .ig-shot {
         position: relative;
         overflow: hidden;
@@ -442,8 +401,6 @@
     }
     .ig-shot:hover .ig-shot-veil { opacity: 1; }
 
-    /* Placeholder cuando la obra aún no tiene fotografía:
-       plano de taller, no un hueco gris. */
     .ig-plate {
         position: absolute;
         inset: 0;
@@ -467,12 +424,7 @@
     }
 }
 
-/* ------------------------------------------------------------
-   7. NAVBAR PÚBLICO
-   Sobre el hero: transparente. Al scrollear: papel 95% + blur.
-   Un solo estado conmutado por data-atributo (no class swapping,
-   que falla silenciosamente).
-   ------------------------------------------------------------ */
+/* Navbar público */
 @layer components {
     .ig-nav {
         position: fixed;
@@ -559,13 +511,11 @@
     }
     .ig-nav[data-ig-solid] .ig-nav-burger { color: var(--color-carbon); }
 
-    /* Anclas: compensa la altura del nav fijo. */
+    /* Compensa la altura del nav fijo. */
     .ig-anchor { scroll-margin-top: 92px; }
 }
 
-/* ------------------------------------------------------------
-   8. MOTION — reveal por IntersectionObserver
-   ------------------------------------------------------------ */
+/* Animaciones */
 @layer components {
     .ig-reveal {
         opacity: 0;
@@ -579,14 +529,12 @@
     .ig-d3 { transition-delay: 300ms; }
     .ig-d4 { transition-delay: 400ms; }
 
-    /* Zoom de entrada del hero (una sola vez, 1.04 → 1). */
     .ig-hero-shot { animation: ig-subtle-zoom 10s ease-out both; }
     @keyframes ig-subtle-zoom {
         from { transform: scale(1.04); }
         to { transform: scale(1); }
     }
 
-    /* Indicador de scroll del hero. */
     .ig-scroll-line {
         width: 1px;
         height: 3rem;
@@ -598,7 +546,6 @@
         50% { transform: translateY(6px); opacity: 0.35; }
     }
 
-    /* Textura de plano para bloques oscuros (hero, footer). */
     .ig-blueprint {
         background-image:
             linear-gradient(rgb(255 255 255 / 0.045) 1px, transparent 1px),
@@ -607,10 +554,7 @@
     }
 }
 
-/* ------------------------------------------------------------
-   9. ACCESIBILIDAD / MOVIMIENTO REDUCIDO
-   La referencia no lo tenía. Aquí se corta todo transform.
-   ------------------------------------------------------------ */
+/* Movimiento reducido */
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
 
@@ -633,7 +577,6 @@
     .ig-card-hover:hover { transform: none; }
 }
 
-/* Impresión: sin capas de motion ni velos. */
 @media print {
     .ig-reveal { opacity: 1; transform: none; }
     .ig-shot-veil { display: none; }

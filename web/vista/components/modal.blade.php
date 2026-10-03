@@ -36,8 +36,6 @@
         </div>
 
         <div class="px-5 sm:px-7 py-5 sm:py-6">
-            {{-- Errores de validación dentro del modal: si el formulario se reabre tras un rechazo,
-                 el mensaje queda a la vista y no detrás del fondo oscuro. --}}
             @if($errores && $errors->any())
                 <div role="alert" style="border: 1px solid #b4403f; background: #fbeeee; color: #8a2b2b; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.875rem; line-height: 1.5;">
                     <p style="font-weight: 600; margin-bottom: 0.25rem;">No se pudo guardar:</p>

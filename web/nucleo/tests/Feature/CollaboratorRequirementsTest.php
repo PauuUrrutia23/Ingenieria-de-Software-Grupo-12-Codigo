@@ -8,9 +8,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * FASE 14 — RNF17 aplicado a colaboradores: sólo JPG/JPEG/PNG, ≤500 KB.
- */
 class CollaboratorRequirementsTest extends TestCase
 {
     use RefreshDatabase;
@@ -54,8 +51,6 @@ class CollaboratorRequirementsTest extends TestCase
         $this->assertDatabaseMissing('colaboradores', ['nombre_comercial' => 'Proveedor WebP']);
     }
 
-    // --- FASE 15: Nombre Comercial según DS-67 (trim, max 100, primera letra mayúscula) ---
-
     public function test_nombre_vacio_es_rechazado()
     {
         $this->enviar(UploadedFile::fake()->image('logo.png'), '')
@@ -64,7 +59,7 @@ class CollaboratorRequirementsTest extends TestCase
 
     public function test_nombre_de_100_caracteres_es_valido()
     {
-        $nombre = 'A' . str_repeat('a', 99); // 100 caracteres
+        $nombre = 'A' . str_repeat('a', 99);
         $this->enviar(UploadedFile::fake()->image('logo.png'), $nombre)
             ->assertSessionHasNoErrors();
         $this->assertDatabaseHas('colaboradores', ['nombre_comercial' => $nombre]);
@@ -72,7 +67,7 @@ class CollaboratorRequirementsTest extends TestCase
 
     public function test_nombre_de_101_caracteres_es_rechazado()
     {
-        $nombre = 'A' . str_repeat('a', 100); // 101 caracteres
+        $nombre = 'A' . str_repeat('a', 100);
         $this->enviar(UploadedFile::fake()->image('logo.png'), $nombre)
             ->assertSessionHasErrors('nombre_comercial');
     }

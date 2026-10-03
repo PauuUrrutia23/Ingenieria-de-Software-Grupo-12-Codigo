@@ -11,7 +11,6 @@
         ];
     @endphp
 
-    {{-- Estado de la sesión: sólo lo que la vista realmente sabe. --}}
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
         <div class="lg:col-span-7">
             <p class="ig-lede max-w-prose">

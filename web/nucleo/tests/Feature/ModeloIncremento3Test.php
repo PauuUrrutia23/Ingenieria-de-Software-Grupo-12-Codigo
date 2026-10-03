@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * Ajuste del esquema al modelo lógico aprobado del Incremento 3 (propuesta "tabla_producto"):
- * PRODUCTO con orden/activo e imagen opcional, COMPONENTE_PRODUCTO con orden,
- * PROYECTO con comuna separada de la región y la ficha de conectores en su propia sección.
- */
 class ModeloIncremento3Test extends TestCase
 {
     use RefreshDatabase;

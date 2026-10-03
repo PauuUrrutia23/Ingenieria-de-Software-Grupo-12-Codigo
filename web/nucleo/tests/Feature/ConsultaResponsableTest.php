@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * FASE 10 — RF53 / CU40.2: la consulta sobrevive a la eliminación del responsable.
- */
 class ConsultaResponsableTest extends TestCase
 {
     use RefreshDatabase;

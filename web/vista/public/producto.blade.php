@@ -1,6 +1,5 @@
 <x-app-layout titulo="Conectores metálicos — Ingecon">
 
-    {{-- ====================== RUTA DE NAVEGACIÓN ====================== --}}
     <div class="bg-surface border-b border-line pt-28 pb-5 lg:pt-32">
         <div class="ig-container">
             <nav class="ig-meta flex items-center gap-2.5" aria-label="Ruta de navegación">
@@ -22,12 +21,10 @@
         @endif
     </div>
 
-    {{-- ====================== FICHA TÉCNICA DEL PRODUCTO ====================== --}}
     <section class="ig-section bg-surface">
         <div class="ig-container">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
 
-                {{-- Zona visual: lámina principal + miniaturas --}}
                 <div class="ig-reveal">
                     <div class="ig-shot aspect-[4/3] border border-line mb-4">
                         <img src="{{ asset($ficha['imagen_principal']['src']) }}"
@@ -44,7 +41,6 @@
                     </div>
                 </div>
 
-                {{-- Datos del producto --}}
                 <div class="ig-reveal ig-d1">
                     <p class="ig-eyebrow mb-6">Producto</p>
                     <h1 class="ig-h-display mb-8 !text-[clamp(2rem,4.5vw,3.25rem)]">Conectores metálicos</h1>
@@ -76,7 +72,6 @@
         </div>
     </section>
 
-    {{-- ============================ DÓNDE SE USAN ============================ --}}
     <section class="ig-section bg-paper-deep border-y border-line">
         <div class="ig-container">
             <div class="max-w-2xl mb-14 lg:mb-16 ig-reveal">
@@ -96,7 +91,6 @@
         </div>
     </section>
 
-    {{-- ====================== DOCUMENTACIÓN TÉCNICA (banda oscura) ====================== --}}
     <section class="ig-section bg-carbon text-white ig-blueprint">
         <div class="ig-container">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">

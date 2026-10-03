@@ -6,7 +6,6 @@ use App\Models\Administrador;
 use App\Models\Producto;
 use Illuminate\Database\Seeder;
 
-/** Traslada al modelo Producto las tres líneas que antes se mostraban en HTML estático. */
 class ProductosPublicosSeeder extends Seeder
 {
     public function run(): void

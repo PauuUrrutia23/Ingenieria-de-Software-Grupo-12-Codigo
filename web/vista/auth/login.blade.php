@@ -1,48 +1,34 @@
 <x-app-layout>
     <div x-data="{ acceso: true, olvide: false }">
 
-        {{-- ============================================================
-             Hero de acceso: 50% imagen arquitectónica (plano, no foto)
-             / 50% formulario (sheet derecho, abierto por defecto).
-             El nav fijo es transparente sobre esta zona oscura.
-             ============================================================ --}}
         <section data-ig-hero-overlay
                  class="relative min-h-screen bg-carbon ig-blueprint overflow-hidden">
 
-            {{-- Media mitad derecha: estructura de plano en filete fino --}}
             <div class="absolute inset-y-0 right-0 w-full lg:w-1/2 pointer-events-none" aria-hidden="true">
                 <svg class="absolute inset-0 w-full h-full opacity-60"
                      viewBox="0 0 640 520" fill="none" preserveAspectRatio="xMidYMid slice">
-                    {{-- Eje y luces de la cercha --}}
                     <line x1="40" y1="140" x2="600" y2="140" stroke="rgba(217,185,143,0.30)" stroke-width="1"/>
                     <line x1="40" y1="300" x2="600" y2="300" stroke="rgba(217,185,143,0.30)" stroke-width="1"/>
-                    {{-- Ala superior en zigzag --}}
                     <path d="M40 220 L120 140 L200 220 L280 140 L360 220 L440 140 L520 220 L600 140"
                           stroke="rgba(255,255,255,0.35)" stroke-width="1" fill="none"/>
-                    {{-- Almenas verticales --}}
                     <line x1="120" y1="140" x2="120" y2="300" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
                     <line x1="280" y1="140" x2="280" y2="300" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
                     <line x1="440" y1="140" x2="440" y2="300" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
                     <line x1="600" y1="140" x2="600" y2="300" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
-                    {{-- Apoyos --}}
                     <path d="M40 300 L40 420 M600 300 L600 420" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
                     <path d="M20 420 L60 420 M580 420 L620 420" stroke="rgba(217,185,143,0.40)" stroke-width="1"/>
-                    {{-- Cotas --}}
                     <line x1="40" y1="360" x2="600" y2="360" stroke="rgba(255,255,255,0.14)" stroke-width="1" stroke-dasharray="2 6"/>
                     <circle cx="120" cy="140" r="3" stroke="rgba(217,185,143,0.55)" stroke-width="1" fill="none"/>
                     <circle cx="280" cy="140" r="3" stroke="rgba(217,185,143,0.55)" stroke-width="1" fill="none"/>
                     <circle cx="440" cy="140" r="3" stroke="rgba(217,185,143,0.55)" stroke-width="1" fill="none"/>
                     <circle cx="600" cy="140" r="3" stroke="rgba(217,185,143,0.55)" stroke-width="1" fill="none"/>
-                    {{-- Marco de croquis --}}
                     <rect x="40" y="60" width="560" height="400" stroke="rgba(255,255,255,0.10)" stroke-width="1" fill="none"/>
                     <text x="46" y="82" fill="rgba(255,255,255,0.35)" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="2">E-01 · CERCHA</text>
                     <text x="46" y="452" fill="rgba(255,255,255,0.35)" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="2">ESC. 1:50</text>
                 </svg>
-                {{-- Wordmark sobre el plano --}}
                 <p class="absolute bottom-8 right-8 ig-meta !text-white/40">Plano de taller · Ingecon</p>
             </div>
 
-            {{-- Columna de contenido (mitad izquierda en desktop) --}}
             <div class="relative ig-container min-h-screen flex items-center">
                 <div class="max-w-xl w-full pt-32 pb-24">
                     <p class="ig-eyebrow ig-eyebrow-on-dark mb-6">Acceso interno</p>
@@ -64,10 +50,6 @@
             </div>
         </section>
 
-        {{-- ============================================================
-             Modal de acceso — sheet derecho (50% en desktop,
-             formulario completo en móvil, con el plano de fondo).
-             ============================================================ --}}
         <div x-show="acceso" style="display:none;"
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0"
@@ -144,10 +126,6 @@
             </div>
         </div>
 
-        {{-- ============================================================
-             Modal de recuperación — mismo lenguaje visual.
-             aria-labelledby="recuperar-titulo" es aserción de test.
-             ============================================================ --}}
         <div x-show="olvide" style="display:none;"
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0"

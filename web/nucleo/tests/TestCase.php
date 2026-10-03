@@ -11,12 +11,6 @@ abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
 
-    /**
-     * Autentica a un administrador con una sesión persistida válida (RF27/RF32).
-     * Equivale a pasar por el login real sin depender del id de sesión volátil:
-     * planta el token en los datos de sesión (que sí persisten entre peticiones)
-     * y crea la fila "sesiones" que CheckAdminSession exige.
-     */
     protected function loginAdmin($admin, ?string $guard = null)
     {
         $token = Str::random(48);

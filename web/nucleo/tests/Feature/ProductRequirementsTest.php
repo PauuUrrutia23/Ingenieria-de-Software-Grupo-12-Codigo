@@ -7,11 +7,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * BLOQUE C — vista lógica de Producto (RF54 / CU43.1).
- * FASE 7: la tabla productos existe con sus columnas y FK válida.
- * Crece con las Fases 8 (componente_producto) y 9 (modelos/relaciones).
- */
 class ProductRequirementsTest extends TestCase
 {
     use RefreshDatabase;

@@ -7,12 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Fase 10 — RF53/CU40.2: en motores donde la tabla ya existía con datos (p. ej.
-     * MySQL de un equipo), convierte la FK del responsable a ON DELETE SET NULL.
-     * En SQLite no se ejecuta: la migración de creación ya lo declara y SQLite no
-     * admite ALTER de claves foráneas.
-     */
+    // Solo MySQL: en SQLite la migración de creación ya define ON DELETE SET NULL.
     public function up()
     {
         if (DB::getDriverName() === 'sqlite') {

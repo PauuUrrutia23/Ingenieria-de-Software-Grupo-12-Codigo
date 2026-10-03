@@ -7,9 +7,6 @@
 
       @php $hayFiltros = trim((string) request('q')) !== '' || request('categoria') || request('region'); @endphp
 
-      {{-- ========================= MASTHEAD =========================
-           Sin hero: la página nace bajo el navbar fijo (pt-32) y el nav
-           arranca sólido porque esta vista no declara overlay. --}}
       <section class="bg-carbon text-white ig-blueprint pt-32 pb-16 md:pt-36 md:pb-20 border-b border-white/10">
         <div class="ig-container">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-end">
@@ -41,7 +38,6 @@
         </div>
       </section>
 
-      {{-- ========================= FILTROS ========================= --}}
       <section class="bg-surface border-b border-line ig-reveal ig-d2">
         <div class="ig-container py-10 md:py-12">
           <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-9">
@@ -105,10 +101,6 @@
         </div>
       </section>
 
-      {{-- ====================== RESULTADOS ======================
-           Este nodo se reemplaza por completo con innerHTML al filtrar, así
-           que su contenido (el partial) no usa revelados por scroll: el
-           observer de resources/js/app.js sólo corre al cargar. --}}
       <section class="bg-paper ig-section-tight">
         <div class="ig-container">
           <div id="resultados-proyectos" :class="cargando ? 'opacity-50 transition-opacity' : ''">
@@ -119,12 +111,11 @@
         </div>
       </section>
 
-      {{-- El mapa usa únicamente proyectos publicados que tienen ambas coordenadas. --}}
       <section class="ig-section bg-surface border-t border-line">
         <div class="ig-container">
           <h2 class="ig-h-section mb-6">Proyectos en el mapa</h2>
           <p class="ig-lede mb-8">Seleccione un marcador para consultar la ficha vigente de la obra.</p>
-          {{-- Contexto de apilamiento propio: las capas internas de Leaflet (z-index 400-1000) no deben quedar sobre las Ventanas Modales (z-[80]). --}}
+          {{-- Evita que las capas del mapa (Leaflet) queden sobre las ventanas modales. --}}
           <div id="mapa-proyectos" x-show="!mapaError" style="position: relative; z-index: 0;" class="h-[430px] w-full border border-line" aria-label="Mapa de proyectos publicados"></div>
           <p x-show="sinMarcadores && !mapaError" x-cloak class="ig-lede mt-4">No hay proyectos publicados con coordenadas para estos filtros.</p>
           <p x-show="mapaError" x-cloak class="ig-lede mt-4">El mapa no está disponible. La galería sigue accesible.</p>
@@ -132,7 +123,6 @@
       </section>
       <script id="marcadores-proyectos" type="application/json">@json($marcadores)</script>
 
-      {{-- ======================== FICHA ======================== --}}
       <div x-show="fichaAbierta" x-cloak style="display:none;"
            class="fixed inset-0 z-[80] flex items-center justify-center p-4 md:p-8">
         <div class="absolute inset-0 bg-carbon/85 backdrop-blur-sm" @click="cerrarFicha()"></div>

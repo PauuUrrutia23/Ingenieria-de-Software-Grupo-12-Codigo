@@ -46,10 +46,6 @@ class CertificadoController extends Controller
         return $this->storage->descargar($certificado->archivo_pdf, $nombreSeguro . '.pdf');
     }
 
-    /**
-     * RF25 / CU25 (Fase 20): preview inline del PDF de un certificado vigente.
-     * La vista pública debe apuntar aquí, no a Storage::url() directo.
-     */
     public function preview(Certificado $certificado)
     {
         if ($certificado->estado !== 'vigente') {

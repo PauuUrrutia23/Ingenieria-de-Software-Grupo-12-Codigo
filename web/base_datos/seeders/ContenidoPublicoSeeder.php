@@ -6,19 +6,6 @@ use App\Models\Administrador;
 use App\Models\Contenido;
 use Illuminate\Database\Seeder;
 
-/**
- * RF14 / RF15 — carga las secciones "Preguntas frecuentes" y "Opiniones de clientes"
- * de la portada. Sin estas filas la vista muestra sus estados vacíos.
- *
- * Idempotente: firstOrCreate por (seccion, titulo), igual que el resto de seeders.
- *
- * AVISO: los textos son contenido de demostración redactado a partir de lo que el
- * propio sitio ya publica (pino radiata impregnado, conectores galvanizados, líneas
- * de producto, regiones con obras, NCh 1198 / ANSI-TPI, flujo del formulario de
- * contacto). Las opiniones NO son testimonios reales de clientes: deben reemplazarse
- * por testimonios autorizados antes de publicar el sitio o de una defensa ante el
- * profesor. Se editan desde el Panel de Gestión (/admin/contenido) sin tocar código.
- */
 class ContenidoPublicoSeeder extends Seeder
 {
     public function run(): void
@@ -67,7 +54,7 @@ class ContenidoPublicoSeeder extends Seeder
             );
         }
 
-        // titulo = quién opina, cuerpo = el testimonio (así lo lee public/index.blade.php).
+        // titulo = quién opina, cuerpo = testimonio
         $opiniones = [
             [
                 'Jefe de obra · Constructora habitacional, Región Metropolitana',

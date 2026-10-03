@@ -8,10 +8,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * FASE 18 — RF10: la ficha de conectores se recupera desde Contenido, sin hardcodear,
- * y la ausencia de bloques o de archivo produce respaldo/placeholder (nunca 500).
- */
 class PublicContentRequirementsTest extends TestCase
 {
     use RefreshDatabase;
@@ -76,7 +72,6 @@ class PublicContentRequirementsTest extends TestCase
 
     public function test_sin_fila_de_imagen_o_archivo_vacio_ignora_y_usa_respaldo()
     {
-        // imagen_principal presente pero sin archivo -> placeholder, sin romper.
         $this->fila('imagen_principal', 'Solo alt, sin archivo.', null, 4);
 
         $this->get('/producto')->assertStatus(200)->assertViewHas('ficha', function (array $ficha) {
@@ -87,7 +82,6 @@ class PublicContentRequirementsTest extends TestCase
 
     public function test_la_vista_muestra_la_ficha_desde_bd_no_hardcodeada()
     {
-        // El seeder de producto requiere un administrador; se siembra antes.
         $this->seed([
             \Database\Seeders\AdminJefeSeeder::class,
             \Database\Seeders\ProductoContenidoSeeder::class,
@@ -95,14 +89,11 @@ class PublicContentRequirementsTest extends TestCase
 
         $respuesta = $this->get('/producto')->assertStatus(200);
 
-        // Contenido del seeder (fuente BD), no texto fijo de la vista.
         $respuesta->assertSee('dimensionados según el cálculo de cada proyecto', false);
         $respuesta->assertSee('Acero estructural galvanizado', false);
         $respuesta->assertSee('Cerchas de techumbre', false);
         $respuesta->assertSee('img/conector-pieza-sola.jpg', false);
     }
-
-    // --- FASE 29: RF13 nombre comercial visible bajo cada logo de colaborador ---
 
     public function test_colaborador_muestra_nombre_y_alt_bajo_el_logo()
     {
@@ -114,7 +105,6 @@ class PublicContentRequirementsTest extends TestCase
         ]);
 
         $respuesta = $this->get('/')->assertStatus(200);
-        // Nombre visible como texto (span) y como alt de la imagen.
         $respuesta->assertSee('MultiAcero', false);
         $respuesta->assertSee('alt="MultiAcero"', false);
     }
@@ -123,8 +113,6 @@ class PublicContentRequirementsTest extends TestCase
     {
         $this->get('/')->assertStatus(200)->assertSee('Pronto publicaremos nuestros colaboradores', false);
     }
-
-    // --- FASE 31: RF14 la FAQ vigente llega a home(); su fallo no rompe la página ---
 
     public function test_faq_llega_a_la_vista_ordenada()
     {
@@ -136,7 +124,7 @@ class PublicContentRequirementsTest extends TestCase
         }
 
         $this->get('/')->assertStatus(200)->assertViewHas('faqs', function ($faqs) {
-            return $faqs->count() === 2 && $faqs->first()->titulo === 'P2'; // orden asc
+            return $faqs->count() === 2 && $faqs->first()->titulo === 'P2';
         });
     }
 
@@ -160,8 +148,6 @@ class PublicContentRequirementsTest extends TestCase
         $this->get('/')->assertStatus(200)->assertViewHas('faqs', fn ($f) => $f->isEmpty());
     }
 
-    // --- FASE 32: RF14 acordeón FAQ ---
-
     public function test_faq_renderiza_pregunta_y_respuesta_oculta_inicialmente()
     {
         $faq = Contenido::create([
@@ -181,8 +167,6 @@ class PublicContentRequirementsTest extends TestCase
     {
         $this->get('/')->assertStatus(200)->assertSee('Aún no hay preguntas frecuentes.');
     }
-
-    // --- FASE 33: RF15 cargar opiniones desde BD (excepción aislada) ---
 
     public function test_opiniones_llegan_a_la_vista()
     {
@@ -214,8 +198,6 @@ class PublicContentRequirementsTest extends TestCase
         $this->get('/')->assertStatus(200)->assertViewHas('opiniones', fn ($o) => $o->isEmpty());
     }
 
-    // --- FASE 34: RF15 testimonios visibles sin datos inventados ---
-
     public function test_opinion_muestra_nombre_y_testimonio_desde_bd()
     {
         Contenido::create([
@@ -246,8 +228,6 @@ class PublicContentRequirementsTest extends TestCase
             ->assertSee('&lt;b&gt;Muy buen servicio&lt;/b&gt;', false)
             ->assertDontSee('<script>alert(1)</script>', false);
     }
-
-    // --- FASE 35: RF16 etapas industriales vigentes agrupadas desde BD ---
 
     private function filaFase(
         string $nombre,
@@ -308,8 +288,6 @@ class PublicContentRequirementsTest extends TestCase
         $this->get('/')->assertStatus(200)->assertViewHas('fasesIndustriales', fn ($fases) => $fases->isEmpty());
     }
 
-    // --- FASE 36: RF16 pestañas de fases con descripción vigente ---
-
     public function test_seeder_de_fases_es_idempotente()
     {
         $this->seed([\Database\Seeders\AdminJefeSeeder::class, \Database\Seeders\FasesIndustrialesSeeder::class]);
@@ -337,8 +315,6 @@ class PublicContentRequirementsTest extends TestCase
     {
         $this->get('/')->assertStatus(200)->assertSee('Aún no hay etapas industriales publicadas.');
     }
-
-    // --- FASE 37: RF17 galería por etapa, con archivos existentes ---
 
     public function test_fase_muestra_varias_imagenes_existentes()
     {
@@ -374,8 +350,6 @@ class PublicContentRequirementsTest extends TestCase
             ->assertDontSee('<figure class="border border-line bg-paper-deep">', false);
     }
 
-    // --- FASE 38: RF17 ampliación en modal ---
-
     public function test_imagen_existente_ofrece_modal_con_cierre_y_descripcion()
     {
         \Illuminate\Support\Facades\Storage::fake('public');
@@ -399,8 +373,6 @@ class PublicContentRequirementsTest extends TestCase
             ->assertSee('Solo texto.')
             ->assertDontSee('@click="abrirImagen($event.currentTarget)"', false);
     }
-
-    // --- FASES 39-40: RF54 productos públicos con componentes ---
 
     public function test_producto_con_componentes_llega_a_la_vista_y_se_renderiza()
     {
@@ -462,8 +434,6 @@ class PublicContentRequirementsTest extends TestCase
             ->assertViewHas('productos', fn ($productos) => $productos->isEmpty())
             ->assertSee('Aún no hay productos publicados.');
     }
-
-    // --- FASES 41-42: RF55 banner vigente desde BD ---
 
     public function test_banner_ganador_por_orden_y_id()
     {

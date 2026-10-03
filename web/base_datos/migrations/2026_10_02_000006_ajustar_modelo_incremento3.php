@@ -5,24 +5,13 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Ajusta el esquema al modelo lógico aprobado del Incremento 3 (propuesta "tabla_producto"):
- *  - PRODUCTO: imagen y tipo_mime opcionales; agrega orden y activo.
- *  - COMPONENTE_PRODUCTO: nombre VARCHAR(120); agrega orden.
- *  - PROYECTO: ubicacion_geografica pasa a comuna (la región ya tiene su propia columna).
- *  - CONTENIDO: la ficha de Conectores Metálicos (RF10) deja la sección 'producto'
- *    y pasa a 'ficha_conectores', para no confundirla con la tabla PRODUCTO.
- *
- * Se usa SQL compatible con MySQL 5.6 (CHANGE/MODIFY, sin RENAME COLUMN) y, en SQLite,
- * se reconstruye la tabla productos porque SQLite no permite cambiar la nulabilidad.
- */
+// Ajusta el esquema al modelo lógico del Incremento 3 (propuesta tabla_producto).
 return new class extends Migration
 {
     public function up()
     {
         $driver = DB::getDriverName();
 
-        // ---------------------------------------------------------------- PRODUCTO
         if ($driver === 'sqlite') {
             $this->reconstruirProductosSqlite(true);
         } else {
@@ -33,7 +22,6 @@ return new class extends Migration
             });
         }
 
-        // ---------------------------------------------------------------- COMPONENTE_PRODUCTO
         $largos = DB::table('componentes_producto')->whereRaw('LENGTH(nombre) > 120')->count();
         if ($largos > 0) {
             throw new RuntimeException("Hay $largos componentes con más de 120 caracteres; acórtelos antes de migrar.");
@@ -45,13 +33,12 @@ return new class extends Migration
             $table->smallInteger('orden')->default(0);
         });
 
-        // ---------------------------------------------------------------- PROYECTO
         if ($driver === 'sqlite') {
             DB::statement('ALTER TABLE proyectos RENAME COLUMN ubicacion_geografica TO comuna');
         } else {
             DB::statement('ALTER TABLE proyectos CHANGE ubicacion_geografica comuna VARCHAR(150) NOT NULL');
         }
-        // "Melipilla, Metropolitana" -> "Melipilla" cuando el sufijo repite la región del proyecto
+        // "Melipilla, Metropolitana" -> "Melipilla"
         foreach (DB::table('proyectos')->select('id_proyecto', 'comuna', 'region')->get() as $p) {
             $partes = array_map('trim', explode(',', (string) $p->comuna));
             if (count($partes) > 1 && mb_strtolower(end($partes)) === mb_strtolower(trim((string) $p->region))) {
@@ -61,7 +48,6 @@ return new class extends Migration
             }
         }
 
-        // ---------------------------------------------------------------- CONTENIDO
         DB::table('contenidos')->where('seccion', 'producto')->update(['seccion' => 'ficha_conectores']);
     }
 
@@ -100,7 +86,7 @@ return new class extends Migration
         }
     }
 
-    /** SQLite: recrea productos con (o sin) los ajustes, conservando los datos y la FK de componentes. */
+    // SQLite no permite alterar columnas: se recrea la tabla conservando los datos y la FK.
     private function reconstruirProductosSqlite(bool $ajustada): void
     {
         Schema::disableForeignKeyConstraints();

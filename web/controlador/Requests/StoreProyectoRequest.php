@@ -22,8 +22,6 @@ class StoreProyectoRequest extends FormRequest
             'anio_ejecucion' => 'required|integer|min:1990|max:' . (date('Y') + 1),
             'categoria' => ['required', Rule::in(CategoriasProyecto::valores())],
 
-            // RF48 (Fase 22): el estado inicial NO viene de la vista; store() fuerza 'borrador'.
-            // Fase 23: el alta exige entre 1 y 15 imágenes (obligatoriedad separada del estado).
             'imagenes' => 'required|array|min:1|max:15',
             'imagenes.*' => Rnf17::reglasImagen(),
         ];

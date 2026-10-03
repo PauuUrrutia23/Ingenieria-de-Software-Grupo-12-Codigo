@@ -10,15 +10,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * RF27 / RF32 — sesión persistida como autoridad real.
- * FASE 2 del plan: estos tests se escriben ANTES de tocar AuthController (Fase 3)
- * y CheckAdminSession (Fase 4). El bloque B (Fases 2-6) se cierra junto y la suite
- * debe quedar en verde antes de generar checkpoint.
- *
- * Se usa Hash::make() y no bcrypt() a propósito: config/hashing.php fija el driver
- * argon2id, así estos tests no heredan el fallo ambiental de AuthTest.
- */
 class AuthSessionRequirementsTest extends TestCase
 {
     use RefreshDatabase;
@@ -41,7 +32,6 @@ class AuthSessionRequirementsTest extends TestCase
         ]);
     }
 
-    /** Token de sesión que dejó el login (persiste en datos de sesión). */
     private function tokenVigente(): ?string
     {
         return $this->app['session.store']->get('sesion_ingecon');
@@ -70,7 +60,6 @@ class AuthSessionRequirementsTest extends TestCase
         $this->assertNotNull($sesion, 'No se registró la sesión.');
         $this->assertNotNull($this->tokenVigente(), 'El login no dejó token en la sesión.');
 
-        // Autoridad: la fila se resuelve por el mismo token que porta la sesión.
         $this->assertSame(
             hash('sha256', $this->tokenVigente()),
             $sesion->token_hash,
@@ -85,7 +74,6 @@ class AuthSessionRequirementsTest extends TestCase
 
         Sesion::where('id_admin', $admin->id_admin)->update(['estado' => 'cerrada']);
 
-        // La autoridad es la tabla: una fila cerrada expulsa al pedir el panel.
         $this->get('/admin/dashboard')->assertRedirect('/login');
     }
 
@@ -104,7 +92,6 @@ class AuthSessionRequirementsTest extends TestCase
         $admin = $this->admin();
         $this->iniciarSesion($admin);
 
-        // La Fase 3 dejó token en sesión y la fila vigente lo respalda: acceso.
         $this->get('/admin/dashboard')->assertStatus(200);
     }
 
@@ -131,7 +118,6 @@ class AuthSessionRequirementsTest extends TestCase
 
         $this->iniciarSesion($admin);
 
-        // La fila pasa a pertenecer a otro admin: el token vigente ya no coincide.
         Sesion::where('id_admin', $admin->id_admin)->update(['id_admin' => $otro->id_admin]);
 
         $this->get('/admin/dashboard')->assertRedirect('/login');
@@ -167,7 +153,6 @@ class AuthSessionRequirementsTest extends TestCase
     {
         $admin = $this->admin();
 
-        // Otra sesión activa del mismo admin (otro dispositivo) no debe verse afectada.
         Sesion::create([
             'id_admin' => $admin->id_admin,
             'token_hash' => hash('sha256', 'token-de-otro-dispositivo'),
@@ -210,7 +195,6 @@ class AuthSessionRequirementsTest extends TestCase
         $this->get('/admin/dashboard')->assertRedirect('/login');
     }
 
-    /** Registra una ruta privada que exige sesión vigente + rol Administrador Jefe. */
     private function rutaJefe(): void
     {
         $this->app['router']

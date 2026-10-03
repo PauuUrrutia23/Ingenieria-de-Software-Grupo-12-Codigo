@@ -14,9 +14,7 @@ return new class extends Migration
             $table->string("estado", 20)->default("pendiente");
             $table->string("prioridad", 10)->nullable();
             $table->foreignId("id_visitante")->constrained("visitantes", "id_visitante");
-            // FASE 10 (RF53/CU40.2): la Consulta sobrevive a la eliminación del
-            // responsable. Se define ON DELETE SET NULL aquí porque SQLite no admite
-            // ALTER de FK; ver la migración incremental para motores con datos previos.
+            // ON DELETE SET NULL se define aquí porque SQLite no permite modificar la FK después.
             $table->foreignId("id_admin_responsable")->nullable()->constrained("administradores", "id_admin")->nullOnDelete();
             $table->dateTime("created_at");
         });

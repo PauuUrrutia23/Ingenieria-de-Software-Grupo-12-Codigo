@@ -1,6 +1,5 @@
 <x-app-layout titulo="Colaboradores — Ingecon">
 
-    {{-- ===================== BANDA DE APERTURA ===================== --}}
     <section class="bg-surface border-b border-line pt-32 pb-16 lg:pt-40 lg:pb-24">
         <div class="ig-container">
             <div class="max-w-3xl ig-reveal">
@@ -13,7 +12,6 @@
         </div>
     </section>
 
-    {{-- ============================ CUADRÍCULA ============================ --}}
     <section class="ig-section bg-paper">
         <div class="ig-container">
 
@@ -27,7 +25,6 @@
             @else
                 <p class="ig-meta ig-reveal mb-10">Aliados registrados · {{ count($colaboradores) }}</p>
 
-                {{-- Marcos idénticos, peso visual uniforme, base alineada. --}}
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px bg-line border border-line ig-reveal">
                     @foreach($colaboradores as $prov)
                         <div class="flex flex-col items-center justify-center bg-surface px-6 py-12 group">

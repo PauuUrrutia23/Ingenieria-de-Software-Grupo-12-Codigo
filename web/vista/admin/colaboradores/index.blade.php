@@ -3,7 +3,6 @@
 
     <div x-data="moduloColaboradores()">
 
-        {{-- Encabezado de página --}}
         <div class="flex flex-wrap items-end justify-between gap-4 mb-8 -mt-2">
             <div class="max-w-xl">
                 <p class="ig-eyebrow mb-2">Alianzas</p>

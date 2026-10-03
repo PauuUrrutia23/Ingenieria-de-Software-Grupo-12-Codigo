@@ -15,7 +15,6 @@
         </div>
     @endif
 
-    {{-- Pestañas de sección: el query param ?seccion= define qué contenido se lista --}}
     <nav class="flex flex-wrap items-end gap-x-6 gap-y-3 mb-6 border-b border-line" aria-label="Secciones de contenido">
         <a href="{{ route('admin.productos.index') }}" class="pb-3 -mb-px border-b-2 border-transparent text-sm text-mute hover:text-carbon">Productos</a>
         @foreach($secciones as $s)

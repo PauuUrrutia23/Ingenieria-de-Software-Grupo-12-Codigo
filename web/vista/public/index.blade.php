@@ -1,6 +1,5 @@
 <x-app-layout titulo="Ingecon — Industrialización de la madera y construcción prefabricada">
 
-    {{-- ============================ HERO ============================ --}}
     @if($banner)
         <section data-ig-hero-overlay
                  class="relative min-h-[100svh] flex items-end bg-carbon text-white overflow-hidden">
@@ -30,7 +29,6 @@
         </section>
     @endif
 
-    {{-- ==================== LÍNEAS DE PRODUCCIÓN ==================== --}}
     <section id="productos" class="ig-section bg-surface ig-anchor">
         <div class="ig-container">
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 lg:mb-20">
@@ -75,7 +73,6 @@
         </div>
     </section>
 
-    {{-- ========================= PROCESO ========================= --}}
     <section class="ig-section bg-paper-deep border-y border-line">
         <div class="ig-container">
             <div class="max-w-3xl mb-16 ig-reveal">
@@ -159,7 +156,6 @@
         </div>
     </section>
 
-    {{-- ======================== PROYECTOS ======================== --}}
     <section id="proyectos" class="ig-section bg-surface ig-anchor">
         <div class="ig-container">
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-14 lg:mb-20">
@@ -178,7 +174,6 @@
                 @php $destacado = $proyectos_recientes->first(); $secundarios = $proyectos_recientes->slice(1, 2); @endphp
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                    {{-- Obra destacada --}}
                     <a href="/proyectos" class="lg:col-span-7 ig-shot h-[340px] md:h-[480px] ig-reveal">
                         @if($destacado->imagenes->isNotEmpty())
                             <img src="{{ Storage::url($destacado->imagenes->first()->imagen) }}"
@@ -198,7 +193,6 @@
                         </span>
                     </a>
 
-                    {{-- Obras secundarias --}}
                     <div class="lg:col-span-5 grid grid-cols-1 gap-4">
                         @forelse($secundarios as $i => $proyecto)
                         <a href="/proyectos" class="ig-shot h-[220px] md:h-[232px] ig-reveal ig-d{{ $i + 2 }}">
@@ -227,7 +221,6 @@
                     </div>
                 </div>
 
-                {{-- Obras restantes en registro tabular, sin repetir la card. --}}
                 @if($proyectos_recientes->count() > 3)
                 <div class="mt-14 border-t border-line">
                     @foreach($proyectos_recientes->slice(3) as $proyecto)
@@ -246,7 +239,6 @@
         </div>
     </section>
 
-    {{-- ===================== CERTIFICACIONES ===================== --}}
     <section id="certificaciones" class="ig-section bg-carbon text-white ig-blueprint ig-anchor">
         <div class="ig-container">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-10">
@@ -288,7 +280,6 @@
         </div>
     </section>
 
-    {{-- ======================= COLABORADORES ======================= --}}
     <section class="ig-section bg-surface">
         <div class="ig-container">
             <div class="text-center mb-14 ig-reveal">
@@ -353,7 +344,6 @@
         </div>
     </section>
 
-    {{-- ======================== OPINIONES ======================== --}}
     <section id="opiniones" class="ig-section bg-surface border-t border-line ig-anchor">
         <div class="ig-container">
             <div class="text-center mb-14 ig-reveal">
@@ -376,7 +366,6 @@
         </div>
     </section>
 
-    {{-- ========================== FAQ ========================== --}}
     <section id="preguntas-frecuentes" class="ig-section bg-paper-deep border-t border-line ig-anchor">
         <div class="ig-container">
             <div class="max-w-3xl mx-auto">
@@ -416,7 +405,6 @@
         </div>
     </section>
 
-    {{-- ======================== CONTACTO ======================== --}}
     <section id="contacto" class="ig-section bg-paper border-t border-line ig-anchor">
         <div class="ig-container">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
@@ -502,7 +490,6 @@
                         </p>
                     </form>
 
-                    {{-- CU5.1 — confirmación de envío --}}
                     <div x-show="confirmando" x-cloak style="display:none;"
                          class="fixed inset-0 z-[80] flex items-center justify-center px-4"
                          @keydown.escape.window="cancelarEnvio()">
@@ -528,7 +515,6 @@
                         </div>
                     </div>
 
-                    {{-- CU9.1 — éxito con N° de seguimiento --}}
                     @if(session('consulta_id'))
                         <div x-data="{ exito: true }" x-show="exito" style="display:none;"
                              class="fixed inset-0 z-[80] flex items-center justify-center px-4"
@@ -617,7 +603,6 @@
           enviando: false,
 
           init() {
-            // Tras un rechazo del servidor (RF06), la vista vuelve al formulario para mostrar los errores.
             if (@js($errors->hasAny(['nombre', 'apellido', 'email', 'mensaje', 'acepta_terminos']))) {
               this.$nextTick(() => document.getElementById('contacto')?.scrollIntoView());
             }

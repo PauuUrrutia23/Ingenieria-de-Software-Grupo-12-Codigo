@@ -12,21 +12,18 @@
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
                        style="max-width:560px;background-color:#FFFFFF;border:1px solid #E2DFD8;font-family:Inter,'Segoe UI',Arial,Helvetica,sans-serif;color:#111315;font-size:15px;line-height:1.7;">
 
-                    {{-- Cabecera carbón --}}
                     <tr>
                         <td style="background-color:#111315;padding:22px 32px;font-family:Outfit,'Segoe UI',Arial,Helvetica,sans-serif;font-size:16px;font-weight:400;letter-spacing:6px;color:#FFFFFF;">
                             INGECON<span style="color:#B88A58;">.</span>
                         </td>
                     </tr>
 
-                    {{-- Etiqueta de seguridad --}}
                     <tr>
                         <td style="border-bottom:1px solid #E2DFD8;background-color:#F7F6F3;padding:12px 32px;font-family:'IBM Plex Mono',Consolas,monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#82603A;">
                             Panel de Gestión · Recuperación de acceso
                         </td>
                     </tr>
 
-                    {{-- Cuerpo --}}
                     <tr>
                         <td style="padding:36px 32px;font-weight:300;">
                             <p style="margin:0 0 20px;font-family:Outfit,'Segoe UI',Arial,Helvetica,sans-serif;font-size:22px;font-weight:400;letter-spacing:-0.01em;line-height:1.3;color:#111315;">
@@ -35,7 +32,6 @@
 
                             <p style="margin:0 0 28px;">Recibimos una solicitud para restablecer la contraseña de su cuenta en el Panel de Gestión de Ingecon.</p>
 
-                            {{-- Botón de filo recto: madera sobre carbón oscuro --}}
                             <p style="margin:0 0 28px;">
                                 <a href="{{ url('/password/restablecer/' . $token) }}"
                                    style="background-color:#B88A58;color:#111315;padding:14px 28px;font-family:Inter,'Segoe UI',Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;display:inline-block;border-radius:0;">
@@ -62,7 +58,6 @@
                         </td>
                     </tr>
 
-                    {{-- Pie --}}
                     <tr>
                         <td style="border-top:1px solid #E2DFD8;padding:18px 32px;font-size:12px;line-height:1.6;color:#6F6A62;">
                             Industrialización de la madera desde 1994 · Aviso automático de Ingecon.

@@ -6,16 +6,7 @@ use App\Models\Administrador;
 use App\Models\Contenido;
 use Illuminate\Database\Seeder;
 
-/**
- * RF03 / RF10 — enlaces institucionales administrables desde el Panel de gestión.
- *
- *  - documentacion: ficha técnica de Conectores Metálicos. Mientras no exista la oficial, apunta a un
- *    PDF de DEMOSTRACIÓN servido por el propio sitio (public/docs). Reemplaza la URL provisional externa.
- *  - ubicacion: enlace de Google Maps del pie de página. Queda una búsqueda provisional, marcada como tal,
- *    hasta cargar la dirección real de la planta desde el Panel de gestión.
- *
- * Idempotente: no sobrescribe enlaces que el Personal de Administración ya haya definido.
- */
+// La ficha técnica es un PDF de demostración y la ubicación es provisional: reemplazar por los datos reales de Ingecon.
 class EnlacesInstitucionalesSeeder extends Seeder
 {
     public const DOC_DEMO = '/docs/conectores-metalicos-ficha-tecnica-demo.pdf';

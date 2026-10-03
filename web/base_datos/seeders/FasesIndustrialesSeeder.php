@@ -6,7 +6,6 @@ use App\Models\Administrador;
 use App\Models\Contenido;
 use Illuminate\Database\Seeder;
 
-/** Conserva en BD las tres etapas que antes estaban escritas en la vista pública. */
 class FasesIndustrialesSeeder extends Seeder
 {
     public function run(): void

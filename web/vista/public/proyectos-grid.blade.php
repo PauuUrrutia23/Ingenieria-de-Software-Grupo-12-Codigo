@@ -6,7 +6,6 @@
     $colecciones = $proyectos->getCollection()->chunk(3);
 @endphp
 
-{{-- ============ CONTADOR / METADATOS (mono) ============ --}}
 <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-line">
   @if($proyectos->total() > 0)
     <p class="ig-meta mb-0">
@@ -25,11 +24,6 @@
   @endif
 </div>
 
-{{-- ============ GALERÍA EDITORIAL ============
-     Bandas de tres obras: una destacada (7/12) y dos secundarias (5/12)
-     apiladas, con proporciones distintas. La última banda puede traer
-     una o dos obras y se recompone.
---}}
 @forelse($colecciones as $bloque)
   @php
     $total_bloque = $bloque->count();
@@ -105,7 +99,6 @@
     @endif
   </div>
 @empty
-  {{-- ============ SIN RESULTADOS (estado diseñado) ============ --}}
   <div class="border border-line bg-surface">
     <div class="grid grid-cols-1 lg:grid-cols-12">
       <div class="lg:col-span-4 relative min-h-[200px]">
@@ -124,7 +117,6 @@
   </div>
 @endforelse
 
-{{-- ============ PAGINACIÓN ============ --}}
 @if($proyectos->hasPages())
   <nav class="mt-14 border-t border-line pt-8 flex flex-col sm:flex-row items-center justify-between gap-5"
        aria-label="Paginación de obras">

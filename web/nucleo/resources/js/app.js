@@ -2,17 +2,10 @@ import './bootstrap';
 import Alpine from 'alpinejs';
 import focus from '@alpinejs/focus';
 
-// x-trap de las Ventanas Modales: mantiene el foco del teclado dentro del modal abierto.
 Alpine.plugin(focus);
 
 window.Alpine = Alpine;
 Alpine.start();
-
-/* ------------------------------------------------------------
-   Capa de comportamiento del rediseño visual.
-   No reemplaza ningún componente Alpine de las vistas: sólo
-   revela por scroll y estado del navbar (respeta prefers-reduced-motion).
-   ------------------------------------------------------------ */
 
 const ELES_REVELADAS = '.ig-reveal';
 
@@ -26,7 +19,7 @@ function vigilarRevelados(raiz = document) {
         entradas.forEach((entrada) => {
             if (!entrada.isIntersecting) return;
             entrada.target.classList.add('is-in');
-            obs.unobserve(entrada.target); // anima una sola vez
+            obs.unobserve(entrada.target);
         });
     }, { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.15 });
 
@@ -35,8 +28,6 @@ function vigilarRevelados(raiz = document) {
     });
 }
 
-/* El nav público va transparente sobre el hero y se vuelve sólido
-   al scrollear. En páginas sin hero nace ya sólido. */
 function vigilarNavbar() {
     const nav = document.querySelector('.ig-nav');
     if (!nav) return;
@@ -63,9 +54,7 @@ function vigilarNavbar() {
     }, { passive: true });
 }
 
-/* El contenido dinámico (filtros de proyectos) se inyecta con
-   innerHTML: sus elementos nuevos necesitan observarse y sus
-   iconos Lucide, regenerarse. */
+// El contenido que se inyecta al filtrar proyectos necesita volver a observarse y regenerar sus íconos.
 function refrescarContenidoDinamico(raiz) {
     vigilarRevelados(raiz);
     if (window.lucide) window.lucide.createIcons();

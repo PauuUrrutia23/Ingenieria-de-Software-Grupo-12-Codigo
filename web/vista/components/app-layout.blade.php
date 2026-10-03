@@ -21,8 +21,6 @@
 </head>
 <body class="antialiased font-sans text-carbon flex flex-col min-h-screen bg-paper">
 
-    {{-- Menú lateral (se conserva: es la entrada directa a Proyectos,
-         Certificaciones y Colaboradores desde cualquier página). --}}
     <div x-data="{ isLateralOpen: false }">
         <button @click="isLateralOpen = true" aria-label="Abrir menú lateral"
                 :aria-expanded="isLateralOpen"
@@ -71,7 +69,6 @@
         </aside>
     </div>
 
-    {{-- Navbar: transparente sobre el hero, sólido al scrollear. --}}
     <nav x-data="{ isMobileMenuOpen: false }" class="ig-nav">
         <div class="ig-container !px-6 md:!px-12">
             <div class="flex justify-between items-center gap-6">
@@ -110,7 +107,6 @@
             </div>
         </div>
 
-        {{-- Menú móvil: panel a pantalla completa, no una lista pegada. --}}
         <div id="menu-movil" x-show="isMobileMenuOpen" x-cloak x-trap.noscroll="isMobileMenuOpen"
              @keydown.escape.window="isMobileMenuOpen = false"
              x-transition:enter="transition-opacity duration-400 ease-out"

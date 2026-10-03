@@ -38,8 +38,6 @@ class AdminController extends Controller
 
     public function colaboradoresStore(Request $request)
     {
-        // DS-67 / FASE 15: se recortan espacios de borde y se valida; no se
-        // reescribe la cadena (se conservan nombres de marca tal cual llegan).
         $request->merge(['nombre_comercial' => trim((string) $request->input('nombre_comercial'))]);
 
         $data = $request->validate([
@@ -86,7 +84,6 @@ class AdminController extends Controller
 
     public function colaboradoresUpdate(Request $request, int $colaboradore)
     {
-        // DS-67 / FASE 15: trim de bordes sin reescribir la marca; validación coherente.
         $request->merge(['nombre_comercial' => trim((string) $request->input('nombre_comercial'))]);
 
         $data = $request->validate([
@@ -148,7 +145,6 @@ class AdminController extends Controller
 
     public const SECCIONES = ['faq', 'opiniones', 'banner', 'fases_industriales', 'ubicacion', 'documentacion'];
 
-    /** Secciones que solo guardan un enlace: ubicación del pie de página (RF03) y documentación técnica (RF10). */
     public const SECCIONES_ENLACE = ['ubicacion', 'documentacion'];
 
     public const NOMBRES_SECCION = [
@@ -348,7 +344,7 @@ class AdminController extends Controller
             ]);
         }
 
-        // RF42: la exportación incluye todas las Consultas, así que se habilita según el total, no según la búsqueda.
+        // La exportación incluye todas las consultas, no solo las del filtro.
         $hayConsultas = $q === '' ? $consultas->total() > 0 : $this->db->query(Consulta::class)->exists();
 
         return view('admin.consultas.index', compact('consultas', 'orden', 'q', 'hayConsultas'));

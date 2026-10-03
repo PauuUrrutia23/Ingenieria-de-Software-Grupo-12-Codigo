@@ -6,14 +6,6 @@ use App\Models\Administrador;
 use App\Models\Contenido;
 use Illuminate\Database\Seeder;
 
-/**
- * RF10 / Fase 18 — ficha de conectores metálicos persistida en Contenido.
- *
- * Mueve a BD el contenido que estaba hardcodeado en public/producto.blade.php
- * (descripción, especificaciones, aplicaciones, imagen representativa y miniaturas).
- * Las listas viajan serializadas como JSON en 'cuerpo'; no se crea una entidad nueva.
- * Idempotente: sólo actúa si no existe la sección 'ficha_conectores'.
- */
 class ProductoContenidoSeeder extends Seeder
 {
     public function run(): void

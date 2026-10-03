@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\Storage;
 use Mockery;
 use Tests\TestCase;
 
-/**
- * FASE 13 — RNF17 aplicado al módulo de proyectos: 2 MB, sólo JPG/JPEG/PNG, máx. 15.
- */
 class ProjectRequirementsTest extends TestCase
 {
     use RefreshDatabase;
@@ -101,15 +98,13 @@ class ProjectRequirementsTest extends TestCase
         $this->assertDatabaseHas('proyectos', ['nombre_obra' => 'Obra mixta']);
     }
 
-    // --- FASE 22: RF48 el alta siempre nace en Borrador, la vista no decide ---
-
     public function test_alta_manipulada_con_publicado_se_guarda_como_borrador()
     {
         Storage::fake('public');
         $admin = Administrador::factory()->create();
 
         $datos = $this->datos([UploadedFile::fake()->image('x.jpg')], 'Intento publicado');
-        $datos['estado_publicacion'] = 'publicado'; // valor manipulable
+        $datos['estado_publicacion'] = 'publicado';
 
         $this->loginAdmin($admin)->post('/admin/proyectos', $datos)->assertSessionHasNoErrors();
 
@@ -127,8 +122,6 @@ class ProjectRequirementsTest extends TestCase
             ->assertStatus(200)
             ->assertDontSee('name="estado_publicacion"', false);
     }
-
-    // --- FASE 23: RF48 obligatoriedad de imágenes 1-15 en el alta ---
 
     public function test_alta_sin_imagenes_es_rechazada()
     {
@@ -168,8 +161,6 @@ class ProjectRequirementsTest extends TestCase
         $this->assertSame(15, \App\Models\ImagenProyecto::count());
     }
 
-    // --- FASE 24: RF48 alta consistente (transacción; sin proyectos huérfanos) ---
-
     public function test_fallo_en_la_primera_imagen_no_deja_proyecto_ni_imagenes()
     {
         $stor = Mockery::mock(StorageAdapter::class);
@@ -203,12 +194,9 @@ class ProjectRequirementsTest extends TestCase
             ], 'Falla2'))
             ->assertSessionHasErrors('imagenes');
 
-        // Rollback de BD: ni proyecto ni imágenes quedaron.
         $this->assertDatabaseMissing('proyectos', ['nombre_obra' => 'Falla2']);
         $this->assertSame(0, ImagenProyecto::count());
     }
-
-    // --- FASE 25: RF49 total de imágenes al editar (existentes + nuevas <= 15) ---
 
     private function proyectoConImagenes(int $adminId, int $nImagenes): \App\Models\Proyecto
     {

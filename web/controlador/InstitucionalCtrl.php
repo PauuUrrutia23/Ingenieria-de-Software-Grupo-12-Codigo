@@ -49,14 +49,9 @@ class InstitucionalCtrl extends Controller
             'proyectos_recientes' => $proyectosRecientes,
             'certificados' => $certificados,
             'proveedores' => $proveedores,
-            // RF03 (Fase 27): el enlace de ubicación se resuelve desde BD; se prepara
-            // aquí (dato de backend). El footer lo consume en la Fase 28.
             'ubicacionUrl' => $this->urlUbicacionVigente(),
-            // RF14 (Fase 31): la FAQ vigente llega a la vista; su fallo no rompe el home.
             'faqs' => $this->faqsVigentes(),
-            // RF15 (Fase 33): opiniones vigentes, con excepción aislada.
             'opiniones' => $this->contenidosPorSeccion('opiniones'),
-            // RF16 (Fase 35): filas vigentes agrupadas por etapa, sin inventar etapas ausentes.
             'fasesIndustriales' => $this->fasesIndustriales(),
             'productos' => $this->productosPublicos(),
             'banner' => $this->bannerVigente(),
@@ -65,7 +60,6 @@ class InstitucionalCtrl extends Controller
 
     public function producto()
     {
-        // RF10 (Fase 18-19): la ficha de conectores se recupera de Contenido, no hardcodeada.
         return view('public.producto', [
             'docsUrl' => $this->urlDocumentacionVigente() ?: '#',
             'ficha' => $this->fichaConectores(),
@@ -74,9 +68,6 @@ class InstitucionalCtrl extends Controller
 
     public function terminos()
     {
-        // RF02 / CU2.1 (Fase 16): la URL vigente del documento de términos se resuelve
-        // desde BD (Contenido, sección 'terminos', último activo). Se pasa a la vista
-        // para que el pie de página la use; null = no hay documento configurado.
         return view('legal.terminos', [
             'terminosUrl' => $this->urlTerminosVigente(),
         ]);
@@ -113,11 +104,6 @@ class InstitucionalCtrl extends Controller
         return ($url && $url !== '#') ? $url : null;
     }
 
-    /**
-     * RF02 / CU2.1 — URL vigente del documento de Términos.
-     * Regla determinista: Contenido de sección 'terminos', activo, el de id más alto.
-     * Si la consulta BD falla, se captura y se retorna null (estado controlado, sin 500).
-     */
     private function urlTerminosVigente(): ?string
     {
         try {
@@ -135,10 +121,6 @@ class InstitucionalCtrl extends Controller
         return ($url && $url !== '#') ? $url : null;
     }
 
-    /**
-     * RF03 (Fase 27) — URL de ubicación (Google Maps) vigente desde Contenido.
-     * Regla determinista: sección 'ubicacion', activo, el de id más alto. BD falla -> null.
-     */
     private function urlUbicacionVigente(): ?string
     {
         try {
@@ -156,11 +138,7 @@ class InstitucionalCtrl extends Controller
         return ($url && $url !== '#') ? $url : null;
     }
 
-    /**
-     * Colección de Contenido vigente de una sección (activo, por 'orden'). El fallo de BD
-     * se captura y devuelve una colección vacía, de modo que cada bloque de la home se
-     * degrada de forma independiente sin tumbar la página. Fuente común de RF14/RF15/RF16/RF55.
-     */
+    // Si la consulta falla devuelve una colección vacía: una sección caída no rompe el inicio.
     private function contenidosPorSeccion(string $seccion)
     {
         try {
@@ -174,7 +152,6 @@ class InstitucionalCtrl extends Controller
         }
     }
 
-    /** Filas de cada etapa en el orden industrial vigente; una etapa puede tener varias imágenes. */
     private function fasesIndustriales()
     {
         $porNombre = $this->contenidosPorSeccion('fases_industriales')
@@ -212,7 +189,7 @@ class InstitucionalCtrl extends Controller
         }
     }
 
-    /** El banner con mayor orden gana; a igualdad de orden gana el más reciente. */
+    // Gana el banner de mayor orden; si empatan, el más reciente.
     private function bannerVigente(): ?Contenido
     {
         try {
@@ -253,11 +230,6 @@ class InstitucionalCtrl extends Controller
         }
     }
 
-    /**
-     * RF14 (Fase 31) — preguntas frecuentes vigentes desde Contenido ('faq', activo, por orden).
-     * Se captura el fallo de forma independiente: si esta consulta revienta, el resto del
-     * home se sigue renderizando con la lista vacía (no 500).
-     */
     private function faqsVigentes()
     {
         try {
@@ -271,15 +243,6 @@ class InstitucionalCtrl extends Controller
         }
     }
 
-    /**
-     * RF10 (Fase 18) — ficha de conectores metálicos recuperada de Contenido.
-     *
-     * Fuente única de verdad: filas de sección 'ficha_conectores', una por bloque lógico,
-     * discriminadas por 'titulo'. Las listas (especificaciones y miniaturas) viajan
-     * serializadas como JSON en 'cuerpo' (decisión de serialización del plan, sin
-     * crear una entidad nueva). Si la BD falla o falta un bloque, se devuelve un
-     * valor de respaldo y una imagen placeholder: la página nunca revienta (no 500).
-     */
     private function fichaConectores(): array
     {
         $porTitulo = [];
