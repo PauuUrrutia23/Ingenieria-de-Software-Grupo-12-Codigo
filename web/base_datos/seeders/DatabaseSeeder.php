@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             BannerContenidoSeeder::class,
             ContenidoPublicoSeeder::class,
             EnlacesInstitucionalesSeeder::class,
+            CoordenadasProyectosSeeder::class,
         ]);
     }
 }

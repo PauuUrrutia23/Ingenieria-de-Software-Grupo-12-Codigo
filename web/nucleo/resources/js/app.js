@@ -11,7 +11,7 @@ Alpine.start();
 /* ------------------------------------------------------------
    Capa de comportamiento del rediseño visual.
    No reemplaza ningún componente Alpine de las vistas: sólo
-   revela por scroll, estado del navbar y preferencia de motion.
+   revela por scroll y estado del navbar (respeta prefers-reduced-motion).
    ------------------------------------------------------------ */
 
 const ELES_REVELADAS = '.ig-reveal';
@@ -63,37 +63,6 @@ function vigilarNavbar() {
     }, { passive: true });
 }
 
-/* Este equipo reporta prefers-reduced-motion: reduce, así que el
-   motion se ve apagado por sistema. La píldora del footer lo
-   enciende sin tocar la configuración de Windows. */
-const CLAVE_MOTION = 'ig-motion';
-
-function aplicarPreferenceMotion() {
-    if (localStorage.getItem(CLAVE_MOTION) === 'on') {
-        document.documentElement.classList.add('force-motion');
-    }
-    sincronizarPillMotion();
-}
-
-function sincronizarPillMotion() {
-    const activo = document.documentElement.classList.contains('force-motion');
-    document.querySelectorAll('[data-ig-motion-toggle]').forEach((boton) => {
-        boton.textContent = activo ? 'Ocultar animaciones' : 'Ver animaciones';
-        boton.setAttribute('aria-pressed', activo ? 'true' : 'false');
-    });
-}
-
-function vigilarPillMotion() {
-    document.querySelectorAll('[data-ig-motion-toggle]').forEach((boton) => {
-        boton.addEventListener('click', () => {
-            const activo = document.documentElement.classList.toggle('force-motion');
-            localStorage.setItem(CLAVE_MOTION, activo ? 'on' : 'off');
-            sincronizarPillMotion();
-            if (activo) vigilarRevelados();
-        });
-    });
-}
-
 /* El contenido dinámico (filtros de proyectos) se inyecta con
    innerHTML: sus elementos nuevos necesitan observarse y sus
    iconos Lucide, regenerarse. */
@@ -104,7 +73,5 @@ function refrescarContenidoDinamico(raiz) {
 
 window.igRefrescarContenidoDinamico = refrescarContenidoDinamico;
 
-aplicarPreferenceMotion();
 vigilarNavbar();
 vigilarRevelados();
-vigilarPillMotion();

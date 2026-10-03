@@ -124,7 +124,8 @@
         <div class="ig-container">
           <h2 class="ig-h-section mb-6">Proyectos en el mapa</h2>
           <p class="ig-lede mb-8">Seleccione un marcador para consultar la ficha vigente de la obra.</p>
-          <div id="mapa-proyectos" x-show="!mapaError" class="h-[430px] w-full border border-line" aria-label="Mapa de proyectos publicados"></div>
+          {{-- Contexto de apilamiento propio: las capas internas de Leaflet (z-index 400-1000) no deben quedar sobre las Ventanas Modales (z-[80]). --}}
+          <div id="mapa-proyectos" x-show="!mapaError" style="position: relative; z-index: 0;" class="h-[430px] w-full border border-line" aria-label="Mapa de proyectos publicados"></div>
           <p x-show="sinMarcadores && !mapaError" x-cloak class="ig-lede mt-4">No hay proyectos publicados con coordenadas para estos filtros.</p>
           <p x-show="mapaError" x-cloak class="ig-lede mt-4">El mapa no está disponible. La galería sigue accesible.</p>
         </div>

@@ -438,12 +438,6 @@ class AdminController extends Controller
         return preg_match('/^\s*[=+\-@]/u', $texto) ? "'" . $texto : $texto;
     }
 
-    public function consultasShow(Consulta $consulta)
-    {
-        $consulta->load(['visitante', 'adminResponsable']);
-        return view('admin.consultas.show', compact('consulta'));
-    }
-
     public function consultasUpdate(Request $request, Consulta $consulta)
     {
         $request->validate([

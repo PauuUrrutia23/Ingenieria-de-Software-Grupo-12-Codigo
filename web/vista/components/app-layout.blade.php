@@ -200,10 +200,6 @@
                     @php $urlTerminos = $terminosUrl ?? null; @endphp
                     <a href="{{ $urlTerminos ?: route('terminos') }}" target="_blank" rel="noopener"
                        class="hover:text-white transition-colors">Términos y Condiciones y Política de Privacidad</a>
-                    <button type="button" data-ig-motion-toggle aria-pressed="false"
-                            class="hover:text-white transition-colors border border-white/15 px-3 py-1.5 uppercase tracking-[0.14em] text-[0.625rem]">
-                        Ver animaciones
-                    </button>
                 </div>
             </div>
         </div>

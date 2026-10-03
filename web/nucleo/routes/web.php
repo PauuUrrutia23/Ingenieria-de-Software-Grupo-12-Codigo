@@ -78,7 +78,6 @@ Route::middleware(['auth', CheckAdminSession::class])->group(function () {
         ->whereIn('formato', ['csv', 'xlsx'])->name('admin.consultas.exportar');
     Route::get('admin/consultas/{consulta}/detalle', [AdminController::class, 'consultasDetalle'])
         ->whereNumber('consulta')->name('admin.consultas.detalle');
-    Route::get('admin/consultas/{consulta}', [AdminController::class, 'consultasShow'])->name('admin.consultas.show');
     Route::put('admin/consultas/{consulta}', [AdminController::class, 'consultasUpdate'])->name('admin.consultas.update');
 
     Route::get('admin/password', [AuthController::class, 'passwordEdit'])->name('admin.password.edit');

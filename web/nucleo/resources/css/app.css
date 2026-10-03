@@ -633,21 +633,6 @@
     .ig-card-hover:hover { transform: none; }
 }
 
-/* Este equipo reporta movimiento reducido por defecto: la píldora
-   "Ver animaciones" activa la capa sin tocar Windows. */
-html.force-motion .ig-reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 900ms var(--ease-premium), transform 900ms var(--ease-premium);
-}
-html.force-motion .ig-reveal.is-in {
-    opacity: 1;
-    transform: none;
-}
-html.force-motion .ig-hero-shot { animation: ig-subtle-zoom 10s ease-out both; }
-html.force-motion .ig-scroll-line { animation: ig-drift 2.4s var(--ease-steel) infinite; }
-html.force-motion .ig-shot:hover > img { transform: scale(1.04); }
-
 /* Impresión: sin capas de motion ni velos. */
 @media print {
     .ig-reveal { opacity: 1; transform: none; }
