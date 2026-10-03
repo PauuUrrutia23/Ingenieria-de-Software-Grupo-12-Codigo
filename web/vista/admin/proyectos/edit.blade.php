@@ -39,12 +39,11 @@
                 </div>
                 <div>
                     <label for="ed-region" class="ig-label">Región</label>
-                    <input id="ed-region" type="text" name="region" value="{{ old('region', $proyecto->region) }}"
-                           class="ig-field-box" required>
+                    <select id="ed-region" name="region" class="ig-field-box cursor-pointer" required><option value="">Seleccione una región…</option>@foreach(\App\Support\RegionesChile::LISTA as $r)<option value="{{ $r }}" {{ old('region', $proyecto->region) === $r ? 'selected' : '' }}>{{ $r }}</option>@endforeach</select>
                 </div>
                 <div>
-                    <label for="ed-ubicacion" class="ig-label">Ubicación / Comuna</label>
-                    <input id="ed-ubicacion" type="text" name="ubicacion_geografica" value="{{ old('ubicacion_geografica', $proyecto->ubicacion_geografica) }}"
+                    <label for="ed-ubicacion" class="ig-label">Comuna</label>
+                    <input id="ed-ubicacion" type="text" name="comuna" value="{{ old('comuna', $proyecto->comuna) }}"
                            class="ig-field-box" required>
                 </div>
                 <div>

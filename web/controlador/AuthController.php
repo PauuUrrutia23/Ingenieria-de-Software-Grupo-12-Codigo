@@ -40,21 +40,21 @@ class AuthController extends Controller
             $admin = $this->db->query(Administrador::class)->where('correo', $request->correo)->first();
         } catch (\Throwable $e) {
             report($e);
-            return back()->withErrors(['correo' => 'El acceso no está disponible temporalmente.']);
+            return back()->withInput($request->only('correo'))->withErrors(['correo' => 'El acceso no está disponible temporalmente.']);
         }
 
         if (!$admin) {
-            return back()->withErrors(['correo' => 'Credenciales inválidas.']);
+            return back()->withInput($request->only('correo'))->withErrors(['correo' => 'Credenciales inválidas.']);
         }
 
         if (!$admin->activo) {
-            return back()->withErrors(['correo' => 'Cuenta inactiva. Contacte al administrador jefe.']);
+            return back()->withInput($request->only('correo'))->withErrors(['correo' => 'Cuenta inactiva. Contacte al administrador jefe.']);
         }
 
         if ($admin->bloqueado_hasta && $admin->bloqueado_hasta > Carbon::now()) {
             $minutos = max(1, Carbon::now()->diffInMinutes($admin->bloqueado_hasta));
 
-            return back()->withErrors([
+            return back()->withInput($request->only('correo'))->withErrors([
                 'correo' => "Cuenta bloqueada temporalmente por intentos fallidos. Vuelva a intentarlo en {$minutos} minuto(s).",
             ]);
         }
@@ -64,7 +64,7 @@ class AuthController extends Controller
                 $this->db->update($admin, ['bloqueado_hasta' => null, 'intentos_fallidos' => 0]);
             } catch (\Throwable $e) {
                 report($e);
-                return back()->withErrors(['correo' => 'El acceso no está disponible temporalmente.']);
+                return back()->withInput($request->only('correo'))->withErrors(['correo' => 'El acceso no está disponible temporalmente.']);
             }
         }
 
@@ -73,7 +73,7 @@ class AuthController extends Controller
                 $this->db->update($admin, ['intentos_fallidos' => 0]);
             } catch (\Throwable $e) {
                 report($e);
-                return back()->withErrors(['correo' => 'El acceso no está disponible temporalmente.']);
+                return back()->withInput($request->only('correo'))->withErrors(['correo' => 'El acceso no está disponible temporalmente.']);
             }
 
             Auth::login($admin);
@@ -107,16 +107,16 @@ class AuthController extends Controller
             });
         } catch (\Throwable $e) {
             report($e);
-            return back()->withErrors(['correo' => 'El acceso no está disponible temporalmente.']);
+            return back()->withInput($request->only('correo'))->withErrors(['correo' => 'El acceso no está disponible temporalmente.']);
         }
 
         if ($bloqueado) {
             $this->notificaciones->notificarBloqueoCuenta($admin);
 
-            return back()->withErrors(['correo' => 'Cuenta bloqueada por 60 minutos debido a múltiples intentos fallidos.']);
+            return back()->withInput($request->only('correo'))->withErrors(['correo' => 'Cuenta bloqueada por 60 minutos debido a múltiples intentos fallidos.']);
         }
 
-        return back()->withErrors(['correo' => 'Credenciales inválidas.']);
+        return back()->withInput($request->only('correo'))->withErrors(['correo' => 'Credenciales inválidas.']);
     }
 
     public function logout(Request $request)

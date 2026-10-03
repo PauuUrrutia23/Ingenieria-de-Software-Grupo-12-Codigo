@@ -9,6 +9,7 @@
      x-transition:leave-end="opacity-0"
      class="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-6"
      @keydown.escape.window="{{ $show }} = false"
+     x-trap.noscroll="{{ $show }}"
      role="dialog" aria-modal="true">
 
     <div class="absolute inset-0 bg-carbon/65 backdrop-blur-[3px]" @click="{{ $show }} = false" aria-hidden="true"></div>

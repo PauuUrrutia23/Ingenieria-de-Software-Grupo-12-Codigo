@@ -1,5 +1,9 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
+import focus from '@alpinejs/focus';
+
+// x-trap de las Ventanas Modales: mantiene el foco del teclado dentro del modal abierto.
+Alpine.plugin(focus);
 
 window.Alpine = Alpine;
 Alpine.start();

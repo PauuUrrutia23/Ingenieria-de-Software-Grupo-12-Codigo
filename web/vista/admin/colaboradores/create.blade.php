@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <x-slot name="header">Nuevo Proveedor</x-slot>
+    <x-slot name="header">Agregar Colaborador</x-slot>
 
     <div class="mb-8 -mt-2">
         <p class="ig-eyebrow mb-2">Alianzas</p>

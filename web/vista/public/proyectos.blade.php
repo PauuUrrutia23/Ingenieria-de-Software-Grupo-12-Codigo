@@ -46,11 +46,8 @@
         <div class="ig-container py-10 md:py-12">
           <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-9">
             <p class="ig-eyebrow mb-0">Acotar la búsqueda</p>
-            @if($hayFiltros)
-              <span class="ig-link-ghost"><i data-lucide="filter" class="h-3.5 w-3.5 text-wood-deep"></i> Filtro activo</span>
-            @else
-              <span class="ig-meta">Sin filtros aplicados</span>
-            @endif
+            <span x-show="filtroActivo" @if(!$hayFiltros) style="display: none;" @endif class="ig-link-ghost"><i data-lucide="filter" class="h-3.5 w-3.5 text-wood-deep"></i> Filtro activo</span>
+            <span x-show="!filtroActivo" @if($hayFiltros) style="display: none;" @endif class="ig-meta">Sin filtros aplicados</span>
           </div>
 
           <form id="filtros-proyectos" action="/proyectos" method="GET"
@@ -203,6 +200,7 @@
     <script>
       function galeriaProyectos() {
         return {
+          filtroActivo: @js((bool) $hayFiltros),
           cargando: false,
           cargandoFicha: false,
           aviso: '',
@@ -339,6 +337,7 @@
               if (peticion.signal.aborted) return;
               document.getElementById('resultados-proyectos').innerHTML = html;
               history.replaceState(null, '', url);
+              this.filtroActivo = !sinCriterios;
               if (window.lucide) lucide.createIcons();
               if (window.igRefrescarContenidoDinamico) window.igRefrescarContenidoDinamico(document.getElementById('resultados-proyectos'));
 

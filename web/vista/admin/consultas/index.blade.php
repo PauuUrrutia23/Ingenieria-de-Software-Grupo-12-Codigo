@@ -31,7 +31,7 @@
         </form>
         <div class="flex flex-wrap items-center gap-3 mb-6">
             <span class="ig-meta">Exportar todas las consultas</span>
-            @if($consultas->total() > 0)
+            @if($hayConsultas)
                 <a href="{{ route('admin.consultas.exportar', 'csv') }}" class="ig-btn ig-btn-secondary">CSV</a>
                 <a href="{{ route('admin.consultas.exportar', 'xlsx') }}" class="ig-btn ig-btn-secondary">Excel</a>
             @else

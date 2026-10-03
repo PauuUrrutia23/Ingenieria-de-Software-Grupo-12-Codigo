@@ -104,7 +104,7 @@ class BusinessRulesTest extends TestCase
             'nombre_obra' => 'Proyecto con demasiadas fotos',
             'descripcion_tecnica' => 'Descripción técnica de prueba suficientemente larga.',
             'region' => 'Metropolitana',
-            'ubicacion_geografica' => 'Santiago, Metropolitana',
+            'comuna' => 'Santiago',
             'anio_ejecucion' => 2025,
             'categoria' => 'construccion',
             'estado_publicacion' => 'borrador',

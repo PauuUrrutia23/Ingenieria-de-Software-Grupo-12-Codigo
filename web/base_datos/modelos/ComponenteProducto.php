@@ -13,7 +13,8 @@ class ComponenteProducto extends Model
 
     protected $table = 'componentes_producto';
     protected $primaryKey = 'id_componente';
-    protected $fillable = ['nombre', 'id_producto'];
+    protected $fillable = ['nombre', 'orden', 'id_producto'];
+    protected $casts = ['orden' => 'integer'];
 
     public function producto() { return $this->belongsTo(Producto::class, 'id_producto', 'id_producto'); }
 }

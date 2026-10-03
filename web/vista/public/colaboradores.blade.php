@@ -7,7 +7,7 @@
                 <p class="ig-eyebrow mb-6">Alianzas</p>
                 <h1 class="ig-h-display mb-8">Colaboradores</h1>
                 <p class="ig-lede">
-                    Proveedores y socios estratégicos que respaldan nuestros proyectos.
+                    Colaboradores y socios estratégicos que respaldan nuestros proyectos.
                 </p>
             </div>
         </div>
@@ -31,8 +31,8 @@
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px bg-line border border-line ig-reveal">
                     @foreach($colaboradores as $prov)
                         <div class="flex flex-col items-center justify-center bg-surface px-6 py-12 group">
-                            <div class="flex items-center justify-center h-16 w-full mb-6">
-                                <img src="{{ Storage::url($prov->logotipo) }}"
+                            <div class="flex items-center justify-center h-24 w-full mb-6">
+                                <img src="{{ $prov->logo_url }}"
                                      alt="{{ $prov->nombre_comercial }}" loading="lazy"
                                      class="max-h-full max-w-full object-contain grayscale opacity-60 transition-all duration-500 group-hover:grayscale-0 group-hover:opacity-100">
                             </div>

@@ -12,7 +12,7 @@
             <button type="button" @click="crear = true"
                     class="ig-btn ig-btn-primary !py-3 !px-5 shrink-0">
                 <i data-lucide="plus" class="w-4 h-4"></i>
-                Nuevo Proveedor
+                Agregar Colaborador
             </button>
         </div>
 
@@ -44,7 +44,7 @@
                         class="w-full">
                     <div class="relative w-24 h-24 mx-auto mb-3 border border-line overflow-hidden">
                         <span class="ig-plate" aria-hidden="true"></span>
-                        <img src="{{ Storage::url($c->logotipo) }}" alt="{{ $c->nombre_comercial }}" class="w-full h-full object-contain p-2 relative z-10">
+                        <img src="{{ $c->logo_url }}" alt="{{ $c->nombre_comercial }}" class="w-full h-full object-contain p-2 relative z-10">
                     </div>
                     <p class="text-carbon text-sm leading-snug line-clamp-2" title="{{ $c->nombre_comercial }}">{{ $c->nombre_comercial }}</p>
                     <p class="ig-meta mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Editar</p>
@@ -61,7 +61,7 @@
 
         <div class="mt-8">{{ $colaboradores->links() }}</div>
 
-        <x-modal show="crear" titulo="Nuevo Proveedor" ancho="max-w-md">
+        <x-modal show="crear" titulo="Agregar Colaborador" ancho="max-w-md">
             <form action="{{ route('admin.colaboradores.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf
                 <input type="hidden" name="_modal" value="crear">
@@ -93,7 +93,7 @@
             </form>
         </x-modal>
 
-        <x-modal show="editar" titulo="Editar Proveedor" ancho="max-w-md">
+        <x-modal show="editar" titulo="Editar Colaborador" ancho="max-w-md">
             <form :action="'{{ url('admin/colaboradores') }}/' + seleccionado.id" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf @method('PUT')
                 <input type="hidden" name="_modal" value="editar">
@@ -119,7 +119,7 @@
             </form>
         </x-modal>
 
-        <x-modal show="eliminar" titulo="Eliminar Proveedor" ancho="max-w-md">
+        <x-modal show="eliminar" titulo="Eliminar Colaborador" ancho="max-w-md">
             <p class="text-mute-deep mb-6 leading-relaxed">
                 ¿Confirma que desea eliminar a <strong x-text="seleccionado.nombre" class="text-carbon font-semibold"></strong>?
                 Esta acción no se puede deshacer.

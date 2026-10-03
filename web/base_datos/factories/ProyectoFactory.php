@@ -16,7 +16,7 @@ class ProyectoFactory extends Factory
             'nombre_obra' => 'Obra ' . $this->faker->unique()->words(2, true),
             'descripcion_tecnica' => $this->faker->sentence(),
             'region' => $this->faker->randomElement(['Metropolitana', 'Biobío', 'Maule', 'Araucanía']),
-            'ubicacion_geografica' => $this->faker->city() . ', Metropolitana',
+            'comuna' => $this->faker->city(),
             'anio_ejecucion' => $this->faker->numberBetween(2020, 2026),
             'estado_publicacion' => 'publicado',
             'categoria' => $this->faker->randomElement(['construccion', 'industrial', 'terminaciones']),

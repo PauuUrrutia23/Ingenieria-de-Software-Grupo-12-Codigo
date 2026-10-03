@@ -4,10 +4,6 @@
 > **Obligatorios:** RF55 (Banner), CU27.2 (recuperación de contraseña) y CU40.2 (responsable de Consulta).
 > **RNF17:** logotipos ≤500 KB; fotografías/imágenes ≤2 MB; sólo JPG/JPEG/PNG. No se declaran válidos WebP ni MP4.
 
-> **Alcance vigente:** Incrementos 1 + 2 + 3 — **55 Requerimientos Funcionales** (16 I1 + 23 I2 + 16 I3), 17 RNF.
-> **Obligatorios:** RF55 (Banner), CU27.2 (recuperación de contraseña) y CU40.2 (responsable de Consulta).
-> **RNF17:** logotipos ≤500 KB; fotografías/imágenes ≤2 MB; sólo JPG/JPEG/PNG. No se declaran válidos WebP ni MP4.
-
 > Consolidado a partir de: `Grupo 12 - Documento_0.docx`, `Grupo 12 - incremento1.docx`,
 > `Grupo 12 - Incremento 2.docx`, `Dimensión Técnica Ingecon_v1.2_mod.docx`.
 > Las secciones de casos de uso de Incrementos 1 y 2 conservan la especificación

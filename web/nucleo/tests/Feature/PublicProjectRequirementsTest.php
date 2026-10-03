@@ -18,7 +18,7 @@ class PublicProjectRequirementsTest extends TestCase
             'nombre_obra' => 'Galpón de prueba',
             'categoria' => 'industrial',
             'region' => 'Biobío',
-            'ubicacion_geografica' => 'Concepción',
+            'comuna' => 'Concepción',
             'estado_publicacion' => 'publicado',
         ], $datos));
     }

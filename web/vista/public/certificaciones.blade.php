@@ -79,13 +79,18 @@
                                     <span class="ig-badge {{ $claseEstado }}">{{ $estado }}</span>
                                 </div>
 
-                                @if($cert->organismo)
-                                    <a href="{{ $cert->url_organismo ?: '#' }}" target="_blank" rel="noopener"
+                                @if($cert->organismo && $cert->url_organismo)
+                                    <a href="{{ $cert->url_organismo }}" target="_blank" rel="noopener"
                                        class="ig-link-ghost !normal-case !tracking-normal !text-sm mb-5 text-mute-deep">
                                         <i data-lucide="badge-check" class="h-4 w-4 text-wood-deep"></i>
                                         {{ $cert->organismo }}
                                         <i data-lucide="external-link" class="h-3.5 w-3.5"></i>
                                     </a>
+                                @elseif($cert->organismo)
+                                    <span class="ig-link-ghost !normal-case !tracking-normal !text-sm mb-5 text-mute-deep">
+                                        <i data-lucide="badge-check" class="h-4 w-4 text-wood-deep"></i>
+                                        {{ $cert->organismo }}
+                                    </span>
                                 @endif
 
                                 <p class="text-mute font-light leading-relaxed max-w-3xl mb-7">{{ $cert->descripcion }}</p>

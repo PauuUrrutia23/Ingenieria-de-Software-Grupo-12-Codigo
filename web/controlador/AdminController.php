@@ -61,7 +61,7 @@ class AdminController extends Controller
             report($e);
             return back()->withInput()->withErrors(['logotipo' => 'No se pudo crear el colaborador.']);
         }
-        return redirect()->route('admin.colaboradores.index')->with('success', 'Proveedor creado.');
+        return redirect()->route('admin.colaboradores.index')->with('success', 'Colaborador creado.');
     }
 
     public function colaboradoresEdit(Colaborador $colaborador)
@@ -77,8 +77,7 @@ class AdminController extends Controller
             return response()->json([
                 'id' => $registro->id_colaborador,
                 'nombre' => $registro->nombre_comercial,
-                'logo' => $this->storage->existe($registro->logotipo)
-                    ? $this->storage->url($registro->logotipo) : null,
+                'logo' => $registro->logo_url,
             ]);
         } catch (\Throwable $e) {
             return response()->json(['message' => 'El colaborador no está disponible temporalmente.'], 503);
@@ -124,7 +123,7 @@ class AdminController extends Controller
         if ($logoNuevo && $logoAnterior) {
             try { $this->storage->borrar($logoAnterior); } catch (\Throwable $e) { report($e); }
         }
-        return redirect()->route('admin.colaboradores.index')->with('success', 'Proveedor actualizado.');
+        return redirect()->route('admin.colaboradores.index')->with('success', 'Colaborador actualizado.');
     }
 
     public function colaboradoresDestroy(int $colaboradore)
@@ -144,16 +143,21 @@ class AdminController extends Controller
         } catch (\Throwable $e) {
             report($e);
         }
-        return redirect()->route('admin.colaboradores.index')->with('success', 'Proveedor eliminado.');
+        return redirect()->route('admin.colaboradores.index')->with('success', 'Colaborador eliminado.');
     }
 
-    public const SECCIONES = ['faq', 'opiniones', 'banner', 'fases_industriales'];
+    public const SECCIONES = ['faq', 'opiniones', 'banner', 'fases_industriales', 'ubicacion', 'documentacion'];
+
+    /** Secciones que solo guardan un enlace: ubicación del pie de página (RF03) y documentación técnica (RF10). */
+    public const SECCIONES_ENLACE = ['ubicacion', 'documentacion'];
 
     public const NOMBRES_SECCION = [
         'faq' => 'Preguntas Frecuentes',
         'opiniones' => 'Opiniones de Clientes',
         'banner' => 'Banner de Inicio',
         'fases_industriales' => 'Fases Industriales',
+        'ubicacion' => 'Ubicación',
+        'documentacion' => 'Documentación técnica',
     ];
 
     public const CAMPOS_OBLIGATORIOS = [
@@ -161,11 +165,24 @@ class AdminController extends Controller
         'banner' => ['cuerpo' => 'el texto descriptivo'],
         'fases_industriales' => ['titulo' => 'el nombre de la fase', 'cuerpo' => 'el texto de la fase'],
         'opiniones' => ['titulo' => 'el nombre del cliente', 'cuerpo' => 'el testimonio'],
+        'ubicacion' => ['enlace' => 'el enlace de Google Maps'],
+        'documentacion' => ['enlace' => 'el enlace de la documentación'],
+    ];
+
+    private const MENSAJES_CONTENIDO = [
+        'enlace.regex' => 'El enlace debe comenzar con http://, https:// o / (archivo del sitio).',
     ];
 
     private function contenidoReglas(string $seccion): array
     {
         $obligatorios = self::CAMPOS_OBLIGATORIOS[$seccion] ?? [];
+
+        if (in_array($seccion, self::SECCIONES_ENLACE, true)) {
+            return [
+                'titulo' => ['nullable', 'string', 'max:200'],
+                'enlace' => ['required', 'string', 'max:300', 'regex:/^(https?:\/\/|\/)\S+$/'],
+            ];
+        }
 
         return [
             'titulo' => [isset($obligatorios['titulo']) ? 'required' : 'nullable', 'string', 'max:200'],
@@ -217,7 +234,7 @@ class AdminController extends Controller
 
         $data = $request->validate(
             $this->contenidoReglas($seccion),
-            [],
+            self::MENSAJES_CONTENIDO,
             $this->contenidoAtributos($seccion)
         );
         $data['seccion'] = $seccion;
@@ -257,7 +274,7 @@ class AdminController extends Controller
     {
         $data = $request->validate(
             $this->contenidoReglas($contenido->seccion),
-            [],
+            self::MENSAJES_CONTENIDO,
             $this->contenidoAtributos($contenido->seccion)
         );
 
@@ -331,7 +348,10 @@ class AdminController extends Controller
             ]);
         }
 
-        return view('admin.consultas.index', compact('consultas', 'orden', 'q'));
+        // RF42: la exportación incluye todas las Consultas, así que se habilita según el total, no según la búsqueda.
+        $hayConsultas = $q === '' ? $consultas->total() > 0 : $this->db->query(Consulta::class)->exists();
+
+        return view('admin.consultas.index', compact('consultas', 'orden', 'q', 'hayConsultas'));
     }
 
     public function consultasDetalle(int $consulta)

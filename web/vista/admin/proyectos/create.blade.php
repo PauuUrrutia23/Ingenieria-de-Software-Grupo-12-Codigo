@@ -29,11 +29,11 @@
                 </div>
                 <div>
                     <label for="c-region" class="ig-label">Región</label>
-                    <input id="c-region" type="text" name="region" value="{{ old('region') }}" class="ig-field-box" required>
+                    <select id="c-region" name="region" class="ig-field-box cursor-pointer" required><option value="">Seleccione una región…</option>@foreach(\App\Support\RegionesChile::LISTA as $r)<option value="{{ $r }}" {{ old('region') === $r ? 'selected' : '' }}>{{ $r }}</option>@endforeach</select>
                 </div>
                 <div>
-                    <label for="c-ubicacion" class="ig-label">Ubicación / Comuna</label>
-                    <input id="c-ubicacion" type="text" name="ubicacion_geografica" value="{{ old('ubicacion_geografica') }}" class="ig-field-box" required>
+                    <label for="c-ubicacion" class="ig-label">Comuna</label>
+                    <input id="c-ubicacion" type="text" name="comuna" value="{{ old('comuna') }}" class="ig-field-box" required>
                 </div>
                 <div>
                     <label for="c-latitud" class="ig-label">Latitud (opcional)</label>

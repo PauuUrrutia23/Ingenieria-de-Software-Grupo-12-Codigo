@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <x-slot name="header">Editar Proveedor</x-slot>
+    <x-slot name="header">Editar Colaborador</x-slot>
 
     <div class="mb-8 -mt-2">
         <p class="ig-eyebrow mb-2">Alianzas</p>
@@ -26,7 +26,7 @@
             <span class="ig-label block">Logotipo actual</span>
             <div class="relative w-32 h-24 border border-line mb-4">
                 <span class="ig-plate" aria-hidden="true"></span>
-                <img src="{{ Storage::url($colaborador->logotipo) }}" alt="{{ $colaborador->nombre_comercial }}"
+                <img src="{{ $colaborador->logo_url }}" alt="{{ $colaborador->nombre_comercial }}"
                      class="relative z-10 w-full h-full object-contain p-2">
             </div>
             <label for="logotipo" class="ig-label">Logotipo (dejar vacío para mantener el actual)</label>

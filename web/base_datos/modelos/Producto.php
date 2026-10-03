@@ -11,8 +11,9 @@ class Producto extends Model
 
     protected $table = 'productos';
     protected $primaryKey = 'id_producto';
-    protected $fillable = ['nombre', 'descripcion', 'imagen', 'tipo_mime', 'id_admin'];
+    protected $fillable = ['nombre', 'descripcion', 'imagen', 'tipo_mime', 'orden', 'activo', 'id_admin'];
+    protected $casts = ['activo' => 'boolean', 'orden' => 'integer'];
 
     public function administrador() { return $this->belongsTo(Administrador::class, 'id_admin', 'id_admin'); }
-    public function componentes() { return $this->hasMany(ComponenteProducto::class, 'id_producto', 'id_producto'); }
+    public function componentes() { return $this->hasMany(ComponenteProducto::class, 'id_producto', 'id_producto')->orderBy('orden')->orderBy('id_componente'); }
 }

@@ -13,7 +13,7 @@ class InstitucionalCtrl extends Controller
 {
     private const SECCION_DOCUMENTACION = 'documentacion';
     private const SECCION_TERMINOS = 'terminos';
-    private const SECCION_PRODUCTO = 'producto';
+    private const SECCION_FICHA_CONECTORES = 'ficha_conectores';
     private const SECCION_UBICACION = 'ubicacion';
     private const FASES_INDUSTRIALES = [
         'Descortezado',
@@ -199,6 +199,8 @@ class InstitucionalCtrl extends Controller
         try {
             return $this->db->query(Producto::class)
                 ->with('componentes')
+                ->where('activo', true)
+                ->orderBy('orden')
                 ->orderBy('id_producto')
                 ->get()
                 ->map(function (Producto $producto) {
@@ -272,7 +274,7 @@ class InstitucionalCtrl extends Controller
     /**
      * RF10 (Fase 18) — ficha de conectores metálicos recuperada de Contenido.
      *
-     * Fuente única de verdad: filas de sección 'producto', una por bloque lógico,
+     * Fuente única de verdad: filas de sección 'ficha_conectores', una por bloque lógico,
      * discriminadas por 'titulo'. Las listas (especificaciones y miniaturas) viajan
      * serializadas como JSON en 'cuerpo' (decisión de serialización del plan, sin
      * crear una entidad nueva). Si la BD falla o falta un bloque, se devuelve un
@@ -283,7 +285,7 @@ class InstitucionalCtrl extends Controller
         $porTitulo = [];
         try {
             $registros = $this->db->query(Contenido::class)
-                ->where('seccion', self::SECCION_PRODUCTO)
+                ->where('seccion', self::SECCION_FICHA_CONECTORES)
                 ->where('activo', true)
                 ->orderBy('orden')
                 ->get();

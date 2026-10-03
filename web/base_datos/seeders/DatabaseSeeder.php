@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
             FasesIndustrialesSeeder::class,
             ProductosPublicosSeeder::class,
             BannerContenidoSeeder::class,
+            ContenidoPublicoSeeder::class,
+            EnlacesInstitucionalesSeeder::class,
         ]);
     }
 }

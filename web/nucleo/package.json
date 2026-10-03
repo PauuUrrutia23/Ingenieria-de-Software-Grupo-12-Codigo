@@ -6,6 +6,7 @@
         "build": "vite build"
     },
     "devDependencies": {
+        "@alpinejs/focus": "^3.17.4",
         "@tailwindcss/postcss": "^4.3.3",
         "@tailwindcss/vite": "^4.3.3",
         "autoprefixer": "^10.5.4",

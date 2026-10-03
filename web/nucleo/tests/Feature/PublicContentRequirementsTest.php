@@ -27,7 +27,7 @@ class PublicContentRequirementsTest extends TestCase
     private function fila(string $titulo, ?string $cuerpo, ?string $archivo = null, int $orden = 0): void
     {
         Contenido::create([
-            'seccion' => 'producto',
+            'seccion' => 'ficha_conectores',
             'titulo' => $titulo,
             'cuerpo' => $cuerpo,
             'archivo' => $archivo,
@@ -121,7 +121,7 @@ class PublicContentRequirementsTest extends TestCase
 
     public function test_estado_vacio_de_proveedores_no_rompe()
     {
-        $this->get('/')->assertStatus(200)->assertSee('Pronto publicaremos nuestros proveedores', false);
+        $this->get('/')->assertStatus(200)->assertSee('Pronto publicaremos nuestros colaboradores', false);
     }
 
     // --- FASE 31: RF14 la FAQ vigente llega a home(); su fallo no rompe la página ---

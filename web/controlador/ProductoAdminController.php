@@ -16,7 +16,7 @@ class ProductoAdminController extends Controller
 
     public function index()
     {
-        $productos = Producto::query()->with('componentes')->orderBy('id_producto', 'desc')->get();
+        $productos = Producto::query()->with('componentes')->orderBy('orden')->orderBy('id_producto', 'desc')->get();
         return view('admin.productos.index', compact('productos'));
     }
 
@@ -57,8 +57,8 @@ class ProductoAdminController extends Controller
                     'tipo_mime' => $request->file('imagen')->getMimeType(),
                     'id_admin' => Auth::id(),
                 ]);
-                foreach ($datos['componentes'] ?? [] as $nombre) {
-                    $producto->componentes()->create(['nombre' => trim($nombre)]);
+                foreach (array_values($datos['componentes'] ?? []) as $i => $nombre) {
+                    $producto->componentes()->create(['nombre' => trim($nombre), 'orden' => $i + 1]);
                 }
             });
         } catch (\Throwable $e) {
@@ -90,8 +90,8 @@ class ProductoAdminController extends Controller
                 }
                 $registro->update($cambios);
                 $registro->componentes()->delete();
-                foreach ($datos['componentes'] ?? [] as $nombre) {
-                    $registro->componentes()->create(['nombre' => trim($nombre)]);
+                foreach (array_values($datos['componentes'] ?? []) as $i => $nombre) {
+                    $registro->componentes()->create(['nombre' => trim($nombre), 'orden' => $i + 1]);
                 }
                 return true;
             });

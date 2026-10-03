@@ -84,9 +84,8 @@
                     <a href="/#productos" class="ig-nav-link">Productos</a>
                     <a href="/#proyectos" class="ig-nav-link">Proyectos</a>
                     <a href="/#certificaciones" class="ig-nav-link">Certificaciones</a>
-                    <a href="{{ route('public.documentacion.conectores') }}" target="_blank" rel="noopener"
-                       class="ig-nav-link flex items-center gap-1.5">
-                        Conectores Metálicos <i data-lucide="external-link" class="h-3 w-3"></i>
+                    <a href="{{ route('public.producto') }}" target="_blank" rel="noopener" class="ig-nav-link">
+                        Conectores Metálicos
                     </a>
 
                     <a href="/#contacto" class="ig-nav-cta">Contáctanos</a>
@@ -133,7 +132,7 @@
                        class="font-display text-3xl font-light tracking-tight text-white hover:text-wood-light transition-colors">Proyectos</a>
                     <a href="/#certificaciones" @click="isMobileMenuOpen = false"
                        class="font-display text-3xl font-light tracking-tight text-white hover:text-wood-light transition-colors">Certificaciones</a>
-                    <a href="{{ route('public.documentacion.conectores') }}" target="_blank" rel="noopener"
+                    <a href="{{ route('public.producto') }}" target="_blank" rel="noopener" @click="isMobileMenuOpen = false"
                        class="font-display text-3xl font-light tracking-tight text-white hover:text-wood-light transition-colors">Conectores Metálicos</a>
                 </nav>
                 <div class="mt-12 flex flex-col gap-3">
@@ -184,7 +183,7 @@
                     <ul class="space-y-4">
                         <li><a href="{{ route('public.certificaciones') }}" class="text-white/55 hover:text-white text-sm font-light transition-colors">Certificaciones</a></li>
                         <li><a href="{{ route('public.colaboradores') }}" class="text-white/55 hover:text-white text-sm font-light transition-colors">Colaboradores</a></li>
-                        <li><a href="{{ route('public.producto') }}" class="text-white/55 hover:text-white text-sm font-light transition-colors">Conectores metálicos</a></li>
+                        <li><a href="{{ route('public.producto') }}" target="_blank" rel="noopener" class="text-white/55 hover:text-white text-sm font-light transition-colors">Conectores metálicos</a></li>
                         <li><a href="/#contacto" class="text-white/55 hover:text-white text-sm font-light transition-colors">Contactar</a></li>
                     </ul>
                 </div>

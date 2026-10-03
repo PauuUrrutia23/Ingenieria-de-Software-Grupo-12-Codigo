@@ -63,7 +63,7 @@
                     <h3 class="font-display text-lg leading-tight text-carbon mb-1 line-clamp-2">{{ $p->nombre_obra }}</h3>
                     <p class="ig-meta mb-5 flex items-center gap-1.5">
                         <i data-lucide="map-pin" class="h-3.5 w-3.5 text-wood-deep"></i>
-                        {{ $p->ubicacion_geografica }} · {{ $p->anio_ejecucion }}
+                        {{ $p->comuna }}, {{ $p->region }} · {{ $p->anio_ejecucion }}
                     </p>
 
                     <div class="mt-auto flex gap-2">
@@ -118,12 +118,11 @@
                     </div>
                     <div>
                         <label for="pr-region" class="ig-label">Región</label>
-                        <input id="pr-region" type="text" name="region" value="{{ old('region') }}"
-                               class="ig-field-box" required>
+                        <select id="pr-region" name="region" class="ig-field-box cursor-pointer" required><option value="">Seleccione una región…</option>@foreach(\App\Support\RegionesChile::LISTA as $r)<option value="{{ $r }}" {{ old('region') === $r ? 'selected' : '' }}>{{ $r }}</option>@endforeach</select>
                     </div>
                     <div>
-                        <label for="pr-ubicacion" class="ig-label">Ubicación / Comuna</label>
-                        <input id="pr-ubicacion" type="text" name="ubicacion_geografica" value="{{ old('ubicacion_geografica') }}"
+                        <label for="pr-ubicacion" class="ig-label">Comuna</label>
+                        <input id="pr-ubicacion" type="text" name="comuna" value="{{ old('comuna') }}"
                                class="ig-field-box" required>
                     </div>
                     <div><label for="pr-latitud" class="ig-label">Latitud (opcional)</label><input id="pr-latitud" type="number" step="any" min="-90" max="90" name="latitud" value="{{ old('latitud') }}" class="ig-field-box"></div>
@@ -176,8 +175,8 @@
                         @endforeach
                     </select></div>
                     <div><label for="editar-proyecto-anio" class="ig-label">Año de Ejecución</label><input id="editar-proyecto-anio" type="number" name="anio_ejecucion" x-model="editado.anio_ejecucion" class="ig-field-box" required></div>
-                    <div><label for="editar-proyecto-region" class="ig-label">Región</label><input id="editar-proyecto-region" name="region" x-model="editado.region" class="ig-field-box" required></div>
-                    <div><label for="editar-proyecto-ubicacion" class="ig-label">Ubicación / Comuna</label><input id="editar-proyecto-ubicacion" name="ubicacion_geografica" x-model="editado.ubicacion_geografica" class="ig-field-box" required></div>
+                    <div><label for="editar-proyecto-region" class="ig-label">Región</label><select id="editar-proyecto-region" name="region" x-model="editado.region" class="ig-field-box cursor-pointer" required><option value="">Seleccione una región…</option>@foreach(\App\Support\RegionesChile::LISTA as $r)<option value="{{ $r }}">{{ $r }}</option>@endforeach</select></div>
+                    <div><label for="editar-proyecto-ubicacion" class="ig-label">Comuna</label><input id="editar-proyecto-ubicacion" name="comuna" x-model="editado.comuna" class="ig-field-box" required></div>
                     <div><label for="editar-proyecto-latitud" class="ig-label">Latitud (opcional)</label><input id="editar-proyecto-latitud" type="number" step="any" min="-90" max="90" name="latitud" x-model="editado.latitud" class="ig-field-box"></div>
                     <div><label for="editar-proyecto-longitud" class="ig-label">Longitud (opcional)</label><input id="editar-proyecto-longitud" type="number" step="any" min="-180" max="180" name="longitud" x-model="editado.longitud" class="ig-field-box"></div>
                     <div class="sm:col-span-2"><label for="editar-proyecto-estado" class="ig-label">Visibilidad</label><select id="editar-proyecto-estado" name="estado_publicacion" x-model="editado.estado_publicacion" class="ig-field-box"><option value="borrador">Borrador</option><option value="publicado">Publicado</option></select></div>
@@ -218,7 +217,7 @@
           errorEdicion: '',
           resumenImagenes: '',
           seleccionado: { id: null, nombre: '', imagenes: 0 },
-          editado: { id: null, nombre_obra: '', categoria: 'construccion', anio_ejecucion: '', region: '', ubicacion_geografica: '', latitud: '', longitud: '', estado_publicacion: 'borrador', descripcion_tecnica: '', imagenes_count: 0 },
+          editado: { id: null, nombre_obra: '', categoria: 'construccion', anio_ejecucion: '', region: '', comuna: '', latitud: '', longitud: '', estado_publicacion: 'borrador', descripcion_tecnica: '', imagenes_count: 0 },
 
           init() {
             @if($errors->any() && old('_modal') === 'crear')
@@ -228,7 +227,7 @@
               this.editado = {
                 id: @js(old('_proyecto_id')), nombre_obra: @js(old('nombre_obra')),
                 categoria: @js(old('categoria')), anio_ejecucion: @js(old('anio_ejecucion')),
-                region: @js(old('region')), ubicacion_geografica: @js(old('ubicacion_geografica')),
+                region: @js(old('region')), comuna: @js(old('comuna')),
                 latitud: @js(old('latitud')), longitud: @js(old('longitud')),
                 estado_publicacion: @js(old('estado_publicacion')),
                 descripcion_tecnica: @js(old('descripcion_tecnica')), imagenes_count: 0,

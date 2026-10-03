@@ -19,7 +19,7 @@ class ProductoRequest extends FormRequest
             'descripcion' => ['required', 'string'],
             'imagen' => array_merge([$this->isMethod('post') ? 'required' : 'nullable'], Rnf17::reglasImagen()),
             'componentes' => ['nullable', 'array'],
-            'componentes.*' => ['required', 'string', 'max:150'],
+            'componentes.*' => ['required', 'string', 'max:120'],
         ];
     }
 }

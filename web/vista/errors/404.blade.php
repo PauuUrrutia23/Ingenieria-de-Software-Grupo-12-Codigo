@@ -3,7 +3,10 @@
         <div class="text-center max-w-xl">
             <p class="font-mono text-[6rem] leading-none font-normal tracking-tight text-carbon md:text-[8rem]">404</p>
             <span class="block w-16 h-px bg-wood mx-auto my-10" aria-hidden="true"></span>
-            <h1 class="font-display text-2xl md:text-3xl font-light tracking-tight mb-10">Página no encontrada</h1>
+            <h1 class="font-display text-2xl md:text-3xl font-light tracking-tight {{ isset($exception) && $exception->getMessage() ? 'mb-4' : 'mb-10' }}">Página no encontrada</h1>
+            @if(isset($exception) && $exception->getMessage())
+                <p class="text-mute font-light mb-10">{{ $exception->getMessage() }}</p>
+            @endif
             <a href="/" class="ig-btn ig-btn-primary">Volver al inicio</a>
         </div>
     </div>

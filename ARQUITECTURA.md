@@ -268,7 +268,7 @@ tipos**, no los que se puedan inferir de las DS-39..DS-71 a mano.
 | | nombre_obra | VARCHAR(150) | |
 | | descripcion_tecnica | TEXT | |
 | | region | VARCHAR(80) | |
-| | ubicacion_geografica | VARCHAR(150) | |
+| | comuna | VARCHAR(150) | *(Incr. 3: antes `ubicacion_geografica`; la región va en su propia columna)* |
 | | latitud | DECIMAL(9,6) | NULL *(para Leaflet/mapa — CU22.1, fuera de Incr. 1-2 pero columna ya prevista)* |
 | | longitud | DECIMAL(9,6) | NULL |
 | | anio_ejecucion | SMALLINT | |
@@ -469,8 +469,8 @@ dependen de M5 (todo Personal de Administración pasa por `CU 27.1`).
 
 ### Fase 4 — M3: Galería de Proyectos pública (RF18,19,20,21,23 · CU18.1,19.1,20.1,21.1,23.1)
 1. `ProyectoPublicoController@index` — solo `estado=publicado`.
-2. Filtros: texto (`LIKE` sobre nombre+ubicación), categoría (`WHERE categoria=`), ubicación
-   (`WHERE ubicacion_geografica=`), combinables (CU21.1) vía query string.
+2. Filtros: texto (`LIKE` sobre nombre+comuna+región), categoría (`WHERE categoria=`), ubicación
+   (`WHERE region=`), combinables (CU21.1) vía query string.
 3. `ProyectoPublicoController@show` — ficha técnica en modal (Alpine `x-data` + fetch parcial
    o Blade component con datos ya cargados) — CU23.1, oculta si `estado != publicado`.
 4. Vista con menú desplegable de ubicación + botón "Aplicar Filtros" + input de texto +

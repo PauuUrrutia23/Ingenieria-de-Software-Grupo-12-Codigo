@@ -23,6 +23,8 @@ class AdminGestionController extends Controller
             'correo' => ['required', 'email:rfc', 'max:150', 'regex:/@ingecon\.cl$/i', Rule::unique('administradores', 'correo')],
             'password' => ['required', 'string', 'min:8', 'confirmed',
                 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[^a-zA-Z0-9]/'],
+        ], [
+            'correo.regex' => 'El correo debe ser un Correo Institucional (@ingecon.cl).',
         ]);
 
         try {

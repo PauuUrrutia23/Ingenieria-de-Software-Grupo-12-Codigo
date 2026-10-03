@@ -101,7 +101,7 @@ return [
         'estado' => 'el estado',
         'prioridad' => 'la prioridad',
         'nombre_obra' => 'el Nombre de la Obra',
-        'ubicacion_geografica' => 'la Ubicación Geográfica',
+        'comuna' => 'la Comuna',
         'categoria' => 'la categoría',
         'anio_ejecucion' => 'el año de ejecución',
         'estado_publicacion' => 'el estado de publicación',

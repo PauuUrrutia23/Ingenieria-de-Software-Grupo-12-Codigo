@@ -20,14 +20,19 @@
                     'opiniones' => 'Nombre del cliente',
                     'fases_industriales' => 'Nombre de la fase',
                     'banner' => 'Título (opcional)',
+                    'ubicacion' => 'Descripción (opcional)',
+                    'documentacion' => 'Descripción (opcional)',
                 ][$seccion];
                 $etiquetaCuerpo = [
                     'faq' => 'Respuesta',
                     'opiniones' => 'Testimonio',
                     'fases_industriales' => 'Texto de la fase',
                     'banner' => 'Texto descriptivo',
+                    'ubicacion' => '',
+                    'documentacion' => '',
                 ][$seccion];
-                $tituloObligatorio = $seccion !== 'banner';
+                $esEnlace = in_array($seccion, ['ubicacion', 'documentacion'], true);
+                $tituloObligatorio = !$esEnlace && $seccion !== 'banner';
             @endphp
 
             <div>
@@ -37,6 +42,16 @@
                 @error('titulo') <p class="ig-error">{{ $message }}</p> @enderror
             </div>
 
+            @if($esEnlace)
+            <div>
+                <label for="cont-enlace" class="ig-label">Enlace <span class="text-wood-deep">*</span></label>
+                <input id="cont-enlace" type="text" name="enlace" value="{{ old('enlace') }}" required maxlength="300"
+                       placeholder="{{ $seccion === 'ubicacion' ? 'https://maps.google.com/?q=...' : 'https://... o /docs/archivo.pdf' }}"
+                       class="ig-field-box @error('enlace') ig-field-box-invalid @enderror">
+                <p class="text-xs text-mute mt-2">{{ $seccion === 'ubicacion' ? 'Enlace de Google Maps que se abre desde el pie de página (RF03).' : 'Enlace de la documentación técnica de Conectores Metálicos (RF10).' }} Se abre en una nueva pestaña.</p>
+                @error('enlace') <p class="ig-error">{{ $message }}</p> @enderror
+            </div>
+            @else
             <div>
                 <label for="cont-cuerpo" class="ig-label">{{ $etiquetaCuerpo }} <span class="text-wood-deep">*</span></label>
                 <textarea id="cont-cuerpo" name="cuerpo" rows="4" required
@@ -52,6 +67,8 @@
                 <p class="text-xs text-mute mt-2">JPG, PNG, WebP o MP4. Máximo 5 MB.</p>
                 @error('archivo') <p class="ig-error">{{ $message }}</p> @enderror
             </div>
+
+            @endif
 
             <div class="flex justify-end gap-3 pt-2 border-t border-line">
                 <a href="{{ route('admin.contenido.index', ['seccion' => $seccion]) }}"

@@ -52,7 +52,13 @@
                     <tr class="border-b border-line last:border-b-0 hover:bg-paper transition-colors">
                         <td class="px-5 py-4 text-sm text-carbon">{{ $c->titulo ?? '—' }}</td>
                         <td class="px-5 py-4 text-sm">
-                            @if($c->archivo)
+                            @if(!$c->archivo && $c->enlace)
+                                <a href="{{ $c->enlace }}" target="_blank" rel="noopener"
+                                   class="ig-link-ghost !normal-case !tracking-normal !text-sm">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                                    Abrir enlace
+                                </a>
+                            @elseif($c->archivo)
                                 <a href="{{ Storage::url($c->archivo) }}" target="_blank" rel="noopener"
                                    class="ig-link-ghost !normal-case !tracking-normal !text-sm">
                                     <i data-lucide="external-link" class="w-4 h-4"></i>

@@ -193,7 +193,7 @@
                                 {{ $destacado->nombre_obra }}
                             </span>
                             <span class="ig-meta !text-white/60 mt-4">
-                                {{ $destacado->ubicacion_geografica }} · {{ $destacado->anio_ejecucion }}
+                                {{ $destacado->comuna }}, {{ $destacado->region }} · {{ $destacado->anio_ejecucion }}
                             </span>
                         </span>
                     </a>
@@ -215,7 +215,7 @@
                                     {{ $proyecto->nombre_obra }}
                                 </span>
                                 <span class="ig-meta !text-white/60 mt-3 block">
-                                    {{ $proyecto->ubicacion_geografica }} · {{ $proyecto->anio_ejecucion }}
+                                    {{ $proyecto->comuna }}, {{ $proyecto->region }} · {{ $proyecto->anio_ejecucion }}
                                 </span>
                             </span>
                         </a>
@@ -236,7 +236,7 @@
                         <span class="font-display text-lg font-light text-carbon group-hover:text-wood-deep transition-colors">
                             {{ $proyecto->nombre_obra }}
                         </span>
-                        <span class="ig-meta">{{ $proyecto->ubicacion_geografica }}</span>
+                        <span class="ig-meta">{{ $proyecto->comuna }}, {{ $proyecto->region }}</span>
                         <span class="ig-meta ml-auto">{{ $proyecto->anio_ejecucion }}</span>
                     </a>
                     @endforeach
@@ -288,18 +288,18 @@
         </div>
     </section>
 
-    {{-- ======================= PROVEEDORES ======================= --}}
+    {{-- ======================= COLABORADORES ======================= --}}
     <section class="ig-section bg-surface">
         <div class="ig-container">
             <div class="text-center mb-14 ig-reveal">
-                <p class="ig-eyebrow justify-center mb-4">Proveedores</p>
-                <h2 class="ig-h-section">Proveedores estratégicos</h2>
+                <p class="ig-eyebrow justify-center mb-4">Colaboradores</p>
+                <h2 class="ig-h-section">Colaboradores estratégicos</h2>
             </div>
 
             @php $grupos = $proveedores->chunk(4); @endphp
 
             @if($grupos->isEmpty())
-                <div class="text-center ig-lede ig-reveal">Pronto publicaremos nuestros proveedores oficiales.</div>
+                <div class="text-center ig-lede ig-reveal">Pronto publicaremos nuestros colaboradores oficiales.</div>
             @else
                 <div x-data="carruselColaboradores({{ $grupos->count() }})">
                     <div class="relative">
@@ -310,11 +310,11 @@
                                 @foreach($grupos as $grupo)
                                     <div class="w-full shrink-0 grid grid-cols-2 md:grid-cols-4 gap-px bg-line">
                                         @foreach($grupo as $prov)
-                                            <div class="flex flex-col items-center justify-center gap-3 bg-surface h-[120px] p-6 overflow-hidden">
-                                                <img src="{{ Storage::url($prov->logotipo) }}"
+                                            <div class="flex flex-col items-center justify-center gap-3 bg-surface h-[150px] p-6 overflow-hidden">
+                                                <img src="{{ $prov->logo_url }}"
                                                      alt="{{ $prov->nombre_comercial }}"
                                                      loading="lazy"
-                                                     class="max-h-[70px] max-w-full object-contain grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+                                                     class="max-h-[100px] max-w-full object-contain grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
                                                 <span class="ig-meta truncate max-w-full">{{ $prov->nombre_comercial }}</span>
                                             </div>
                                         @endforeach
@@ -448,13 +448,13 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                             <div>
                                 <label for="c-nombre" class="ig-label">Nombre</label>
-                                <input id="c-nombre" type="text" name="nombre" x-model="campos.nombre" value="{{ old('nombre') }}"
+                                <input id="c-nombre" type="text" name="nombre" x-model="campos.nombre" value="{{ old('nombre') }}" maxlength="80" pattern="[\p{L}\s]+" title="El nombre solo puede contener letras y espacios."
                                        class="ig-input @error('nombre') ig-input-invalid @enderror" required>
                                 @error('nombre')<p class="ig-error"><i data-lucide="alert-circle" class="h-3.5 w-3.5 mt-0.5"></i>{{ $message }}</p>@enderror
                             </div>
                             <div>
                                 <label for="c-apellido" class="ig-label">Apellidos</label>
-                                <input id="c-apellido" type="text" name="apellido" x-model="campos.apellido" value="{{ old('apellido') }}"
+                                <input id="c-apellido" type="text" name="apellido" x-model="campos.apellido" value="{{ old('apellido') }}" maxlength="80" pattern="[\p{L}\s]+" title="El apellido solo puede contener letras y espacios."
                                        class="ig-input @error('apellido') ig-input-invalid @enderror">
                                 @error('apellido')<p class="ig-error"><i data-lucide="alert-circle" class="h-3.5 w-3.5 mt-0.5"></i>{{ $message }}</p>@enderror
                             </div>
@@ -467,7 +467,7 @@
                         </div>
                         <div>
                             <label for="c-mensaje" class="ig-label">Mensaje</label>
-                            <textarea id="c-mensaje" name="mensaje" rows="4" x-model="campos.mensaje"
+                            <textarea id="c-mensaje" name="mensaje" rows="4" x-model="campos.mensaje" minlength="10" maxlength="1000"
                                       class="ig-textarea resize-none @error('mensaje') ig-input-invalid @enderror" required>{{ old('mensaje') }}</textarea>
                             @error('mensaje')<p class="ig-error"><i data-lucide="alert-circle" class="h-3.5 w-3.5 mt-0.5"></i>{{ $message }}</p>@enderror
                         </div>
@@ -610,20 +610,17 @@
 
       function formularioContacto() {
         return {
-          campos: { nombre: '', apellido: '', email: '', mensaje: '' },
-          aceptaTerminos: false,
+          campos: { nombre: @js(old('nombre', '')), apellido: @js(old('apellido', '')), email: @js(old('email', '')), mensaje: @js(old('mensaje', '')) },
+          aceptaTerminos: @js((bool) old('acepta_terminos')),
           resaltarTerminos: false,
           confirmando: false,
           enviando: false,
 
           init() {
-            this.$nextTick(() => {
-              const f = this.$refs.form;
-              this.campos.nombre = f.nombre.value;
-              this.campos.apellido = f.apellido.value;
-              this.campos.email = f.email.value;
-              this.campos.mensaje = f.mensaje.value;
-            });
+            // Tras un rechazo del servidor (RF06), la vista vuelve al formulario para mostrar los errores.
+            if (@js($errors->hasAny(['nombre', 'apellido', 'email', 'mensaje', 'acepta_terminos']))) {
+              this.$nextTick(() => document.getElementById('contacto')?.scrollIntoView());
+            }
           },
 
           pedirConfirmacion() {

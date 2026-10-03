@@ -57,7 +57,7 @@
           <span class="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-wood-light mb-3">{{ \App\Support\CategoriasProyecto::etiqueta($proyecto->categoria) }}</span>
           <span class="font-display text-2xl md:text-3xl lg:text-4xl font-light tracking-tight text-white mb-3">{{ $proyecto->nombre_obra }}</span>
           <span class="font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-white/65">
-            {{ $proyecto->ubicacion_geografica }} <span class="text-white/35">·</span> {{ $proyecto->anio_ejecucion }}
+            {{ $proyecto->comuna }}, {{ $proyecto->region }} <span class="text-white/35">·</span> {{ $proyecto->anio_ejecucion }}
           </span>
           <span class="mt-5 inline-flex items-center gap-2.5 font-mono text-[0.625rem] uppercase tracking-[0.16em] text-white/85
                        opacity-0 -translate-y-1 transition-all duration-500
@@ -90,7 +90,7 @@
               <span class="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-wood-light mb-2.5">{{ \App\Support\CategoriasProyecto::etiqueta($proyecto->categoria) }}</span>
               <span class="font-display text-xl lg:text-2xl font-light tracking-tight text-white mb-2.5">{{ $proyecto->nombre_obra }}</span>
               <span class="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-white/65">
-                {{ $proyecto->ubicacion_geografica }} <span class="text-white/35">·</span> {{ $proyecto->anio_ejecucion }}
+                {{ $proyecto->comuna }}, {{ $proyecto->region }} <span class="text-white/35">·</span> {{ $proyecto->anio_ejecucion }}
               </span>
               <span class="mt-4 inline-flex items-center gap-2.5 font-mono text-[0.625rem] uppercase tracking-[0.16em] text-white/85
                            opacity-0 -translate-y-1 transition-all duration-500

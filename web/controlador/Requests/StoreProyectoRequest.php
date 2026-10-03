@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Requests;
+use App\Support\RegionesChile;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Support\Rnf17;
 use App\Support\CategoriasProyecto;
@@ -14,8 +15,8 @@ class StoreProyectoRequest extends FormRequest
         return [
             'nombre_obra' => 'required|string|max:150',
             'descripcion_tecnica' => 'required|string',
-            'region' => 'required|string|max:80',
-            'ubicacion_geografica' => 'required|string|max:150',
+            'region' => ['required', 'string', Rule::in(RegionesChile::valores())],
+            'comuna' => 'required|string|max:150',
             'latitud' => 'nullable|numeric|between:-90,90',
             'longitud' => 'nullable|numeric|between:-180,180',
             'anio_ejecucion' => 'required|integer|min:1990|max:' . (date('Y') + 1),

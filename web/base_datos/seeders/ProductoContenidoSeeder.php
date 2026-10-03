@@ -12,13 +12,13 @@ use Illuminate\Database\Seeder;
  * Mueve a BD el contenido que estaba hardcodeado en public/producto.blade.php
  * (descripción, especificaciones, aplicaciones, imagen representativa y miniaturas).
  * Las listas viajan serializadas como JSON en 'cuerpo'; no se crea una entidad nueva.
- * Idempotente: sólo actúa si no existe la sección 'producto'.
+ * Idempotente: sólo actúa si no existe la sección 'ficha_conectores'.
  */
 class ProductoContenidoSeeder extends Seeder
 {
     public function run(): void
     {
-        if (Contenido::where('seccion', 'producto')->exists()) {
+        if (Contenido::where('seccion', 'ficha_conectores')->exists()) {
             return;
         }
 
@@ -75,7 +75,7 @@ class ProductoContenidoSeeder extends Seeder
 
         foreach ($filas as $f) {
             Contenido::create([
-                'seccion' => 'producto',
+                'seccion' => 'ficha_conectores',
                 'titulo' => $f['titulo'],
                 'cuerpo' => $f['cuerpo'],
                 'archivo' => $f['archivo'] ?? null,

@@ -26,7 +26,7 @@ class IncrementoCoverageTest extends TestCase
         $proyecto = Proyecto::factory()->create([
             'nombre_obra' => 'Galpon Industrial Coronel',
             'descripcion_tecnica' => 'Estructura de cerchas de pino radiata impregnado, luz libre de 25 metros.',
-            'ubicacion_geografica' => 'Coronel',
+            'comuna' => 'Coronel',
             'estado_publicacion' => 'publicado',
             'id_admin' => $this->admin()->id_admin,
         ]);
@@ -65,7 +65,7 @@ class IncrementoCoverageTest extends TestCase
             'nombre_obra' => 'Galpon Los Angeles',
             'categoria' => 'industrial',
             'region' => 'Biobio',
-            'ubicacion_geografica' => 'Los Angeles',
+            'comuna' => 'Los Angeles',
             'estado_publicacion' => 'publicado',
             'id_admin' => $admin->id_admin,
         ]);
@@ -73,7 +73,7 @@ class IncrementoCoverageTest extends TestCase
             'nombre_obra' => 'Vivienda Santiago',
             'categoria' => 'construccion',
             'region' => 'Metropolitana',
-            'ubicacion_geografica' => 'Santiago',
+            'comuna' => 'Santiago',
             'estado_publicacion' => 'publicado',
             'id_admin' => $admin->id_admin,
         ]);

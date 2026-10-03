@@ -79,7 +79,8 @@ class ProyectoController extends Controller
             $texto = $filtros['q'];
             $query->where(function ($subconsulta) use ($texto) {
                 $subconsulta->where('nombre_obra', 'like', '%' . $texto . '%')
-                    ->orWhere('ubicacion_geografica', 'like', '%' . $texto . '%');
+                    ->orWhere('comuna', 'like', '%' . $texto . '%')
+                    ->orWhere('region', 'like', '%' . $texto . '%');
             });
         }
         if ($filtros['categoria'] !== '') {
@@ -121,7 +122,7 @@ class ProyectoController extends Controller
             'id' => $registro->id_proyecto,
             'nombre' => $registro->nombre_obra,
             'descripcion' => $registro->descripcion_tecnica,
-            'ubicacion' => $registro->ubicacion_geografica,
+            'ubicacion' => trim($registro->comuna . ', ' . $registro->region, ', '),
             'categoria' => CategoriasProyecto::etiqueta($registro->categoria),
             'anio' => $registro->anio_ejecucion,
             'imagenes' => $imagenes,
@@ -235,7 +236,7 @@ class ProyectoController extends Controller
 
         return response()->json($registro->only([
             'id_proyecto', 'nombre_obra', 'categoria', 'anio_ejecucion', 'region',
-            'ubicacion_geografica', 'latitud', 'longitud', 'estado_publicacion',
+            'comuna', 'latitud', 'longitud', 'estado_publicacion',
             'descripcion_tecnica', 'imagenes_count',
         ]));
     }
