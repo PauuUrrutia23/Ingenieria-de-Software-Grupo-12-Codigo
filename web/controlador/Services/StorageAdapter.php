@@ -48,8 +48,9 @@ class StorageAdapter
         ]);
     }
 
+    // Ruta relativa (/storage/...): si APP_URL no coincide con la dirección real del sitio, las imágenes igual cargan.
     public function url(string $ruta): string
     {
-        return Storage::disk(self::DISCO)->url($ruta);
+        return parse_url(Storage::disk(self::DISCO)->url($ruta), PHP_URL_PATH);
     }
 }
