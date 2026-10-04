@@ -68,7 +68,7 @@
                                         <span class="hidden md:block ig-meta !text-wood-deep">
                                             {{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
                                         </span>
-                                        <h3 class="font-display text-2xl md:text-[1.75rem] font-light tracking-tight text-carbon">
+                                        <h3 class="font-display text-2xl md:text-[1.75rem] font-light tracking-tight text-carbon" style="overflow-wrap: anywhere">
                                             {{ $cert->nombre }}
                                         </h3>
                                     </div>
@@ -89,7 +89,7 @@
                                     </span>
                                 @endif
 
-                                <p class="text-mute font-light leading-relaxed max-w-3xl mb-7">{{ $cert->descripcion }}</p>
+                                <p class="text-mute font-light leading-relaxed max-w-3xl mb-7" style="overflow-wrap: anywhere">{{ $cert->descripcion }}</p>
 
                                 <div class="flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-line pt-5">
                                     @if($cert->created_at)

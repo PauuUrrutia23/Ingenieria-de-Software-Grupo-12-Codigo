@@ -146,7 +146,12 @@ class InstitucionalCtrl extends Controller
                 ->where('seccion', $seccion)
                 ->where('activo', true)
                 ->orderBy('orden')
-                ->get();
+                ->get()
+                ->map(function (Contenido $registro) {
+                    $registro->setAttribute('imagen_url', $this->urlImagen($registro->archivo, $registro->tipo_mime));
+                    $registro->setAttribute('video_url', $this->urlVideo($registro->archivo, $registro->tipo_mime));
+                    return $registro;
+                });
         } catch (\Throwable $e) {
             return collect();
         }
@@ -154,12 +159,7 @@ class InstitucionalCtrl extends Controller
 
     private function fasesIndustriales()
     {
-        $porNombre = $this->contenidosPorSeccion('fases_industriales')
-            ->map(function (Contenido $registro) {
-                $registro->setAttribute('imagen_url', $this->urlImagen($registro->archivo, $registro->tipo_mime));
-                return $registro;
-            })
-            ->groupBy('titulo');
+        $porNombre = $this->contenidosPorSeccion('fases_industriales')->groupBy('titulo');
         $ordenadas = [];
 
         foreach (self::FASES_INDUSTRIALES as $nombre) {
@@ -202,6 +202,7 @@ class InstitucionalCtrl extends Controller
 
             if ($banner) {
                 $banner->setAttribute('imagen_url', $this->urlImagen($banner->archivo, $banner->tipo_mime));
+                $banner->setAttribute('video_url', $this->urlVideo($banner->archivo, $banner->tipo_mime));
             }
 
             return $banner;
@@ -215,7 +216,7 @@ class InstitucionalCtrl extends Controller
         if (!$ruta || str_contains($ruta, '..') || str_starts_with($ruta, '/')) {
             return null;
         }
-        if ($tipoMime && !in_array($tipoMime, ['image/jpeg', 'image/png'], true)) {
+        if ($tipoMime && !in_array($tipoMime, ['image/jpeg', 'image/png', 'image/webp'], true)) {
             return null;
         }
 
@@ -230,17 +231,22 @@ class InstitucionalCtrl extends Controller
         }
     }
 
+    private function urlVideo(?string $ruta, ?string $tipoMime): ?string
+    {
+        if (!$ruta || $tipoMime !== 'video/mp4' || str_contains($ruta, '..') || str_starts_with($ruta, '/')) {
+            return null;
+        }
+
+        try {
+            return $this->storage->existe($ruta) ? $this->storage->url($ruta) : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
     private function faqsVigentes()
     {
-        try {
-            return $this->db->query(Contenido::class)
-                ->where('seccion', 'faq')
-                ->where('activo', true)
-                ->orderBy('orden')
-                ->get();
-        } catch (\Throwable $e) {
-            return collect();
-        }
+        return $this->contenidosPorSeccion('faq');
     }
 
     private function fichaConectores(): array

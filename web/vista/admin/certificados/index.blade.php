@@ -84,24 +84,25 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label for="cert-nombre" class="ig-label">Nombre de la Normativa</label>
-                        <input id="cert-nombre" type="text" name="nombre" value="{{ old('nombre') }}"
+                        <input id="cert-nombre" type="text" name="nombre" value="{{ old('nombre') }}" maxlength="200"
                                class="ig-field-box" required>
                     </div>
                     <div>
                         <label for="cert-organismo" class="ig-label">Organismo Certificador</label>
-                        <input id="cert-organismo" type="text" name="organismo" value="{{ old('organismo') }}"
+                        <input id="cert-organismo" type="text" name="organismo" value="{{ old('organismo') }}" maxlength="120"
                                class="ig-field-box" required>
                     </div>
                     <div>
                         <label for="cert-url" class="ig-label">Enlace del Organismo</label>
-                        <input id="cert-url" type="url" name="url_organismo" value="{{ old('url_organismo') }}"
+                        <input id="cert-url" type="url" name="url_organismo" value="{{ old('url_organismo') }}" maxlength="300"
                                class="ig-field-box">
                     </div>
                 </div>
                 <div>
                     <label for="cert-desc" class="ig-label">Descripción</label>
-                    <textarea id="cert-desc" name="descripcion" rows="3"
+                    <textarea id="cert-desc" name="descripcion" rows="3" maxlength="500"
                               class="ig-field-box resize-y">{{ old('descripcion') }}</textarea>
+                    <p class="text-xs text-mute mt-1.5">Máximo 500 caracteres.</p>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>

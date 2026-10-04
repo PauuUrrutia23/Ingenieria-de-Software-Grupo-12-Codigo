@@ -62,6 +62,25 @@ return [
     'url' => 'Debe ingresar una dirección web válida en :attribute.',
 
     'custom' => [
+        'imagenes.*' => [
+            'mimetypes' => 'Cada fotografía debe ser un archivo JPG o PNG válido.',
+            'max' => 'Cada fotografía puede pesar como máximo 2 MB.',
+        ],
+        'imagen' => [
+            'mimetypes' => 'La imagen debe ser un archivo JPG o PNG válido.',
+            'max' => 'La imagen puede pesar como máximo 2 MB.',
+        ],
+        'logotipo' => [
+            'mimetypes' => 'El logotipo debe ser un archivo JPG o PNG válido.',
+            'max' => 'El logotipo puede pesar como máximo 500 KB.',
+        ],
+        'archivo' => [
+            'mimetypes' => 'El archivo debe ser JPG, PNG, WebP o MP4 válido.',
+            'max' => 'El video MP4 puede pesar como máximo 50 MB.',
+        ],
+        'archivo_pdf' => [
+            'max' => 'El PDF puede pesar como máximo 5 MB.',
+        ],
         'password' => [
             'regex' => 'La nueva contraseña debe incluir al menos una mayúscula, una minúscula, un número y un carácter especial.',
         ],

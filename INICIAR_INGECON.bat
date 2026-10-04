@@ -227,6 +227,12 @@ echo.
 rem -------------------------------------------------------------
 echo [8/8] Levantando el servidor
 rem -------------------------------------------------------------
+rem El servidor PHP hereda estos limites; el valor predeterminado suele ser 2 MB.
+if defined PHP_INI_SCAN_DIR (
+    set "PHP_INI_SCAN_DIR=!PHP_INI_SCAN_DIR!;%SCRIPTS_DIR%\php-config"
+) else (
+    set "PHP_INI_SCAN_DIR=;%SCRIPTS_DIR%\php-config"
+)
 start "Ingecon - Servidor (no cerrar mientras uses la pagina)" cmd /k ""!PHP_CMD!" artisan serve --port=%APP_PORT%"
 
 echo   Esperando que el servidor arranque...

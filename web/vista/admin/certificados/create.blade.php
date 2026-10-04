@@ -17,21 +17,22 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="n-cert-nombre" class="ig-label">Nombre</label>
-                    <input id="n-cert-nombre" type="text" name="nombre" value="{{ old('nombre') }}" class="ig-field-box" required>
+                    <input id="n-cert-nombre" type="text" name="nombre" value="{{ old('nombre') }}" maxlength="200" class="ig-field-box" required>
                 </div>
                 <div>
                     <label for="n-cert-organismo" class="ig-label">Organismo</label>
-                    <input id="n-cert-organismo" type="text" name="organismo" value="{{ old('organismo') }}" class="ig-field-box" required>
+                    <input id="n-cert-organismo" type="text" name="organismo" value="{{ old('organismo') }}" maxlength="120" class="ig-field-box" required>
                 </div>
                 <div class="sm:col-span-2">
                     <label for="n-cert-url" class="ig-label">URL Organismo</label>
-                    <input id="n-cert-url" type="url" name="url_organismo" value="{{ old('url_organismo') }}" class="ig-field-box">
+                    <input id="n-cert-url" type="url" name="url_organismo" value="{{ old('url_organismo') }}" maxlength="300" class="ig-field-box">
                 </div>
             </div>
 
             <div>
                 <label for="n-cert-desc" class="ig-label">Descripción</label>
-                <textarea id="n-cert-desc" name="descripcion" rows="3" class="ig-field-box resize-y">{{ old('descripcion') }}</textarea>
+                <textarea id="n-cert-desc" name="descripcion" rows="3" maxlength="500" class="ig-field-box resize-y">{{ old('descripcion') }}</textarea>
+                <p class="text-xs text-mute mt-1.5">Máximo 500 caracteres.</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

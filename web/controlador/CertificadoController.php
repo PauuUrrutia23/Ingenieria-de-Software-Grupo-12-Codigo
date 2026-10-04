@@ -83,7 +83,7 @@ class CertificadoController extends Controller
     {
         $data = $request->validate([
             'nombre' => 'required|string|max:200',
-            'descripcion' => 'nullable|string',
+            'descripcion' => 'nullable|string|max:500',
             'organismo' => 'required|string|max:120',
             'url_organismo' => 'nullable|url|max:300',
             'imagen' => array_merge(['nullable'], Rnf17::reglasImagen()),
@@ -123,7 +123,7 @@ class CertificadoController extends Controller
     {
         $data = $request->validate([
             'nombre' => 'required|string|max:200',
-            'descripcion' => 'nullable|string',
+            'descripcion' => 'nullable|string|max:500',
             'estado' => 'required|in:vigente,vencido,revocado',
             'organismo' => 'required|string|max:120',
             'url_organismo' => 'nullable|url|max:300',

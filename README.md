@@ -44,6 +44,12 @@ Al terminar, quedan dos ventanas abiertas: el servidor (no cerrarla mientras se 
 y el navegador. Las credenciales de administrador se muestran al final del script (ver también
 más abajo).
 
+El script configura PHP para admitir videos de contenido de hasta 50 MB y formularios de hasta
+64 MB. Si inicias el servidor con `php artisan serve` manualmente, configura también
+`upload_max_filesize=50M` y `post_max_size=64M` en ese proceso PHP. En un hosting con PHP-FPM,
+`web/nucleo/public/.user.ini` solicita esos límites; si el proveedor impone límites menores,
+hay que ajustarlos en su panel. Las imágenes y PDF conservan sus límites propios del formulario.
+
 Si prefieres instalar todo manualmente, o estás en Linux/Mac, sigue la sección siguiente.
 
 ---

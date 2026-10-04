@@ -24,7 +24,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="ec-nombre" class="ig-label">Nombre de la Normativa</label>
-                    <input id="ec-nombre" type="text" name="nombre" value="{{ old('nombre', $certificado->nombre) }}"
+                    <input id="ec-nombre" type="text" name="nombre" value="{{ old('nombre', $certificado->nombre) }}" maxlength="200"
                            class="ig-field-box" required>
                 </div>
                 <div>
@@ -37,20 +37,21 @@
                 </div>
                 <div>
                     <label for="ec-organismo" class="ig-label">Organismo Certificador</label>
-                    <input id="ec-organismo" type="text" name="organismo" value="{{ old('organismo', $certificado->organismo) }}"
+                    <input id="ec-organismo" type="text" name="organismo" value="{{ old('organismo', $certificado->organismo) }}" maxlength="120"
                            class="ig-field-box" required>
                 </div>
                 <div>
                     <label for="ec-url" class="ig-label">Enlace del Organismo</label>
-                    <input id="ec-url" type="url" name="url_organismo" value="{{ old('url_organismo', $certificado->url_organismo) }}"
+                    <input id="ec-url" type="url" name="url_organismo" value="{{ old('url_organismo', $certificado->url_organismo) }}" maxlength="300"
                            class="ig-field-box">
                 </div>
             </div>
 
             <div>
                 <label for="ec-desc" class="ig-label">Descripción</label>
-                <textarea id="ec-desc" name="descripcion" rows="3"
+                <textarea id="ec-desc" name="descripcion" rows="3" maxlength="500"
                           class="ig-field-box resize-y">{{ old('descripcion', $certificado->descripcion) }}</textarea>
+                <p class="text-xs text-mute mt-1.5">Máximo 500 caracteres.</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -6,6 +6,11 @@
             @if($banner->imagen_url)
                 <img src="{{ $banner->imagen_url }}" alt="{{ $banner->cuerpo }}"
                      fetchpriority="high" class="ig-hero-shot absolute inset-0 w-full h-full object-cover opacity-55">
+            @elseif($banner->video_url)
+                <video class="ig-hero-shot absolute inset-0 w-full h-full object-cover opacity-55"
+                       autoplay muted loop playsinline aria-hidden="true">
+                    <source src="{{ $banner->video_url }}" type="video/mp4">
+                </video>
             @else
                 <div class="absolute inset-0 ig-blueprint opacity-70"></div>
             @endif
@@ -112,21 +117,28 @@
                              class="bg-surface p-8 md:p-12">
                             <h3 class="font-display text-2xl mb-5">{{ $nombre }}</h3>
                             <p class="ig-lede">{{ $registros->first()->cuerpo }}</p>
-                            @php $imagenes = $registros->filter(fn ($registro) => $registro->imagen_url); @endphp
-                            @if($imagenes->isNotEmpty())
+                            @php $medios = $registros->filter(fn ($registro) => $registro->imagen_url || $registro->video_url); @endphp
+                            @if($medios->isNotEmpty())
                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-                                    @foreach($imagenes as $imagen)
+                                    @foreach($medios as $imagen)
                                         <figure class="border border-line bg-paper-deep">
-                                            <button type="button" @click="abrirImagen($event.currentTarget)"
+                                            @if($imagen->imagen_url)
+                                                <button type="button" @click="abrirImagen($event.currentTarget)"
                                                     data-src="{{ $imagen->imagen_url }}"
                                                     data-descripcion="{{ $imagen->cuerpo }}"
                                                     data-alt="{{ $nombre }}: {{ $imagen->cuerpo }}"
                                                     aria-label="Ampliar imagen de {{ $nombre }}"
                                                     class="block w-full cursor-zoom-in">
-                                                <img src="{{ $imagen->imagen_url }}"
+                                                    <img src="{{ $imagen->imagen_url }}"
                                                      alt="{{ $nombre }}: {{ $imagen->cuerpo }}"
                                                      loading="lazy" class="w-full h-52 object-cover">
-                                            </button>
+                                                </button>
+                                            @else
+                                                <video controls preload="metadata" playsinline class="w-full h-52 bg-carbon" aria-label="Video de {{ $nombre }}">
+                                                    <source src="{{ $imagen->video_url }}" type="video/mp4">
+                                                    Tu navegador no puede reproducir este video.
+                                                </video>
+                                            @endif
                                             <figcaption class="text-sm text-mute-deep p-4">{{ $imagen->cuerpo }}</figcaption>
                                         </figure>
                                     @endforeach
@@ -357,6 +369,14 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-line border border-line">
                     @foreach($opiniones as $opinion)
                         <figure class="bg-surface p-8 md:p-10 flex flex-col justify-between gap-8">
+                            @if($opinion->imagen_url)
+                                <img src="{{ $opinion->imagen_url }}" alt="Imagen de {{ $opinion->titulo }}"
+                                     loading="lazy" class="w-full h-44 object-cover">
+                            @elseif($opinion->video_url)
+                                <video controls preload="metadata" playsinline class="w-full h-44 bg-carbon" aria-label="Video de {{ $opinion->titulo }}">
+                                    <source src="{{ $opinion->video_url }}" type="video/mp4">
+                                </video>
+                            @endif
                             <blockquote class="ig-lede">{{ $opinion->cuerpo }}</blockquote>
                             <figcaption class="font-display text-lg text-carbon">{{ $opinion->titulo }}</figcaption>
                         </figure>
@@ -396,6 +416,14 @@
                                      x-show="abierta === {{ $faq->id_contenido }}" x-cloak style="display: none;"
                                      x-transition.opacity>
                                     <p class="ig-lede pb-6">{{ $faq->cuerpo }}</p>
+                                    @if($faq->imagen_url)
+                                        <img src="{{ $faq->imagen_url }}" alt="Imagen de apoyo para {{ $faq->titulo }}"
+                                             loading="lazy" class="max-w-full max-h-80 object-contain mb-6">
+                                    @elseif($faq->video_url)
+                                        <video controls preload="metadata" playsinline class="w-full max-h-80 bg-carbon mb-6" aria-label="Video de apoyo para {{ $faq->titulo }}">
+                                            <source src="{{ $faq->video_url }}" type="video/mp4">
+                                        </video>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach

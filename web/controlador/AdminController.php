@@ -183,7 +183,7 @@ class AdminController extends Controller
         return [
             'titulo' => [isset($obligatorios['titulo']) ? 'required' : 'nullable', 'string', 'max:200'],
             'cuerpo' => [isset($obligatorios['cuerpo']) ? 'required' : 'nullable', 'string'],
-            'archivo' => array_merge(['nullable'], Rnf17::reglasImagen()),
+            'archivo' => array_merge(['nullable'], Rnf17::reglasContenido()),
         ];
     }
 
