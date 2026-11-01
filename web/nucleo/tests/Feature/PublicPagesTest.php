@@ -25,8 +25,8 @@ class PublicPagesTest extends TestCase
 
     public function test_certificaciones_page_lists_all_vigentes()
     {
-        Certificado::factory()->count(5)->create(['estado' => 'vigente']);
-        Certificado::factory()->create(['estado' => 'vencido', 'nombre' => 'Certificado Vencido']);
+        Certificado::factory()->count(5)->create();
+        Certificado::factory()->create(['fecha_vencimiento' => now()->subDay()->toDateString(), 'nombre' => 'Certificado Vencido']);
 
         $response = $this->get('/certificaciones');
 

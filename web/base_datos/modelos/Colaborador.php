@@ -13,7 +13,7 @@ class Colaborador extends Model
 
     protected $table = 'colaboradores';
     protected $primaryKey = 'id_colaborador';
-    protected $fillable = ['nombre_comercial', 'logotipo', 'tipo_mime', 'id_admin'];
+    protected $fillable = ['nombre_comercial', 'logotipo', 'tipo_mime', 'sitio_web', 'id_admin'];
 
     public function getLogoUrlAttribute(): ?string
     {

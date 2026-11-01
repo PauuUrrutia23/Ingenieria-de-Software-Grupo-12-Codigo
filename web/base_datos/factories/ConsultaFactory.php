@@ -17,6 +17,7 @@ class ConsultaFactory extends Factory
             'mensaje' => $this->faker->paragraph(),
             'created_at' => now(),
             'estado' => 'pendiente',
+            'acepta_terminos' => true,
         ];
     }
 }

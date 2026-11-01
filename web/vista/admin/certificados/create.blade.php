@@ -29,6 +29,17 @@
                 </div>
             </div>
 
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="n-cert-emision" class="ig-label">Fecha de Emisión</label>
+                    <input id="n-cert-emision" type="date" name="fecha_emision" value="{{ old('fecha_emision') }}" class="ig-field-box" required>
+                </div>
+                <div>
+                    <label for="n-cert-vencimiento" class="ig-label">Fecha de Vencimiento (opcional)</label>
+                    <input id="n-cert-vencimiento" type="date" name="fecha_vencimiento" value="{{ old('fecha_vencimiento') }}" class="ig-field-box">
+                </div>
+            </div>
+
             <div>
                 <label for="n-cert-desc" class="ig-label">Descripción</label>
                 <textarea id="n-cert-desc" name="descripcion" rows="3" maxlength="500" class="ig-field-box resize-y">{{ old('descripcion') }}</textarea>

@@ -12,9 +12,15 @@ class Administrador extends Authenticatable implements \Illuminate\Contracts\Aut
 
     protected $table = 'administradores';
     protected $primaryKey = 'id_admin';
-    protected $fillable = ['correo', 'password_hash', 'rol', 'intentos_fallidos', 'bloqueado_hasta', 'activo'];
+    protected $fillable = ['correo', 'password_hash', 'rol', 'intentos_fallidos', 'bloqueado_hasta', 'activo', 'perm_editar_contenido', 'perm_exportar_consultas', 'perm_eliminar_consultas'];
     protected $hidden = ['password_hash'];
-    protected $casts = ['activo' => 'boolean', 'bloqueado_hasta' => 'datetime'];
+    protected $casts = [
+        'activo' => 'boolean',
+        'bloqueado_hasta' => 'datetime',
+        'perm_editar_contenido' => 'boolean',
+        'perm_exportar_consultas' => 'boolean',
+        'perm_eliminar_consultas' => 'boolean',
+    ];
 
     public function getAuthPassword() { return $this->password_hash; }
     public function getAuthIdentifierName() { return 'id_admin'; }
@@ -26,4 +32,5 @@ class Administrador extends Authenticatable implements \Illuminate\Contracts\Aut
     public function consultasResponsable() { return $this->hasMany(Consulta::class, 'id_admin_responsable', 'id_admin'); }
     public function certificados() { return $this->hasMany(Certificado::class, 'id_admin', 'id_admin'); }
     public function contenidos() { return $this->hasMany(Contenido::class, 'id_admin', 'id_admin'); }
+    public function historialCambios() { return $this->hasMany(HistorialCambio::class, 'id_admin', 'id_admin'); }
 }

@@ -22,7 +22,7 @@ class CertificadoController extends Controller
     public function listadoPublico()
     {
         try {
-            $certificados = $this->db->query(Certificado::class)->where('estado', 'vigente')->orderBy('nombre')->get();
+            $certificados = $this->db->query(Certificado::class)->vigentes()->orderBy('nombre')->get();
         } catch (\Throwable $e) {
             $certificados = collect();
         }
@@ -86,6 +86,8 @@ class CertificadoController extends Controller
             'descripcion' => 'nullable|string|max:500',
             'organismo' => 'required|string|max:120',
             'url_organismo' => 'nullable|url|max:300',
+            'fecha_emision' => 'required|date',
+            'fecha_vencimiento' => 'nullable|date|after_or_equal:fecha_emision',
             'imagen' => array_merge(['nullable'], Rnf17::reglasImagen()),
             'archivo_pdf' => ['nullable', 'file', 'max:5120', new PdfValido()],
         ]);
@@ -124,9 +126,10 @@ class CertificadoController extends Controller
         $data = $request->validate([
             'nombre' => 'required|string|max:200',
             'descripcion' => 'nullable|string|max:500',
-            'estado' => 'required|in:vigente,vencido,revocado',
             'organismo' => 'required|string|max:120',
             'url_organismo' => 'nullable|url|max:300',
+            'fecha_emision' => 'required|date',
+            'fecha_vencimiento' => 'nullable|date|after_or_equal:fecha_emision',
             'imagen' => array_merge(['nullable'], Rnf17::reglasImagen()),
             'archivo_pdf' => ['nullable', 'file', 'max:5120', new PdfValido()],
         ]);

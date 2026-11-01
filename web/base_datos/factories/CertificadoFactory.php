@@ -15,7 +15,7 @@ class CertificadoFactory extends Factory
         return [
             'nombre' => $this->faker->sentence(3),
             'organismo' => $this->faker->company(),
-            'estado' => 'vigente',
+            'fecha_emision' => $this->faker->dateTimeBetween('-5 years', 'now'),
             'id_admin' => Administrador::factory(),
         ];
     }

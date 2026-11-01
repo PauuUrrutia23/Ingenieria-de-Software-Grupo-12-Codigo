@@ -41,7 +41,7 @@ class EjemploDatosSeeder extends Seeder
             ];
 
             foreach ($certificados as $c) {
-                Certificado::create($c + ['estado' => 'vigente', 'id_admin' => $admin->id_admin]);
+                Certificado::create($c + ['fecha_emision' => now()->toDateString(), 'id_admin' => $admin->id_admin]);
             }
         }
 

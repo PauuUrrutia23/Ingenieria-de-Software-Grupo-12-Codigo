@@ -19,7 +19,7 @@ class CertificateRequirementsTest extends TestCase
         return Certificado::create(array_merge([
             'nombre' => 'Madera preservada - Pino radiata',
             'organismo' => 'INN Chile',
-            'estado' => 'vigente',
+            'fecha_emision' => '2024-01-15',
             'id_admin' => $admin->id_admin,
         ], $attrs));
     }
@@ -63,7 +63,7 @@ class CertificateRequirementsTest extends TestCase
     {
         Storage::fake('public');
         Storage::disk('public')->put('certificados_pdf/y.pdf', "%PDF-1.4");
-        $cert = $this->certificado(['estado' => 'vencido', 'archivo_pdf' => 'certificados_pdf/y.pdf']);
+        $cert = $this->certificado(['fecha_vencimiento' => now()->subDay()->toDateString(), 'archivo_pdf' => 'certificados_pdf/y.pdf']);
 
         $this->get(route('public.certificaciones.preview', $cert))
             ->assertRedirect(route('public.certificaciones'))

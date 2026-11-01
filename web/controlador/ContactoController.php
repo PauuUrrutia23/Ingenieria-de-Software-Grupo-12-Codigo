@@ -53,6 +53,7 @@ class ContactoController extends Controller
                     'id_visitante' => $visitante->id_visitante,
                     'mensaje' => $datos['mensaje'],
                     'estado' => 'pendiente',
+                    'acepta_terminos' => true,
                     'notificacion_admin_pendiente' => true,
                     'created_at' => Carbon::now(),
                 ]);

@@ -28,14 +28,6 @@
                            class="ig-field-box" required>
                 </div>
                 <div>
-                    <label for="ec-estado" class="ig-label">Estado</label>
-                    <select id="ec-estado" name="estado" class="ig-field-box cursor-pointer">
-                        <option value="vigente" {{ $certificado->estado == 'vigente' ? 'selected' : '' }}>Vigente</option>
-                        <option value="vencido" {{ $certificado->estado == 'vencido' ? 'selected' : '' }}>Vencido</option>
-                        <option value="revocado" {{ $certificado->estado == 'revocado' ? 'selected' : '' }}>Revocado</option>
-                    </select>
-                </div>
-                <div>
                     <label for="ec-organismo" class="ig-label">Organismo Certificador</label>
                     <input id="ec-organismo" type="text" name="organismo" value="{{ old('organismo', $certificado->organismo) }}" maxlength="120"
                            class="ig-field-box" required>
@@ -44,6 +36,17 @@
                     <label for="ec-url" class="ig-label">Enlace del Organismo</label>
                     <input id="ec-url" type="url" name="url_organismo" value="{{ old('url_organismo', $certificado->url_organismo) }}" maxlength="300"
                            class="ig-field-box">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="ec-emision" class="ig-label">Fecha de Emisión</label>
+                    <input id="ec-emision" type="date" name="fecha_emision" value="{{ old('fecha_emision', $certificado->fecha_emision?->format('Y-m-d')) }}" class="ig-field-box" required>
+                </div>
+                <div>
+                    <label for="ec-vencimiento" class="ig-label">Fecha de Vencimiento (opcional)</label>
+                    <input id="ec-vencimiento" type="date" name="fecha_vencimiento" value="{{ old('fecha_vencimiento', $certificado->fecha_vencimiento?->format('Y-m-d')) }}" class="ig-field-box">
                 </div>
             </div>
 

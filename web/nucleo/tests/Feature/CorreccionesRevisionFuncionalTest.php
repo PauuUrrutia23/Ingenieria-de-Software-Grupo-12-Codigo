@@ -57,7 +57,7 @@ class CorreccionesRevisionFuncionalTest extends TestCase
         $admin = $this->jefe();
         Certificado::create([
             'codigo' => 'QA-1', 'nombre' => 'Norma QA', 'descripcion' => 'x', 'organismo' => 'Organismo QA',
-            'url_organismo' => null, 'fecha_emision' => now(), 'estado' => 'vigente', 'id_admin' => $admin->id_admin,
+            'url_organismo' => null, 'fecha_emision' => now(), 'id_admin' => $admin->id_admin,
         ]);
 
         $this->get('/certificaciones')->assertStatus(200)

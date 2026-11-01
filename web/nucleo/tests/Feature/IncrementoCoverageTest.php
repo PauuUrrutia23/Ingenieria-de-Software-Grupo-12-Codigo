@@ -267,6 +267,7 @@ class IncrementoCoverageTest extends TestCase
         $response = $this->loginAdmin($admin)->post(route('admin.certificados.store'), [
             'nombre' => 'Norma de prueba',
             'organismo' => 'Organismo de prueba',
+            'fecha_emision' => '2024-01-15',
             'archivo_pdf' => $falso,
         ]);
 
@@ -287,6 +288,7 @@ class IncrementoCoverageTest extends TestCase
         $this->loginAdmin($admin)->post(route('admin.certificados.store'), [
             'nombre' => 'Norma de prueba valida',
             'organismo' => 'Organismo de prueba',
+            'fecha_emision' => '2024-01-15',
             'archivo_pdf' => $pdf,
         ]);
 
@@ -355,7 +357,6 @@ class IncrementoCoverageTest extends TestCase
 
         $certificado = \App\Models\Certificado::factory()->create([
             'nombre' => 'Madera / Construcciones',
-            'estado' => 'vigente',
             'archivo_pdf' => 'certificados_pdf/x.pdf',
         ]);
 
@@ -368,7 +369,6 @@ class IncrementoCoverageTest extends TestCase
     public function test_certificate_without_pdf_reports_unavailability()
     {
         $certificado = \App\Models\Certificado::factory()->create([
-            'estado' => 'vigente',
             'archivo_pdf' => null,
         ]);
 

@@ -35,7 +35,7 @@ class InstitucionalCtrl extends Controller
             $proyectosRecientes = collect();
         }
         try {
-            $certificados = $this->db->query(Certificado::class)->where('estado', 'vigente')->take(3)->get();
+            $certificados = $this->db->query(Certificado::class)->vigentes()->take(3)->get();
         } catch (\Throwable $e) {
             $certificados = collect();
         }
