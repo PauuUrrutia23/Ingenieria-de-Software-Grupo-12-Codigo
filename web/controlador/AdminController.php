@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Colaborador;
 use App\Models\Consulta;
 use App\Models\Contenido;
+use App\Models\Visitante;
 use App\Services\StorageAdapter;
 use App\Support\Rnf17;
 use Illuminate\Http\Request;
@@ -346,10 +347,7 @@ class AdminController extends Controller
             ]);
         }
 
-        // La exportación incluye todas las consultas, no solo las del filtro.
-        $hayConsultas = $q === '' ? $consultas->total() > 0 : $this->db->query(Consulta::class)->exists();
-
-        return view('admin.consultas.index', compact('consultas', 'orden', 'q', 'hayConsultas'));
+        return view('admin.consultas.index', compact('consultas', 'orden', 'q'));
     }
 
     public function consultasDetalle(int $consulta)
@@ -381,20 +379,26 @@ class AdminController extends Controller
         ]);
     }
 
-    public function consultasExportar(string $formato)
+    // RF42: se exportan únicamente las Consultas seleccionadas en el Módulo comercial.
+    public function consultasExportar(Request $request, string $formato)
     {
         if (!in_array($formato, ['csv', 'xlsx'], true)) {
             abort(404);
+        }
+        $ids = array_filter((array) $request->query('ids', []), 'is_numeric');
+        if ($ids === []) {
+            return back()->withErrors(['exportar' => 'Seleccione al menos una consulta para exportar.']);
         }
 
         try {
             $consultas = $this->db->query(Consulta::class)
                 ->with(['visitante', 'adminResponsable'])
+                ->whereIn('id_consulta', $ids)
                 ->orderBy('created_at')
                 ->orderBy('id_consulta')
                 ->get();
             if ($consultas->isEmpty()) {
-                return back()->withErrors(['exportar' => 'No hay consultas para exportar.']);
+                return back()->withErrors(['exportar' => 'Las consultas seleccionadas ya no están disponibles.']);
             }
 
             $directorio = storage_path('app/exports');
@@ -435,6 +439,41 @@ class AdminController extends Controller
     {
         $texto = (string) $valor;
         return preg_match('/^\s*[=+\-@]/u', $texto) ? "'" . $texto : $texto;
+    }
+
+    // RF58 / CU 58.1: elimina las Consultas seleccionadas en el Módulo comercial.
+    public function consultasEliminar(Request $request)
+    {
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ])['ids'];
+
+        try {
+            $existentes = DB::transaction(function () use ($ids) {
+                $existentes = Consulta::query()->whereIn('id_consulta', $ids)->lockForUpdate()->pluck('id_visitante', 'id_consulta');
+                Consulta::query()->whereIn('id_consulta', $existentes->keys())->delete();
+                // RF58: se eliminan los datos del Visitante que ya no tiene otras Consultas.
+                Visitante::query()->whereIn('id_visitante', $existentes->unique()->values())->whereDoesntHave('consultas')->delete();
+                return $existentes->keys();
+            });
+        } catch (\Throwable $e) {
+            report($e);
+            // CU 58.1, Excepción 2: no se borra nada y la selección se mantiene.
+            return back()->withErrors(['consultas' => 'No se pudieron eliminar las consultas. Intente nuevamente.']);
+        }
+
+        // CU 58.1, Excepción 3: se informan las que otra sesión o el RNF24 ya habían eliminado.
+        $eliminadas = $existentes->count();
+        $faltantes = collect($ids)->map(fn ($id) => (int) $id)->diff($existentes)->values();
+        $mensaje = $eliminadas === 1 ? 'Se eliminó 1 consulta.' : "Se eliminaron $eliminadas consultas.";
+        if ($faltantes->count() === 1) {
+            $mensaje .= " La consulta N° {$faltantes[0]} ya no estaba disponible.";
+        } elseif ($faltantes->isNotEmpty()) {
+            $mensaje .= ' Las consultas N° ' . $faltantes->implode(', ') . ' ya no estaban disponibles.';
+        }
+
+        return redirect()->route('admin.consultas.index')->with('success', $mensaje);
     }
 
     public function consultasUpdate(Request $request, Consulta $consulta)

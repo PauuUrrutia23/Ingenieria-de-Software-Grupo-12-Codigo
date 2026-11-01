@@ -1,7 +1,7 @@
 <x-admin-layout>
     <x-slot name="header">Módulo comercial</x-slot>
 
-    <div x-data="moduloConsultas()">
+    <div x-data="moduloConsultas(@js($consultas->pluck('id_consulta')->values()))">
 
         <div class="mb-6 -mt-2">
             <p class="ig-eyebrow mb-2">Bandeja de entrada</p>
@@ -29,25 +29,38 @@
                 <a href="{{ route('admin.consultas.index', ['orden' => $orden]) }}" class="ig-btn ig-btn-secondary">Limpiar</a>
             @endif
         </form>
-        @if(Auth::user()->puede('exportar_consultas'))
-            <div class="flex flex-wrap items-center gap-3 mb-6">
-                <span class="ig-meta">Exportar todas las consultas</span>
-                @if($hayConsultas)
-                    <a href="{{ route('admin.consultas.exportar', 'csv') }}" class="ig-btn ig-btn-secondary">CSV</a>
-                    <a href="{{ route('admin.consultas.exportar', 'xlsx') }}" class="ig-btn ig-btn-secondary">Excel</a>
-                @else
-                    <span class="ig-meta" aria-disabled="true">Sin registros para exportar</span>
-                @endif
-            </div>
-        @endif
         <p x-show="aviso" x-cloak x-text="aviso" role="status" class="text-sm text-wood-deep mb-4"></p>
 
         <div class="ig-card">
+            {{-- RF57: barra superior con la Casilla de Selección general y las opciones según los permisos. --}}
+            <div class="flex flex-wrap items-center gap-4 px-5 py-3 border-b border-line">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" class="h-4 w-4 accent-carbon" aria-label="Seleccionar todas las consultas de la página"
+                           :checked="todasMarcadas()" @change="alternarTodas()" :disabled="idsPagina.length === 0">
+                    <span class="ig-meta" x-text="cantidad() === 1 ? '1 seleccionada' : cantidad() + ' seleccionadas'">0 seleccionadas</span>
+                </label>
+                @if(Auth::user()->puede('exportar_consultas'))
+                    <div class="flex items-center gap-2">
+                        <span class="ig-meta">Exportar</span>
+                        <button type="button" class="ig-btn ig-btn-secondary !py-1.5 !px-3" aria-label="Exportar consultas seleccionadas en CSV"
+                                :disabled="cantidad() === 0" @click="exportar('csv')">CSV</button>
+                        <button type="button" class="ig-btn ig-btn-secondary !py-1.5 !px-3" aria-label="Exportar consultas seleccionadas en Excel"
+                                :disabled="cantidad() === 0" @click="exportar('xlsx')">Excel</button>
+                    </div>
+                @endif
+                @if(Auth::user()->puede('eliminar_consultas'))
+                    <button type="button" class="ig-link-ghost disabled:opacity-40" aria-label="Eliminar consultas seleccionadas"
+                            :disabled="cantidad() === 0" @click="confirmarEliminar = true">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar
+                    </button>
+                @endif
+            </div>
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[68rem] text-left">
                     <caption class="sr-only">Consultas recibidas con estado, prioridad y responsable</caption>
                     <thead class="bg-paper-deep border-b border-line">
                         <tr>
+                            <th scope="col" class="px-5 py-3 w-10"><span class="sr-only">Selección</span></th>
                             <th scope="col" class="ig-meta px-5 py-3 font-normal whitespace-nowrap">
                                 <a href="{{ route('admin.consultas.index', ['q' => $q, 'orden' => $orden === 'asc' ? 'desc' : 'asc']) }}"
                                    aria-label="Ordenar por fecha {{ $orden === 'asc' ? 'descendente' : 'ascendente' }}">
@@ -64,6 +77,10 @@
                     <tbody>
                         @forelse($consultas as $c)
                         <tr class="border-b border-line last:border-b-0 hover:bg-paper transition-colors">
+                            <td class="px-5 py-4">
+                                <input type="checkbox" class="h-4 w-4 cursor-pointer accent-carbon" aria-label="Seleccionar consulta N° {{ $c->id_consulta }}"
+                                       :checked="marcada({{ $c->id_consulta }})" @change="alternar({{ $c->id_consulta }})">
+                            </td>
                             <td class="px-5 py-4 text-sm text-mute whitespace-nowrap font-mono">{{ $c->created_at->format('d/m/Y H:i') }}</td>
                             <td class="px-5 py-4">
                                 <p class="text-sm text-carbon">{{ $c->visitante->nombre }} {{ $c->visitante->apellido }}</p>
@@ -107,7 +124,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="6" class="px-5 py-16 text-center">
+                        <tr><td colspan="7" class="px-5 py-16 text-center">
                             <div class="flex flex-col items-center">
                                 <i data-lucide="inbox" class="w-12 h-12 text-line-strong mb-3"></i>
                                 <p class="text-mute-deep font-medium">{{ $q !== '' ? 'Sin resultados para la búsqueda.' : 'Aún no hay registros.' }}</p>
@@ -193,11 +210,53 @@
                 </form>
             </div>
         </x-modal>
+
+        @if(Auth::user()->puede('eliminar_consultas'))
+            {{-- RF58 / CU 58.1: confirmación antes de borrar; Cancelar mantiene la selección. --}}
+            <x-modal show="confirmarEliminar" titulo="Eliminar Consultas" ancho="max-w-md">
+                <p class="text-mute-deep mb-6">
+                    ¿Confirma que desea eliminar <strong x-text="cantidad() === 1 ? '1 consulta' : cantidad() + ' consultas'"></strong>?
+                    También se eliminarán los datos de los Visitantes que no tengan otras consultas. Esta acción no se puede deshacer.
+                </p>
+                <form action="{{ route('admin.consultas.eliminar') }}" method="POST" class="flex justify-end gap-3">
+                    @csrf @method('DELETE')
+                    <template x-for="id in seleccion" :key="id">
+                        <input type="hidden" name="ids[]" :value="id">
+                    </template>
+                    <button type="button" class="ig-btn ig-btn-secondary" @click="confirmarEliminar = false">Cancelar</button>
+                    <button type="submit" class="ig-btn ig-btn-primary">Confirmar eliminación</button>
+                </form>
+            </x-modal>
+        @endif
     </div>
 
     <script>
-      function moduloConsultas() {
+      // RF57: selección de Consultas de la página actual. Al cambiar de página se recarga y la selección se reinicia (CU 57.1, Excepción 2).
+      function seleccionConsultas(idsPagina) {
         return {
+          idsPagina,
+          seleccion: [],
+          marcada(id) { return this.seleccion.includes(id); },
+          alternar(id) {
+            this.seleccion = this.marcada(id) ? this.seleccion.filter(x => x !== id) : [...this.seleccion, id];
+          },
+          cantidad() { return this.seleccion.length; },
+          todasMarcadas() { return this.idsPagina.length > 0 && this.idsPagina.every(id => this.marcada(id)); },
+          alternarTodas() { this.seleccion = this.todasMarcadas() ? [] : [...this.idsPagina]; },
+        };
+      }
+
+      function moduloConsultas(idsPagina = []) {
+        return {
+          ...seleccionConsultas(idsPagina),
+          confirmarEliminar: false,
+
+          // RF42: se exportan solo las Consultas seleccionadas.
+          exportar(formato) {
+            const url = new URL('{{ route('admin.consultas.exportar', '__formato__') }}'.replace('__formato__', formato));
+            this.seleccion.forEach(id => url.searchParams.append('ids[]', id));
+            window.location.href = url.toString();
+          },
           detalle: false,
           aviso: '',
           cargandoDetalle: false,

@@ -42,10 +42,10 @@ class PermisosAdministradorTest extends TestCase
     public function test_el_jefe_entra_aunque_sus_casillas_esten_en_no()
     {
         $jefe = $this->cuenta(['correo' => 'jefe@ingecon.cl', 'rol' => 'admin_jefe']);
-        Consulta::factory()->create();
+        $consulta = Consulta::factory()->create();
 
         $this->loginAdmin($jefe)->get(route('admin.certificados.index'))->assertOk();
-        $this->loginAdmin($jefe)->get(route('admin.consultas.exportar', 'csv'))->assertOk();
+        $this->loginAdmin($jefe)->get(route('admin.consultas.exportar', ['formato' => 'csv', 'ids' => [$consulta->id_consulta]]))->assertOk();
     }
 
     public function test_sin_exportar_consultas_el_servidor_niega_la_exportacion()
@@ -109,7 +109,7 @@ class PermisosAdministradorTest extends TestCase
     public function test_el_modulo_comercial_oculta_exportar_sin_el_permiso()
     {
         Consulta::factory()->create();
-        $exportar = 'href="' . route('admin.consultas.exportar', 'csv') . '"';
+        $exportar = 'aria-label="Exportar consultas seleccionadas en CSV"';
 
         $this->loginAdmin($this->cuenta())->get(route('admin.consultas.index'))->assertOk()
             ->assertDontSee($exportar, false);

@@ -57,6 +57,8 @@ Route::middleware(['auth', CheckAdminSession::class])->group(function () {
     Route::get('admin/consultas/{consulta}/detalle', [AdminController::class, 'consultasDetalle'])
         ->whereNumber('consulta')->name('admin.consultas.detalle');
     Route::put('admin/consultas/{consulta}', [AdminController::class, 'consultasUpdate'])->name('admin.consultas.update');
+    Route::delete('admin/consultas', [AdminController::class, 'consultasEliminar'])
+        ->middleware('permiso:eliminar_consultas')->name('admin.consultas.eliminar');
 
     Route::get('admin/password', [AuthController::class, 'passwordEdit'])->name('admin.password.edit');
     Route::put('admin/password', [AuthController::class, 'passwordUpdate'])->name('admin.password.update');

@@ -80,13 +80,14 @@ class CommercialModuleRequirementsTest extends TestCase
 
     public function test_exportaciones_requieren_sesion_y_generan_archivos(): void
     {
-        Consulta::factory()->create(['mensaje' => '=HYPERLINK("https://example.com")']);
-        $this->get('/admin/consultas/exportar/csv')->assertRedirect('/login');
+        $consulta = Consulta::factory()->create(['mensaje' => '=HYPERLINK("https://example.com")']);
+        $seleccion = '?ids[]=' . $consulta->id_consulta;
+        $this->get('/admin/consultas/exportar/csv' . $seleccion)->assertRedirect('/login');
 
         $admin = Administrador::factory()->exportadorConsultas()->create();
-        $this->loginAdmin($admin)->get('/admin/consultas/exportar/csv')
+        $this->loginAdmin($admin)->get('/admin/consultas/exportar/csv' . $seleccion)
             ->assertOk()->assertHeader('content-disposition');
-        $this->get('/admin/consultas/exportar/xlsx')
+        $this->get('/admin/consultas/exportar/xlsx' . $seleccion)
             ->assertOk()->assertHeader('content-disposition');
     }
 }

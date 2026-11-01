@@ -79,8 +79,7 @@ class PendientesRevisionFuncionalTest extends TestCase
         $this->loginAdmin($this->admin())
             ->get('/admin/consultas?q=texto-que-no-existe')
             ->assertStatus(200)
-            ->assertSee(route('admin.consultas.exportar', 'csv'), false)
-            ->assertDontSee('Sin registros para exportar');
+            ->assertSee('aria-label="Exportar consultas seleccionadas en CSV"', false);
     }
 
     public function test_modulo_usa_el_termino_colaborador()
