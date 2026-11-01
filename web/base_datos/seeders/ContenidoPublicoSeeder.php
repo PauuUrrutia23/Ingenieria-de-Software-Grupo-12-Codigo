@@ -53,45 +53,5 @@ class ContenidoPublicoSeeder extends Seeder
                 ]
             );
         }
-
-        // titulo = quién opina, cuerpo = testimonio
-        $opiniones = [
-            [
-                'Jefe de obra · Constructora habitacional, Región Metropolitana',
-                'La panelería llegó dimensionada y marcada, así que el montaje en terreno avanzó sin ajustes improvisados.',
-            ],
-            [
-                'Gerente de operaciones · Agroindustria, Región del Biobío',
-                'Necesitábamos un galpón de gran luz y las cerchas respondieron. La estructura pasó su primer invierno sin observaciones.',
-            ],
-            [
-                'Encargado de montaje · Construcción industrial, Región del Maule',
-                'El acompañamiento técnico durante el diseño nos permitió resolver las uniones antes de llegar a obra, no encima de ella.',
-            ],
-            [
-                'Dirección técnica · Proyecto DS19, Región de La Araucanía',
-                'Valoramos tener en un mismo proveedor la madera impregnada y los conectores: simplificó la coordinación y las revisiones.',
-            ],
-            [
-                'Administrador de contrato · Obra pública, Región Metropolitana',
-                'Los despachos llegaron partida por partida según lo acordado, lo que nos permitió cerrar el cronograma sin reprogramar el montaje.',
-            ],
-            [
-                'Socio fundador · Constructora de terminaciones, Región del Biobío',
-                'La escalera prefabricada llegó lista para instalar y las fijaciones venían consideradas en el mismo despacho.',
-            ],
-        ];
-
-        foreach ($opiniones as $indice => [$autor, $testimonio]) {
-            Contenido::firstOrCreate(
-                ['seccion' => 'opiniones', 'titulo' => $autor],
-                [
-                    'cuerpo' => $testimonio,
-                    'orden' => $indice + 1,
-                    'activo' => true,
-                    'id_admin' => $admin->id_admin,
-                ]
-            );
-        }
     }
 }

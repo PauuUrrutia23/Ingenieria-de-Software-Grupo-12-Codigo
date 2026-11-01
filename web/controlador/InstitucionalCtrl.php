@@ -51,7 +51,6 @@ class InstitucionalCtrl extends Controller
             'proveedores' => $proveedores,
             'ubicacionUrl' => $this->urlUbicacionVigente(),
             'faqs' => $this->faqsVigentes(),
-            'opiniones' => $this->contenidosPorSeccion('opiniones'),
             'fasesIndustriales' => $this->fasesIndustriales(),
             'productos' => $this->productosPublicos(),
             'banner' => $this->bannerVigente(),

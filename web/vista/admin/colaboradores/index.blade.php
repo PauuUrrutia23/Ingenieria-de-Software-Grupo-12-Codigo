@@ -83,6 +83,11 @@
                            @change="nombreArchivo = $event.target.files[0] ? $event.target.files[0].name : '';
                                     vistaPrevia = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : ''">
                 </div>
+                <div>
+                    <label for="crear-sitio" class="ig-label">Sitio Web del Colaborador (opcional)</label>
+                    <input id="crear-sitio" type="url" name="sitio_web" value="{{ old('_modal') === 'crear' ? old('sitio_web') : '' }}" maxlength="300"
+                           class="ig-field-box" placeholder="https://">
+                </div>
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" @click="crear = false"
                             class="ig-btn ig-btn-secondary !py-2.5 !px-5">Cancelar</button>
@@ -108,6 +113,11 @@
                     <input id="editar-logo" type="file" name="logotipo" accept="image/jpeg,image/png"
                            class="ig-field-box cursor-pointer file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:uppercase file:tracking-wider file:bg-carbon file:text-surface hover:file:bg-wood hover:file:text-carbon">
                     <p class="text-xs text-mute mt-2">Máximo 500 KB. Si no adjuntas nada, se conserva el actual.</p>
+                </div>
+                <div>
+                    <label for="editar-sitio" class="ig-label">Sitio Web del Colaborador (opcional)</label>
+                    <input id="editar-sitio" type="url" name="sitio_web" x-model="seleccionado.sitio_web" maxlength="300"
+                           class="ig-field-box" placeholder="https://">
                 </div>
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" @click="editar = false"
@@ -140,7 +150,7 @@
           editar: false,
           eliminar: false,
           aviso: '',
-          seleccionado: { id: null, nombre: '', logo: '' },
+          seleccionado: { id: null, nombre: '', logo: '', sitio_web: '' },
 
           init() {
             @if($errors->any() && old('_modal') === 'crear')

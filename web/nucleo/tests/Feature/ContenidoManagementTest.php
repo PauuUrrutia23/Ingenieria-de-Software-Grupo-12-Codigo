@@ -56,7 +56,7 @@ class ContenidoManagementTest extends TestCase
     {
         $admin = Administrador::factory()->editorContenido()->create();
         $contenido = Contenido::create([
-            'seccion' => 'opiniones', 'titulo' => 'Cliente feliz', 'cuerpo' => 'Excelente servicio.',
+            'seccion' => 'faq', 'titulo' => '¿Hacen despachos?', 'cuerpo' => 'Sí, a todo Chile.',
             'orden' => 0, 'activo' => true, 'id_admin' => $admin->id_admin,
         ]);
 

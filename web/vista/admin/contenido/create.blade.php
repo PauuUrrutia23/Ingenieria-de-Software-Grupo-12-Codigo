@@ -17,7 +17,6 @@
             @php
                 $etiquetaTitulo = [
                     'faq' => 'Pregunta',
-                    'opiniones' => 'Nombre del cliente',
                     'fases_industriales' => 'Nombre de la fase',
                     'banner' => 'Título (opcional)',
                     'ubicacion' => 'Descripción (opcional)',
@@ -25,7 +24,6 @@
                 ][$seccion];
                 $etiquetaCuerpo = [
                     'faq' => 'Respuesta',
-                    'opiniones' => 'Testimonio',
                     'fases_industriales' => 'Texto de la fase',
                     'banner' => 'Texto descriptivo',
                     'ubicacion' => '',

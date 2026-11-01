@@ -407,15 +407,13 @@ class IncrementoCoverageTest extends TestCase
         $this->assertDatabaseHas('contenidos', ['seccion' => 'banner']);
     }
 
-    public function test_fases_and_opiniones_require_name_and_text()
+    public function test_fases_require_name_and_text()
     {
         $admin = $this->admin();
 
-        foreach (['fases_industriales', 'opiniones'] as $seccion) {
-            $this->loginAdmin($admin)
-                ->post(route('admin.contenido.store'), ['seccion' => $seccion, 'titulo' => '', 'cuerpo' => ''])
-                ->assertSessionHasErrors(['titulo', 'cuerpo']);
-        }
+        $this->loginAdmin($admin)
+            ->post(route('admin.contenido.store'), ['seccion' => 'fases_industriales', 'titulo' => '', 'cuerpo' => ''])
+            ->assertSessionHasErrors(['titulo', 'cuerpo']);
 
         $this->assertDatabaseCount('contenidos', 0);
     }

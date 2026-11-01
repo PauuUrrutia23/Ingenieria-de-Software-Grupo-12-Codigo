@@ -83,7 +83,7 @@ class ContentManagementRequirementsTest extends TestCase
         $this->app->instance(DBRouterController::class, $db);
 
         $this->loginAdmin($admin)->post('/admin/contenido', [
-            'seccion' => 'opiniones', 'titulo' => 'Cliente', 'cuerpo' => 'Testimonio',
+            'seccion' => 'fases_industriales', 'titulo' => 'Impregnación', 'cuerpo' => 'Proceso en autoclave',
             'archivo' => UploadedFile::fake()->image('cliente.png'),
         ])->assertSessionHasErrors('contenido');
 
@@ -97,7 +97,7 @@ class ContentManagementRequirementsTest extends TestCase
         Storage::disk('public')->put('contenido/anterior.png', 'imagen anterior');
         $admin = Administrador::factory()->editorContenido()->create();
         $contenido = Contenido::create([
-            'seccion' => 'opiniones', 'titulo' => 'Original', 'cuerpo' => 'Texto original',
+            'seccion' => 'fases_industriales', 'titulo' => 'Original', 'cuerpo' => 'Texto original',
             'archivo' => 'contenido/anterior.png', 'orden' => 0, 'activo' => true,
             'id_admin' => $admin->id_admin,
         ]);

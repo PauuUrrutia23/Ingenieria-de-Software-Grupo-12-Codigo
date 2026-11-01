@@ -43,6 +43,7 @@ class AdminController extends Controller
         $data = $request->validate([
             'nombre_comercial' => ['required', 'string', 'max:100', 'regex:/^[\p{Lu}]/u'],
             'logotipo' => array_merge(['required'], Rnf17::reglasLogo()),
+            'sitio_web' => ['nullable', 'url', 'max:300'],
         ]);
 
         $ruta = null;
@@ -62,9 +63,10 @@ class AdminController extends Controller
         return redirect()->route('admin.colaboradores.index')->with('success', 'Colaborador creado.');
     }
 
-    public function colaboradoresEdit(Colaborador $colaborador)
+    // El parámetro se llama como en la ruta ({colaboradore}) para que Laravel enlace el modelo.
+    public function colaboradoresEdit(Colaborador $colaboradore)
     {
-        return view('admin.colaboradores.edit', compact('colaborador'));
+        return view('admin.colaboradores.edit', ['colaborador' => $colaboradore]);
     }
 
     public function colaboradoresDetalle(int $colaborador)
@@ -76,6 +78,7 @@ class AdminController extends Controller
                 'id' => $registro->id_colaborador,
                 'nombre' => $registro->nombre_comercial,
                 'logo' => $registro->logo_url,
+                'sitio_web' => $registro->sitio_web,
             ]);
         } catch (\Throwable $e) {
             return response()->json(['message' => 'El colaborador no está disponible temporalmente.'], 503);
@@ -89,6 +92,7 @@ class AdminController extends Controller
         $data = $request->validate([
             'nombre_comercial' => ['required', 'string', 'max:100', 'regex:/^[\p{Lu}]/u'],
             'logotipo' => array_merge(['nullable'], Rnf17::reglasLogo()),
+            'sitio_web' => ['nullable', 'url', 'max:300'],
         ]);
 
         try {
@@ -143,13 +147,12 @@ class AdminController extends Controller
         return redirect()->route('admin.colaboradores.index')->with('success', 'Colaborador eliminado.');
     }
 
-    public const SECCIONES = ['faq', 'opiniones', 'banner', 'fases_industriales', 'ubicacion', 'documentacion'];
+    public const SECCIONES = ['faq', 'banner', 'fases_industriales', 'ubicacion', 'documentacion'];
 
     public const SECCIONES_ENLACE = ['ubicacion', 'documentacion'];
 
     public const NOMBRES_SECCION = [
         'faq' => 'Preguntas Frecuentes',
-        'opiniones' => 'Opiniones de Clientes',
         'banner' => 'Banner de Inicio',
         'fases_industriales' => 'Fases Industriales',
         'ubicacion' => 'Ubicación',
@@ -160,7 +163,6 @@ class AdminController extends Controller
         'faq' => ['titulo' => 'la pregunta', 'cuerpo' => 'la respuesta'],
         'banner' => ['cuerpo' => 'el texto descriptivo'],
         'fases_industriales' => ['titulo' => 'el nombre de la fase', 'cuerpo' => 'el texto de la fase'],
-        'opiniones' => ['titulo' => 'el nombre del cliente', 'cuerpo' => 'el testimonio'],
         'ubicacion' => ['enlace' => 'el enlace de Google Maps'],
         'documentacion' => ['enlace' => 'el enlace de la documentación'],
     ];
@@ -371,6 +373,7 @@ class AdminController extends Controller
             'nombre' => trim(($registro->visitante?->nombre ?? '') . ' ' . ($registro->visitante?->apellido ?? '')),
             'email' => $registro->visitante?->email,
             'mensaje' => $registro->mensaje,
+            'acepta_terminos' => (bool) $registro->acepta_terminos,
             'estado' => $registro->estado,
             'prioridad' => $registro->prioridad,
             'responsable' => $registro->adminResponsable?->correo,

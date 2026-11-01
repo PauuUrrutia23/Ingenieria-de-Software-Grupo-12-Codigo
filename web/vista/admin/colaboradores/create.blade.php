@@ -28,6 +28,12 @@
             <p class="ig-meta mt-2">Máximo 500 KB (RNF17).</p>
         </div>
 
+        <div>
+            <label for="sitio-web" class="ig-label">Sitio Web del Colaborador (opcional)</label>
+            <input id="sitio-web" type="url" name="sitio_web" value="{{ old('sitio_web') }}" maxlength="300"
+                   class="ig-field-box" placeholder="https://">
+        </div>
+
         <div class="flex items-center gap-3 pt-2">
             <button type="submit" class="ig-btn ig-btn-primary !py-2.5 !px-5">Guardar</button>
             <a href="{{ route('admin.colaboradores.index') }}" class="ig-btn ig-btn-secondary !py-2.5 !px-5">Cancelar</a>

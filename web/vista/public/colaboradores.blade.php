@@ -29,9 +29,8 @@
                     @foreach($colaboradores as $prov)
                         <div class="flex flex-col items-center justify-center bg-surface px-6 py-12 group">
                             <div class="flex items-center justify-center h-24 w-full mb-6">
-                                <img src="{{ $prov->logo_url }}"
-                                     alt="{{ $prov->nombre_comercial }}" loading="lazy"
-                                     class="max-h-full max-w-full object-contain grayscale opacity-60 transition-all duration-500 group-hover:grayscale-0 group-hover:opacity-100">
+                                <x-logo-colaborador :colaborador="$prov"
+                                     class="max-h-full max-w-full object-contain grayscale opacity-60 transition-all duration-500 group-hover:grayscale-0 group-hover:opacity-100" />
                             </div>
                             <span class="ig-meta !text-mute-deep text-center leading-relaxed">
                                 {{ $prov->nombre_comercial }}

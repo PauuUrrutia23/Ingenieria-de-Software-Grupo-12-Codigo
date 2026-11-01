@@ -168,67 +168,6 @@ class PublicContentRequirementsTest extends TestCase
         $this->get('/')->assertStatus(200)->assertSee('Aún no hay preguntas frecuentes.');
     }
 
-    public function test_opiniones_llegan_a_la_vista()
-    {
-        \App\Models\Contenido::create([
-            'seccion' => 'opiniones', 'titulo' => 'Ana R.', 'cuerpo' => 'Excelente trabajo.',
-            'activo' => true, 'orden' => 1, 'id_admin' => $this->adminId(),
-        ]);
-
-        $this->get('/')->assertStatus(200)->assertViewHas('opiniones', fn ($o) => $o->count() === 1 && $o->first()->titulo === 'Ana R.');
-    }
-
-    public function test_opiniones_vacias_es_lista_vacia()
-    {
-        $this->get('/')->assertStatus(200)->assertViewHas('opiniones', fn ($o) => $o->isEmpty());
-    }
-
-    public function test_fallo_de_bd_en_contenido_no_rompe_opiniones()
-    {
-        $this->app->instance(\App\Http\Controllers\DBRouterController::class, new class extends \App\Http\Controllers\DBRouterController {
-            public function query(string $modelo): \Illuminate\Database\Eloquent\Builder
-            {
-                if ($modelo === \App\Models\Contenido::class) {
-                    throw new \RuntimeException('bd');
-                }
-                return $modelo::query();
-            }
-        });
-
-        $this->get('/')->assertStatus(200)->assertViewHas('opiniones', fn ($o) => $o->isEmpty());
-    }
-
-    public function test_opinion_muestra_nombre_y_testimonio_desde_bd()
-    {
-        Contenido::create([
-            'seccion' => 'opiniones', 'titulo' => 'Ana R.', 'cuerpo' => 'Excelente trabajo.',
-            'activo' => true, 'orden' => 1, 'id_admin' => $this->adminId(),
-        ]);
-
-        $this->get('/')->assertStatus(200)
-            ->assertSee('Ana R.')
-            ->assertSee('Excelente trabajo.');
-    }
-
-    public function test_opiniones_vacias_muestran_estado_funcional()
-    {
-        $this->get('/')->assertStatus(200)->assertSee('Aún no hay opiniones publicadas.');
-    }
-
-    public function test_opinion_escapa_caracteres_especiales()
-    {
-        Contenido::create([
-            'seccion' => 'opiniones', 'titulo' => '<script>alert(1)</script>',
-            'cuerpo' => '<b>Muy buen servicio</b>',
-            'activo' => true, 'orden' => 1, 'id_admin' => $this->adminId(),
-        ]);
-
-        $this->get('/')->assertStatus(200)
-            ->assertSee('&lt;script&gt;alert(1)&lt;/script&gt;', false)
-            ->assertSee('&lt;b&gt;Muy buen servicio&lt;/b&gt;', false)
-            ->assertDontSee('<script>alert(1)</script>', false);
-    }
-
     private function filaFase(
         string $nombre,
         string $descripcion,

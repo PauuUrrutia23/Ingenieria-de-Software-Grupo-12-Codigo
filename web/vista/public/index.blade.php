@@ -314,10 +314,8 @@
                                     <div class="w-full shrink-0 grid grid-cols-2 md:grid-cols-4 gap-px bg-line">
                                         @foreach($grupo as $prov)
                                             <div class="flex flex-col items-center justify-center gap-3 bg-surface h-[150px] p-6 overflow-hidden">
-                                                <img src="{{ $prov->logo_url }}"
-                                                     alt="{{ $prov->nombre_comercial }}"
-                                                     loading="lazy"
-                                                     class="max-h-[100px] max-w-full object-contain grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+                                                <x-logo-colaborador :colaborador="$prov"
+                                                     class="max-h-[100px] max-w-full object-contain grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all duration-500" />
                                                 <span class="ig-meta truncate max-w-full">{{ $prov->nombre_comercial }}</span>
                                             </div>
                                         @endforeach
@@ -351,36 +349,6 @@
                             @endforeach
                         </div>
                     @endif
-                </div>
-            @endif
-        </div>
-    </section>
-
-    <section id="opiniones" class="ig-section bg-surface border-t border-line ig-anchor">
-        <div class="ig-container">
-            <div class="text-center mb-14 ig-reveal">
-                <p class="ig-eyebrow justify-center mb-4">Experiencias</p>
-                <h2 class="ig-h-section">Opiniones de clientes</h2>
-            </div>
-
-            @if($opiniones->isEmpty())
-                <p class="text-center ig-lede">Aún no hay opiniones publicadas.</p>
-            @else
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-line border border-line">
-                    @foreach($opiniones as $opinion)
-                        <figure class="bg-surface p-8 md:p-10 flex flex-col justify-between gap-8">
-                            @if($opinion->imagen_url)
-                                <img src="{{ $opinion->imagen_url }}" alt="Imagen de {{ $opinion->titulo }}"
-                                     loading="lazy" class="w-full h-44 object-cover">
-                            @elseif($opinion->video_url)
-                                <video controls preload="metadata" playsinline class="w-full h-44 bg-carbon" aria-label="Video de {{ $opinion->titulo }}">
-                                    <source src="{{ $opinion->video_url }}" type="video/mp4">
-                                </video>
-                            @endif
-                            <blockquote class="ig-lede">{{ $opinion->cuerpo }}</blockquote>
-                            <figcaption class="font-display text-lg text-carbon">{{ $opinion->titulo }}</figcaption>
-                        </figure>
-                    @endforeach
                 </div>
             @endif
         </div>

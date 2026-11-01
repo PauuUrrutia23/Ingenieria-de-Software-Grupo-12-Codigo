@@ -129,7 +129,7 @@
                         <span x-text="c.id" class="text-sm font-mono text-carbon"></span>
                     </div>
                     <div>
-                        <span class="ig-meta block mb-1">Fecha</span>
+                        <span class="ig-meta block mb-1">Fecha y hora de envío</span>
                         <span x-text="c.fecha" class="text-sm font-mono text-carbon"></span>
                     </div>
                     <div>
@@ -151,6 +151,13 @@
                 <div>
                     <span class="ig-meta block mb-2">Mensaje</span>
                     <p class="text-sm text-mute-deep whitespace-pre-wrap bg-paper-deep border border-line p-4 leading-relaxed" x-text="c.mensaje"></p>
+                </div>
+
+                {{-- RF39: constancia de aceptación de los Términos y Condiciones y Política de Privacidad. --}}
+                <div>
+                    <span class="ig-meta block mb-2">Términos y Condiciones</span>
+                    <p x-show="c.acepta_terminos" class="text-sm text-carbon">Aceptó los Términos y Condiciones y la Política de Privacidad al enviar la consulta.</p>
+                    <p x-show="!c.acepta_terminos" x-cloak class="text-sm text-mute">Sin constancia de aceptación registrada.</p>
                 </div>
 
                 <div class="ig-rule"></div>
@@ -194,7 +201,7 @@
           detalle: false,
           aviso: '',
           cargandoDetalle: false,
-          c: { id: null, fecha: '', nombre: '', email: '', mensaje: '', estado: 'pendiente', prioridad: '', responsable: null },
+          c: { id: null, fecha: '', nombre: '', email: '', mensaje: '', acepta_terminos: false, estado: 'pendiente', prioridad: '', responsable: null },
 
           init() {
             this.$watch('detalle', () => this.$nextTick(() => window.lucide && lucide.createIcons()));
