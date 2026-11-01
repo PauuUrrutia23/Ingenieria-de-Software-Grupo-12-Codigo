@@ -15,7 +15,7 @@ class CollaboratorRequirementsTest extends TestCase
     private function enviar(UploadedFile $logo, string $nombre): \Illuminate\Testing\TestResponse
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
 
         return $this->loginAdmin($admin)->post('/admin/colaboradores', [
             'nombre_comercial' => $nombre,

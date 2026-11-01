@@ -21,4 +21,16 @@ class AdministradorFactory extends Factory
             'activo' => true,
         ];
     }
+
+    // RF59: cuenta con el permiso Editar Contenido.
+    public function editorContenido(): static
+    {
+        return $this->state(['perm_editar_contenido' => true]);
+    }
+
+    // RF42: cuenta con el permiso Exportar Consultas.
+    public function exportadorConsultas(): static
+    {
+        return $this->state(['perm_exportar_consultas' => true]);
+    }
 }

@@ -29,7 +29,7 @@ class ContentManagementRequirementsTest extends TestCase
     public function test_creacion_producto_persiste_imagen_y_componentes(): void
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $this->loginAdmin($admin)->post(route('admin.productos.store'), $this->datos())
             ->assertRedirect(route('admin.productos.index'));
 
@@ -42,7 +42,7 @@ class ContentManagementRequirementsTest extends TestCase
     public function test_creacion_rechaza_archivo_invalido_y_campos_vacios(): void
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $this->loginAdmin($admin)->post(route('admin.productos.store'), $this->datos([
             'nombre' => '', 'descripcion' => '', 'imagen' => UploadedFile::fake()->create('video.webp', 30, 'image/webp'),
         ]))->assertSessionHasErrors(['nombre', 'descripcion', 'imagen']);
@@ -52,7 +52,7 @@ class ContentManagementRequirementsTest extends TestCase
     public function test_edicion_sin_nueva_imagen_conserva_archivo_y_sincroniza_componentes(): void
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $this->loginAdmin($admin)->post(route('admin.productos.store'), $this->datos());
         $producto = Producto::firstOrFail();
         $ruta = $producto->imagen;
@@ -69,7 +69,7 @@ class ContentManagementRequirementsTest extends TestCase
 
     public function test_detalle_eliminado_devuelve_respuesta_funcional(): void
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $this->loginAdmin($admin)->getJson('/admin/productos/999999/detalle')
             ->assertStatus(410);
     }
@@ -77,7 +77,7 @@ class ContentManagementRequirementsTest extends TestCase
     public function test_alta_contenido_limpia_archivo_si_falla_bd(): void
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $db = Mockery::mock(DBRouterController::class)->makePartial();
         $db->shouldReceive('create')->once()->andThrow(new \RuntimeException('fallo BD'));
         $this->app->instance(DBRouterController::class, $db);
@@ -95,7 +95,7 @@ class ContentManagementRequirementsTest extends TestCase
     {
         Storage::fake('public');
         Storage::disk('public')->put('contenido/anterior.png', 'imagen anterior');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $contenido = Contenido::create([
             'seccion' => 'opiniones', 'titulo' => 'Original', 'cuerpo' => 'Texto original',
             'archivo' => 'contenido/anterior.png', 'orden' => 0, 'activo' => true,

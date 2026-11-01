@@ -52,7 +52,7 @@ class BusinessRulesTest extends TestCase
 
     public function test_draft_project_is_hidden_from_public_gallery()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         Proyecto::factory()->create(['nombre_obra' => 'Obra Publicada Visible', 'estado_publicacion' => 'publicado', 'id_admin' => $admin->id_admin]);
         Proyecto::factory()->create(['nombre_obra' => 'Obra en Borrador Oculta', 'estado_publicacion' => 'borrador', 'id_admin' => $admin->id_admin]);
 
@@ -65,7 +65,7 @@ class BusinessRulesTest extends TestCase
 
     public function test_consultas_are_paginated_in_blocks_of_10()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         Consulta::factory()->count(15)->create();
 
         $response = $this->loginAdmin($admin)->get('/admin/consultas');
@@ -79,7 +79,7 @@ class BusinessRulesTest extends TestCase
     public function test_colaborador_logo_over_500kb_is_rejected()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $logoGrande = UploadedFile::fake()->image('logo.png')->size(600);
 
         $response = $this->loginAdmin($admin)->post('/admin/colaboradores', [
@@ -94,7 +94,7 @@ class BusinessRulesTest extends TestCase
     public function test_proyecto_rejects_more_than_15_images()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $imagenes = [];
         for ($i = 0; $i < 16; $i++) {
             $imagenes[] = UploadedFile::fake()->image("foto{$i}.jpg");

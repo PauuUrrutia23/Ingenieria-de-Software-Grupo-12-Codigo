@@ -51,31 +51,9 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', CheckAdminSession::class])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
 
-    Route::get('admin/proyectos/{proyecto}/detalle-edicion', [ProyectoController::class, 'detalleEdicion'])
-        ->whereNumber('proyecto')->name('admin.proyectos.detalle-edicion');
-    Route::resource('admin/proyectos', ProyectoController::class)->names('admin.proyectos');
-    Route::delete('admin/imagenes/{imagen}', [ProyectoController::class, 'destroyImage'])->name('admin.imagenes.destroy');
-
-    Route::patch('admin/proyectos/{proyecto}/visibilidad', [ProyectoController::class, 'updateVisibilidad'])
-        ->name('admin.proyectos.visibilidad');
-
-    Route::resource('admin/certificados', CertificadoController::class)
-        ->except(['show'])
-        ->names('admin.certificados')
-        ->parameters(['certificados' => 'certificado']);
-
-    Route::get('admin/colaboradores', [AdminController::class, 'colaboradoresIndex'])->name('admin.colaboradores.index');
-    Route::get('admin/colaboradores/create', [AdminController::class, 'colaboradoresCreate'])->name('admin.colaboradores.create');
-    Route::get('admin/colaboradores/{colaboradore}/detalle', [AdminController::class, 'colaboradoresDetalle'])
-        ->whereNumber('colaboradore')->name('admin.colaboradores.detalle');
-    Route::post('admin/colaboradores', [AdminController::class, 'colaboradoresStore'])->name('admin.colaboradores.store');
-    Route::get('admin/colaboradores/{colaboradore}/edit', [AdminController::class, 'colaboradoresEdit'])->name('admin.colaboradores.edit');
-    Route::put('admin/colaboradores/{colaboradore}', [AdminController::class, 'colaboradoresUpdate'])->name('admin.colaboradores.update');
-    Route::delete('admin/colaboradores/{colaboradore}', [AdminController::class, 'colaboradoresDestroy'])->name('admin.colaboradores.destroy');
-
     Route::get('admin/consultas', [AdminController::class, 'consultasIndex'])->name('admin.consultas.index');
     Route::get('admin/consultas/exportar/{formato}', [AdminController::class, 'consultasExportar'])
-        ->whereIn('formato', ['csv', 'xlsx'])->name('admin.consultas.exportar');
+        ->whereIn('formato', ['csv', 'xlsx'])->middleware('permiso:exportar_consultas')->name('admin.consultas.exportar');
     Route::get('admin/consultas/{consulta}/detalle', [AdminController::class, 'consultasDetalle'])
         ->whereNumber('consulta')->name('admin.consultas.detalle');
     Route::put('admin/consultas/{consulta}', [AdminController::class, 'consultasUpdate'])->name('admin.consultas.update');
@@ -83,23 +61,50 @@ Route::middleware(['auth', CheckAdminSession::class])->group(function () {
     Route::get('admin/password', [AuthController::class, 'passwordEdit'])->name('admin.password.edit');
     Route::put('admin/password', [AuthController::class, 'passwordUpdate'])->name('admin.password.update');
 
-    Route::get('admin/contenido', [AdminController::class, 'contenidoIndex'])->name('admin.contenido.index');
-    Route::get('admin/productos', [ProductoAdminController::class, 'index'])->name('admin.productos.index');
-    Route::get('admin/productos/{producto}/detalle', [ProductoAdminController::class, 'detalle'])
-        ->whereNumber('producto')->name('admin.productos.detalle');
-    Route::post('admin/productos', [ProductoAdminController::class, 'store'])->name('admin.productos.store');
-    Route::put('admin/productos/{producto}', [ProductoAdminController::class, 'update'])
-        ->whereNumber('producto')->name('admin.productos.update');
-    Route::get('admin/contenido/create', [AdminController::class, 'contenidoCreate'])->name('admin.contenido.create');
-    Route::post('admin/contenido', [AdminController::class, 'contenidoStore'])->name('admin.contenido.store');
-    Route::get('admin/contenido/{contenido}/edit', [AdminController::class, 'contenidoEdit'])->name('admin.contenido.edit');
-    Route::put('admin/contenido/{contenido}', [AdminController::class, 'contenidoUpdate'])->name('admin.contenido.update');
-    Route::delete('admin/contenido/{contenido}', [AdminController::class, 'contenidoDestroy'])->name('admin.contenido.destroy');
+    // RF59: Editar Contenido habilita contenido del sitio, Colaboradores, Proyectos, Certificados y Productos.
+    Route::middleware('permiso:editar_contenido')->group(function () {
+        Route::get('admin/proyectos/{proyecto}/detalle-edicion', [ProyectoController::class, 'detalleEdicion'])
+            ->whereNumber('proyecto')->name('admin.proyectos.detalle-edicion');
+        Route::resource('admin/proyectos', ProyectoController::class)->names('admin.proyectos');
+        Route::delete('admin/imagenes/{imagen}', [ProyectoController::class, 'destroyImage'])->name('admin.imagenes.destroy');
+
+        Route::patch('admin/proyectos/{proyecto}/visibilidad', [ProyectoController::class, 'updateVisibilidad'])
+            ->name('admin.proyectos.visibilidad');
+
+        Route::resource('admin/certificados', CertificadoController::class)
+            ->except(['show'])
+            ->names('admin.certificados')
+            ->parameters(['certificados' => 'certificado']);
+
+        Route::get('admin/colaboradores', [AdminController::class, 'colaboradoresIndex'])->name('admin.colaboradores.index');
+        Route::get('admin/colaboradores/create', [AdminController::class, 'colaboradoresCreate'])->name('admin.colaboradores.create');
+        Route::get('admin/colaboradores/{colaboradore}/detalle', [AdminController::class, 'colaboradoresDetalle'])
+            ->whereNumber('colaboradore')->name('admin.colaboradores.detalle');
+        Route::post('admin/colaboradores', [AdminController::class, 'colaboradoresStore'])->name('admin.colaboradores.store');
+        Route::get('admin/colaboradores/{colaboradore}/edit', [AdminController::class, 'colaboradoresEdit'])->name('admin.colaboradores.edit');
+        Route::put('admin/colaboradores/{colaboradore}', [AdminController::class, 'colaboradoresUpdate'])->name('admin.colaboradores.update');
+        Route::delete('admin/colaboradores/{colaboradore}', [AdminController::class, 'colaboradoresDestroy'])->name('admin.colaboradores.destroy');
+
+        Route::get('admin/contenido', [AdminController::class, 'contenidoIndex'])->name('admin.contenido.index');
+        Route::get('admin/productos', [ProductoAdminController::class, 'index'])->name('admin.productos.index');
+        Route::get('admin/productos/{producto}/detalle', [ProductoAdminController::class, 'detalle'])
+            ->whereNumber('producto')->name('admin.productos.detalle');
+        Route::post('admin/productos', [ProductoAdminController::class, 'store'])->name('admin.productos.store');
+        Route::put('admin/productos/{producto}', [ProductoAdminController::class, 'update'])
+            ->whereNumber('producto')->name('admin.productos.update');
+        Route::get('admin/contenido/create', [AdminController::class, 'contenidoCreate'])->name('admin.contenido.create');
+        Route::post('admin/contenido', [AdminController::class, 'contenidoStore'])->name('admin.contenido.store');
+        Route::get('admin/contenido/{contenido}/edit', [AdminController::class, 'contenidoEdit'])->name('admin.contenido.edit');
+        Route::put('admin/contenido/{contenido}', [AdminController::class, 'contenidoUpdate'])->name('admin.contenido.update');
+        Route::delete('admin/contenido/{contenido}', [AdminController::class, 'contenidoDestroy'])->name('admin.contenido.destroy');
+    });
 
     Route::middleware(CheckAdminJefe::class)->group(function () {
         Route::get('admin/administradores', [AdminGestionController::class, 'index'])->name('admin.administradores.index');
         Route::post('admin/administradores', [AdminGestionController::class, 'store'])->name('admin.administradores.store');
         Route::delete('admin/administradores/{administrador}', [AdminGestionController::class, 'destroy'])
             ->whereNumber('administrador')->name('admin.administradores.destroy');
+        Route::patch('admin/administradores/{administrador}/permisos', [AdminGestionController::class, 'actualizarPermiso'])
+            ->whereNumber('administrador')->name('admin.administradores.permisos');
     });
 });

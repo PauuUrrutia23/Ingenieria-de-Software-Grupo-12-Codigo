@@ -29,15 +29,17 @@
                 <a href="{{ route('admin.consultas.index', ['orden' => $orden]) }}" class="ig-btn ig-btn-secondary">Limpiar</a>
             @endif
         </form>
-        <div class="flex flex-wrap items-center gap-3 mb-6">
-            <span class="ig-meta">Exportar todas las consultas</span>
-            @if($hayConsultas)
-                <a href="{{ route('admin.consultas.exportar', 'csv') }}" class="ig-btn ig-btn-secondary">CSV</a>
-                <a href="{{ route('admin.consultas.exportar', 'xlsx') }}" class="ig-btn ig-btn-secondary">Excel</a>
-            @else
-                <span class="ig-meta" aria-disabled="true">Sin registros para exportar</span>
-            @endif
-        </div>
+        @if(Auth::user()->puede('exportar_consultas'))
+            <div class="flex flex-wrap items-center gap-3 mb-6">
+                <span class="ig-meta">Exportar todas las consultas</span>
+                @if($hayConsultas)
+                    <a href="{{ route('admin.consultas.exportar', 'csv') }}" class="ig-btn ig-btn-secondary">CSV</a>
+                    <a href="{{ route('admin.consultas.exportar', 'xlsx') }}" class="ig-btn ig-btn-secondary">Excel</a>
+                @else
+                    <span class="ig-meta" aria-disabled="true">Sin registros para exportar</span>
+                @endif
+            </div>
+        @endif
         <p x-show="aviso" x-cloak x-text="aviso" role="status" class="text-sm text-wood-deep mb-4"></p>
 
         <div class="ig-card">

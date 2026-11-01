@@ -9,6 +9,10 @@
             ['route' => route('admin.consultas.index'), 'icon' => 'inbox', 'titulo' => 'Módulo comercial', 'desc' => 'Historial de consultas recibidas.'],
             ['route' => route('admin.contenido.index'), 'icon' => 'layout-panel-left', 'titulo' => 'Panel de gestión', 'desc' => 'Contenido multimedia del sitio público.'],
         ];
+        // CU 59.2: sin Editar Contenido solo queda el Módulo comercial.
+        if (!Auth::user()->puede('editar_contenido')) {
+            $accesos = array_values(array_filter($accesos, fn ($a) => $a['route'] === route('admin.consultas.index')));
+        }
     @endphp
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">

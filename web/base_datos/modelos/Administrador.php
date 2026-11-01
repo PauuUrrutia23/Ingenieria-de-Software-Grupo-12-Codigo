@@ -22,6 +22,17 @@ class Administrador extends Authenticatable implements \Illuminate\Contracts\Aut
         'perm_eliminar_consultas' => 'boolean',
     ];
 
+    // RF59: el Administrador jefe tiene siempre todos los permisos.
+    public const PERMISOS = ['editar_contenido', 'exportar_consultas', 'eliminar_consultas'];
+
+    public function puede(string $permiso): bool
+    {
+        if (!in_array($permiso, self::PERMISOS, true)) {
+            return false;
+        }
+        return $this->rol === 'admin_jefe' || (bool) $this->{'perm_' . $permiso};
+    }
+
     public function getAuthPassword() { return $this->password_hash; }
     public function getAuthIdentifierName() { return 'id_admin'; }
     public function sesiones() { return $this->hasMany(Sesion::class, 'id_admin', 'id_admin'); }

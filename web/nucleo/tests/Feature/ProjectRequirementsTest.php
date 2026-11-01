@@ -32,7 +32,7 @@ class ProjectRequirementsTest extends TestCase
     public function test_imagen_de_hasta_2mb_es_valida()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $ok = UploadedFile::fake()->image('obra.jpg')->size(2000);
 
         $this->loginAdmin($admin)
@@ -45,7 +45,7 @@ class ProjectRequirementsTest extends TestCase
     public function test_imagen_mayor_a_2mb_es_rechazada()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $grande = UploadedFile::fake()->image('obra.jpg')->size(2100);
 
         $this->loginAdmin($admin)
@@ -58,7 +58,7 @@ class ProjectRequirementsTest extends TestCase
     public function test_webp_es_rechazado()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $webp = UploadedFile::fake()->createWithContent('obra.webp', 'contenido-falso');
 
         $this->loginAdmin($admin)
@@ -71,7 +71,7 @@ class ProjectRequirementsTest extends TestCase
     public function test_mas_de_15_imagenes_es_rechazado()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $imagenes = [];
         for ($i = 0; $i < 16; $i++) {
             $imagenes[] = UploadedFile::fake()->image("foto{$i}.jpg");
@@ -87,7 +87,7 @@ class ProjectRequirementsTest extends TestCase
     public function test_png_y_jpg_se_aceptan_juntos()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $png = UploadedFile::fake()->image('a.png');
         $jpg = UploadedFile::fake()->image('b.jpg');
 
@@ -101,7 +101,7 @@ class ProjectRequirementsTest extends TestCase
     public function test_alta_manipulada_con_publicado_se_guarda_como_borrador()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
 
         $datos = $this->datos([UploadedFile::fake()->image('x.jpg')], 'Intento publicado');
         $datos['estado_publicacion'] = 'publicado';
@@ -116,7 +116,7 @@ class ProjectRequirementsTest extends TestCase
 
     public function test_formulario_de_alta_no_ofrece_estado_inicial()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
 
         $this->loginAdmin($admin)->get('/admin/proyectos/create')
             ->assertStatus(200)
@@ -126,7 +126,7 @@ class ProjectRequirementsTest extends TestCase
     public function test_alta_sin_imagenes_es_rechazada()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
 
         $this->loginAdmin($admin)->post('/admin/proyectos', $this->datos([], 'Sin imagenes'))
             ->assertSessionHasErrors('imagenes');
@@ -137,7 +137,7 @@ class ProjectRequirementsTest extends TestCase
     public function test_alta_con_una_imagen_es_valida()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
 
         $this->loginAdmin($admin)->post('/admin/proyectos', $this->datos([UploadedFile::fake()->image('u.jpg')], 'Una imagen'))
             ->assertSessionHasNoErrors();
@@ -148,7 +148,7 @@ class ProjectRequirementsTest extends TestCase
     public function test_alta_con_quince_imagenes_es_valida()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $imagenes = [];
         for ($i = 0; $i < 15; $i++) {
             $imagenes[] = UploadedFile::fake()->image("f{$i}.jpg");
@@ -167,7 +167,7 @@ class ProjectRequirementsTest extends TestCase
         $stor->shouldReceive('guardar')->once()->andThrow(new \RuntimeException('disco lleno'));
         $this->app->instance(StorageAdapter::class, $stor);
 
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
 
         $this->loginAdmin($admin)
             ->post('/admin/proyectos', $this->datos([UploadedFile::fake()->image('a.jpg')], 'Falla1'))
@@ -185,7 +185,7 @@ class ProjectRequirementsTest extends TestCase
         $stor->shouldReceive('borrar')->once()->with('proyectos/a.jpg');
         $this->app->instance(StorageAdapter::class, $stor);
 
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
 
         $this->loginAdmin($admin)
             ->post('/admin/proyectos', $this->datos([
@@ -211,7 +211,7 @@ class ProjectRequirementsTest extends TestCase
     public function test_editar_10_mas_6_supera_limite_y_se_rechaza()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $proyecto = $this->proyectoConImagenes($admin->id_admin, 10);
 
         $nuevas = [];
@@ -229,7 +229,7 @@ class ProjectRequirementsTest extends TestCase
     public function test_editar_10_mas_5_llega_a_15_y_es_valido()
     {
         Storage::fake('public');
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $proyecto = $this->proyectoConImagenes($admin->id_admin, 10);
 
         $nuevas = [];
@@ -246,7 +246,7 @@ class ProjectRequirementsTest extends TestCase
 
     public function test_listado_ofrece_categorias_validas_y_edicion_en_modal()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $proyecto = $this->proyectoConImagenes($admin->id_admin, 1);
 
         $this->loginAdmin($admin)->get('/admin/proyectos')
@@ -262,7 +262,7 @@ class ProjectRequirementsTest extends TestCase
 
     public function test_modal_recibe_datos_frescos_y_stale_tiene_mensaje()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $proyecto = $this->proyectoConImagenes($admin->id_admin, 1);
         $proyecto->update(['nombre_obra' => 'Nombre actualizado']);
 
@@ -278,7 +278,7 @@ class ProjectRequirementsTest extends TestCase
 
     public function test_fallo_de_archivo_al_editar_revierte_los_cambios()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $proyecto = $this->proyectoConImagenes($admin->id_admin, 1);
         $nombreOriginal = $proyecto->nombre_obra;
 
@@ -298,7 +298,7 @@ class ProjectRequirementsTest extends TestCase
 
     public function test_edicion_no_publica_proyecto_sin_fotografias()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $proyecto = $this->proyectoConImagenes($admin->id_admin, 0);
         $proyecto->update(['estado_publicacion' => 'borrador']);
         $datos = $this->datos([]);
@@ -314,7 +314,7 @@ class ProjectRequirementsTest extends TestCase
 
     public function test_visibilidad_de_proyecto_eliminado_muestra_error_funcional()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $this->loginAdmin($admin)
             ->patch('/admin/proyectos/999999/visibilidad', ['estado_publicacion' => 'publicado'])
             ->assertRedirect(route('admin.proyectos.index'))

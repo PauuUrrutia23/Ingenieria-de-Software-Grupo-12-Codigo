@@ -83,7 +83,7 @@ class CommercialModuleRequirementsTest extends TestCase
         Consulta::factory()->create(['mensaje' => '=HYPERLINK("https://example.com")']);
         $this->get('/admin/consultas/exportar/csv')->assertRedirect('/login');
 
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->exportadorConsultas()->create();
         $this->loginAdmin($admin)->get('/admin/consultas/exportar/csv')
             ->assertOk()->assertHeader('content-disposition');
         $this->get('/admin/consultas/exportar/xlsx')

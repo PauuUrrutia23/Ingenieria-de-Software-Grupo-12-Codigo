@@ -18,7 +18,7 @@ class IncrementoCoverageTest extends TestCase
 
     private function admin(): Administrador
     {
-        return Administrador::factory()->create();
+        return Administrador::factory()->editorContenido()->create();
     }
 
     public function test_gallery_exposes_technical_specs_for_the_modal()
@@ -316,7 +316,7 @@ class IncrementoCoverageTest extends TestCase
     public function test_locked_account_reports_remaining_time_without_restarting_the_lock()
     {
         $bloqueadoHasta = now()->addMinutes(42);
-        $admin = Administrador::factory()->create([
+        $admin = Administrador::factory()->editorContenido()->create([
             'correo' => 'bloqueado@ingecon.cl',
             'password_hash' => \Illuminate\Support\Facades\Hash::make('Correcta123!'),
             'intentos_fallidos' => 5,
@@ -336,7 +336,7 @@ class IncrementoCoverageTest extends TestCase
 
     public function test_lockout_is_applied_even_if_the_notification_email_fails()
     {
-        $admin = Administrador::factory()->create([
+        $admin = Administrador::factory()->editorContenido()->create([
             'correo' => 'sincorreo@ingecon.cl',
             'password_hash' => \Illuminate\Support\Facades\Hash::make('Correcta123!'),
             'intentos_fallidos' => 4,

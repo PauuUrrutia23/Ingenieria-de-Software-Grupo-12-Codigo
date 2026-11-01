@@ -13,7 +13,7 @@ class AdminGestionController extends Controller
 {
     public function index()
     {
-        $administradores = Administrador::query()->orderBy('id_admin')->get();
+        $administradores = Administrador::query()->orderBy('id_admin')->paginate(15);
         return view('admin.administradores.index', compact('administradores'));
     }
 
@@ -42,6 +42,32 @@ class AdminGestionController extends Controller
         }
 
         return redirect()->route('admin.administradores.index')->with('success', 'Administrador creado.');
+    }
+
+    // CU 59.1: cada Casilla de Selección se guarda al marcarla o desmarcarla.
+    public function actualizarPermiso(Request $request, int $administrador)
+    {
+        $datos = $request->validate([
+            'permiso' => ['required', Rule::in(Administrador::PERMISOS)],
+            'activo' => ['required', 'boolean'],
+        ]);
+
+        try {
+            $objetivo = Administrador::query()->find($administrador);
+            if (!$objetivo) {
+                return redirect()->route('admin.administradores.index')
+                    ->withErrors(['administrador' => 'El administrador ya no está disponible.']);
+            }
+            if ($objetivo->rol === 'admin_jefe') {
+                return back()->withErrors(['administrador' => 'El Administrador jefe tiene todos los permisos; no se modifican.']);
+            }
+            $objetivo->update(['perm_' . $datos['permiso'] => (bool) $datos['activo']]);
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['administrador' => 'No se pudo actualizar el permiso.']);
+        }
+
+        return redirect()->route('admin.administradores.index')->with('success', 'Permiso actualizado.');
     }
 
     public function destroy(int $administrador)

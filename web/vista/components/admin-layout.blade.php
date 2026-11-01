@@ -19,15 +19,17 @@
             $active = request()->is($pattern);
             return compact('active', 'icon', 'label', 'href');
         };
-        $items = [
+        // CU 59.2: los módulos de contenido solo se muestran con el permiso Editar Contenido.
+        $editaContenido = Auth::user()->puede('editar_contenido');
+        $items = array_values(array_filter([
             $navItem('admin/dashboard', 'layout-dashboard', 'Dashboard', '/admin/dashboard'),
-            $navItem('admin/proyectos*', 'hard-hat', 'Gestión de proyectos', route('admin.proyectos.index')),
-            $navItem('admin/certificados*', 'shield-check', 'Certificados', route('admin.certificados.index')),
-            $navItem('admin/colaboradores*', 'handshake', 'Colaboradores', route('admin.colaboradores.index')),
+            $editaContenido ? $navItem('admin/proyectos*', 'hard-hat', 'Gestión de proyectos', route('admin.proyectos.index')) : null,
+            $editaContenido ? $navItem('admin/certificados*', 'shield-check', 'Certificados', route('admin.certificados.index')) : null,
+            $editaContenido ? $navItem('admin/colaboradores*', 'handshake', 'Colaboradores', route('admin.colaboradores.index')) : null,
             $navItem('admin/consultas*', 'inbox', 'Módulo comercial', route('admin.consultas.index')),
-            $navItem('admin/contenido*', 'layout-panel-left', 'Panel de gestión', route('admin.contenido.index')),
-            $navItem('admin/productos*', 'package', 'Productos', route('admin.productos.index')),
-        ];
+            $editaContenido ? $navItem('admin/contenido*', 'layout-panel-left', 'Panel de gestión', route('admin.contenido.index')) : null,
+            $editaContenido ? $navItem('admin/productos*', 'package', 'Productos', route('admin.productos.index')) : null,
+        ]));
         if (Auth::user()->rol === 'admin_jefe') {
             $items[] = $navItem('admin/administradores*', 'users', 'Administración', route('admin.administradores.index'));
         }

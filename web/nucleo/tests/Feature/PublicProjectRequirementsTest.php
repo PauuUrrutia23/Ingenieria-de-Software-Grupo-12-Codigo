@@ -116,7 +116,7 @@ class PublicProjectRequirementsTest extends TestCase
 
     public function test_formularios_admin_incluyen_coordenadas_opcionales()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $proyecto = $this->obra(['id_admin' => $admin->id_admin]);
 
         $this->loginAdmin($admin)->get('/admin/proyectos/create')->assertStatus(200)

@@ -20,7 +20,7 @@ class ContenidoManagementTest extends TestCase
 
     public function test_admin_can_add_faq_content()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
 
         $response = $this->loginAdmin($admin)->post('/admin/contenido', [
             'seccion' => 'faq',
@@ -37,7 +37,7 @@ class ContenidoManagementTest extends TestCase
 
     public function test_admin_can_update_content()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $contenido = Contenido::create([
             'seccion' => 'faq', 'titulo' => 'Pregunta original', 'cuerpo' => 'Respuesta original',
             'orden' => 0, 'activo' => true, 'id_admin' => $admin->id_admin,
@@ -54,7 +54,7 @@ class ContenidoManagementTest extends TestCase
 
     public function test_admin_can_delete_content()
     {
-        $admin = Administrador::factory()->create();
+        $admin = Administrador::factory()->editorContenido()->create();
         $contenido = Contenido::create([
             'seccion' => 'opiniones', 'titulo' => 'Cliente feliz', 'cuerpo' => 'Excelente servicio.',
             'orden' => 0, 'activo' => true, 'id_admin' => $admin->id_admin,

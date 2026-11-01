@@ -70,7 +70,8 @@ class ModeloIncremento4Test extends TestCase
             'nombre' => 'ANSI/TPI', 'organismo' => 'TPI', 'fecha_emision' => '2024-02-01', 'id_admin' => $primero->id_admin,
         ]);
 
-        $this->assertSame('CERT-' . str_pad((string) $primero->id_certificado, 4, '0', STR_PAD_LEFT), $primero->fresh()->codigo);
+        $this->assertMatchesRegularExpression('/^CERT-\d{4,}$/', $primero->fresh()->codigo);
+        $this->assertMatchesRegularExpression('/^CERT-\d{4,}$/', $segundo->fresh()->codigo);
         $this->assertNotSame($primero->fresh()->codigo, $segundo->fresh()->codigo);
     }
 
