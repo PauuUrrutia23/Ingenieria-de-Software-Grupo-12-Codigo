@@ -32,6 +32,7 @@
         ]));
         if (Auth::user()->rol === 'admin_jefe') {
             $items[] = $navItem('admin/administradores*', 'users', 'Administración', route('admin.administradores.index'));
+            $items[] = $navItem('admin/historial*', 'history', 'Historial de Cambios', route('admin.historial.index'));
         }
     @endphp
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductoRequest;
 use App\Models\Producto;
+use App\Services\Historial;
 use App\Services\StorageAdapter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -60,6 +61,7 @@ class ProductoAdminController extends Controller
                 foreach (array_values($datos['componentes'] ?? []) as $i => $nombre) {
                     $producto->componentes()->create(['nombre' => trim($nombre), 'orden' => $i + 1]);
                 }
+                Historial::registrar('creacion', 'productos', $producto->id_producto, null, $producto->getAttributes());
             });
         } catch (\Throwable $e) {
             if ($ruta) $this->storage->borrar($ruta);
@@ -88,11 +90,13 @@ class ProductoAdminController extends Controller
                     $cambios['imagen'] = $rutaNueva;
                     $cambios['tipo_mime'] = $request->file('imagen')->getMimeType();
                 }
+                $antes = $registro->getAttributes();
                 $registro->update($cambios);
                 $registro->componentes()->delete();
                 foreach (array_values($datos['componentes'] ?? []) as $i => $nombre) {
                     $registro->componentes()->create(['nombre' => trim($nombre), 'orden' => $i + 1]);
                 }
+                Historial::registrar('modificacion', 'productos', $registro->id_producto, $antes, $registro->getAttributes());
                 return true;
             });
             if (!$actualizado) {

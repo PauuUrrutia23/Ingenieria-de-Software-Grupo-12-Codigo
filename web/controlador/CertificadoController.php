@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Certificado;
 use App\Rules\PdfValido;
+use App\Services\Historial;
 use App\Services\StorageAdapter;
 use App\Support\Rnf17;
 use Illuminate\Http\Request;
@@ -105,7 +106,10 @@ class CertificadoController extends Controller
                 $data['archivo_pdf'] = $this->storage->guardar($request->file('archivo_pdf'), 'certificados_pdf');
                 $escritos[] = $data['archivo_pdf'];
             }
-            DB::transaction(fn () => $this->db->create(Certificado::class, $data));
+            DB::transaction(function () use ($data) {
+                $certificado = $this->db->create(Certificado::class, $data);
+                Historial::registrar('creacion', 'certificados', $certificado->id_certificado, null, $certificado->getAttributes());
+            });
         } catch (\Throwable $e) {
             foreach ($escritos as $ruta) {
                 try { $this->storage->borrar($ruta); } catch (\Throwable $cleanupError) { report($cleanupError); }
@@ -148,7 +152,11 @@ class CertificadoController extends Controller
                 $nuevos[] = $data['archivo_pdf'];
                 $anteriores[] = $certificado->archivo_pdf;
             }
-            DB::transaction(fn () => $this->db->update($certificado, $data));
+            DB::transaction(function () use ($certificado, $data) {
+                $antes = $certificado->getAttributes();
+                $this->db->update($certificado, $data);
+                Historial::registrar('modificacion', 'certificados', $certificado->id_certificado, $antes, $certificado->getAttributes());
+            });
         } catch (\Throwable $e) {
             foreach ($nuevos as $ruta) {
                 try { $this->storage->borrar($ruta); } catch (\Throwable $cleanupError) { report($cleanupError); }
@@ -169,7 +177,10 @@ class CertificadoController extends Controller
             if (!$registro) return redirect()->route('admin.certificados.index')
                 ->withErrors(['certificado' => 'El certificado ya no está disponible.']);
             $rutas = [$registro->imagen, $registro->archivo_pdf];
-            DB::transaction(fn () => $this->db->delete($registro));
+            DB::transaction(function () use ($registro) {
+                $this->db->delete($registro);
+                Historial::registrar('eliminacion', 'certificados', $registro->id_certificado, $registro->getAttributes());
+            });
         } catch (\Throwable $e) {
             report($e);
             return back()->withErrors(['certificado' => 'No se pudo eliminar el certificado.']);

@@ -9,6 +9,7 @@ use App\Http\Controllers\InstitucionalCtrl;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\ProductoAdminController;
 use App\Http\Controllers\AdminGestionController;
+use App\Http\Controllers\HistorialController;
 use App\Http\Middleware\CheckAdminJefe;
 use App\Http\Middleware\CheckAdminSession;
 
@@ -103,6 +104,9 @@ Route::middleware(['auth', CheckAdminSession::class])->group(function () {
 
     Route::middleware(CheckAdminJefe::class)->group(function () {
         Route::get('admin/administradores', [AdminGestionController::class, 'index'])->name('admin.administradores.index');
+        Route::get('admin/historial', [HistorialController::class, 'index'])->name('admin.historial.index');
+        Route::get('admin/historial/{registro}/detalle', [HistorialController::class, 'detalle'])
+            ->whereNumber('registro')->name('admin.historial.detalle');
         Route::post('admin/administradores', [AdminGestionController::class, 'store'])->name('admin.administradores.store');
         Route::delete('admin/administradores/{administrador}', [AdminGestionController::class, 'destroy'])
             ->whereNumber('administrador')->name('admin.administradores.destroy');

@@ -429,6 +429,11 @@
                     <form x-ref="form" action="/contacto" method="POST" class="space-y-8"
                           @submit.prevent="pedirConfirmacion()">
                         @csrf
+                        {{-- RNF19: campo trampa para envíos automatizados; las personas no lo ven ni lo completan. --}}
+                        <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;">
+                            <label for="c-sitio-referencia">No completar este campo</label>
+                            <input id="c-sitio-referencia" type="text" name="sitio_referencia" value="" tabindex="-1" autocomplete="off">
+                        </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                             <div>
                                 <label for="c-nombre" class="ig-label">Nombre</label>

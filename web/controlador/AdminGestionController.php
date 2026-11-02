@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Administrador;
+use App\Services\Historial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -28,13 +29,16 @@ class AdminGestionController extends Controller
         ]);
 
         try {
-            Administrador::create([
-                'correo' => mb_strtolower($datos['correo']),
-                'password_hash' => Hash::make($datos['password']),
-                'rol' => 'admin',
-                'activo' => true,
-                'intentos_fallidos' => 0,
-            ]);
+            DB::transaction(function () use ($datos) {
+                $cuenta = Administrador::create([
+                    'correo' => mb_strtolower($datos['correo']),
+                    'password_hash' => Hash::make($datos['password']),
+                    'rol' => 'admin',
+                    'activo' => true,
+                    'intentos_fallidos' => 0,
+                ]);
+                Historial::registrar('creacion', 'administradores', $cuenta->id_admin, null, $cuenta->getAttributes());
+            });
         } catch (\Throwable $e) {
             report($e);
             return back()->withInput($request->except(['password', 'password_confirmation']))
@@ -61,7 +65,11 @@ class AdminGestionController extends Controller
             if ($objetivo->rol === 'admin_jefe') {
                 return back()->withErrors(['administrador' => 'El Administrador jefe tiene todos los permisos; no se modifican.']);
             }
-            $objetivo->update(['perm_' . $datos['permiso'] => (bool) $datos['activo']]);
+            DB::transaction(function () use ($objetivo, $datos) {
+                $antes = $objetivo->getAttributes();
+                $objetivo->update(['perm_' . $datos['permiso'] => (bool) $datos['activo']]);
+                Historial::registrar('asignacion_permiso', 'administradores', $objetivo->id_admin, $antes, $objetivo->getAttributes());
+            });
         } catch (\Throwable $e) {
             report($e);
             return back()->withErrors(['administrador' => 'No se pudo actualizar el permiso.']);
@@ -92,6 +100,7 @@ class AdminGestionController extends Controller
                         ->update(['id_admin' => Auth::id()]);
                 }
                 $objetivo->delete();
+                Historial::registrar('eliminacion', 'administradores', $administrador, $objetivo->getAttributes());
                 return true;
             });
         } catch (\Throwable $e) {

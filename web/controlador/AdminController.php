@@ -6,6 +6,7 @@ use App\Models\Colaborador;
 use App\Models\Consulta;
 use App\Models\Contenido;
 use App\Models\Visitante;
+use App\Services\Historial;
 use App\Services\StorageAdapter;
 use App\Support\Rnf17;
 use Illuminate\Http\Request;
@@ -53,7 +54,10 @@ class AdminController extends Controller
             $ruta = $this->storage->guardar($request->file('logotipo'), 'colaboradores');
             $data['logotipo'] = $ruta;
             $data['tipo_mime'] = $request->file('logotipo')->getMimeType();
-            $this->db->create(Colaborador::class, $data);
+            DB::transaction(function () use ($data) {
+                $colaborador = $this->db->create(Colaborador::class, $data);
+                Historial::registrar('creacion', 'colaboradores', $colaborador->id_colaborador, null, $colaborador->getAttributes());
+            });
         } catch (\Throwable $e) {
             if ($ruta) {
                 try { $this->storage->borrar($ruta); } catch (\Throwable $cleanupError) { report($cleanupError); }
@@ -114,7 +118,11 @@ class AdminController extends Controller
                 $data['logotipo'] = $logoNuevo;
                 $data['tipo_mime'] = $request->file('logotipo')->getMimeType();
             }
-            DB::transaction(fn () => $this->db->update($colaborador, $data));
+            DB::transaction(function () use ($colaborador, $data) {
+                $antes = $colaborador->getAttributes();
+                $this->db->update($colaborador, $data);
+                Historial::registrar('modificacion', 'colaboradores', $colaborador->id_colaborador, $antes, $colaborador->getAttributes());
+            });
         } catch (\Throwable $e) {
             if ($logoNuevo) {
                 try { $this->storage->borrar($logoNuevo); } catch (\Throwable $cleanupError) { report($cleanupError); }
@@ -135,7 +143,10 @@ class AdminController extends Controller
             if (!$registro) return redirect()->route('admin.colaboradores.index')
                 ->withErrors(['colaborador' => 'El colaborador ya no está disponible.']);
             $logo = $registro->logotipo;
-            DB::transaction(fn () => $this->db->delete($registro));
+            DB::transaction(function () use ($registro) {
+                $this->db->delete($registro);
+                Historial::registrar('eliminacion', 'colaboradores', $registro->id_colaborador, $registro->getAttributes());
+            });
         } catch (\Throwable $e) {
             report($e);
             return back()->withErrors(['colaborador' => 'No se pudo eliminar el colaborador.']);
@@ -248,7 +259,10 @@ class AdminController extends Controller
                 $data['archivo'] = $rutaNueva;
                 $data['tipo_mime'] = $request->file('archivo')->getMimeType();
             }
-            DB::transaction(fn () => $this->db->create(Contenido::class, $data));
+            DB::transaction(function () use ($data) {
+                $contenido = $this->db->create(Contenido::class, $data);
+                Historial::registrar('creacion', 'contenido', $contenido->id_contenido, null, $contenido->getAttributes());
+            });
         } catch (\Throwable $e) {
             if ($rutaNueva) {
                 try { $this->storage->borrar($rutaNueva); } catch (\Throwable $cleanupError) { report($cleanupError); }
@@ -285,7 +299,11 @@ class AdminController extends Controller
                 $data['archivo'] = $rutaNueva;
                 $data['tipo_mime'] = $request->file('archivo')->getMimeType();
             }
-            DB::transaction(fn () => $this->db->update($contenido, $data));
+            DB::transaction(function () use ($contenido, $data) {
+                $antes = $contenido->getAttributes();
+                $this->db->update($contenido, $data);
+                Historial::registrar('modificacion', 'contenido', $contenido->id_contenido, $antes, $contenido->getAttributes());
+            });
         } catch (\Throwable $e) {
             if ($rutaNueva) {
                 try { $this->storage->borrar($rutaNueva); } catch (\Throwable $cleanupError) { report($cleanupError); }
@@ -311,7 +329,10 @@ class AdminController extends Controller
             }
             $seccion = $registro->seccion;
             $archivo = $registro->archivo;
-            DB::transaction(fn () => $this->db->delete($registro));
+            DB::transaction(function () use ($registro) {
+                $this->db->delete($registro);
+                Historial::registrar('eliminacion', 'contenido', $registro->id_contenido, $registro->getAttributes());
+            });
         } catch (\Throwable $e) {
             report($e);
             return back()->withErrors(['contenido' => 'No se pudo eliminar el contenido.']);
@@ -363,6 +384,14 @@ class AdminController extends Controller
 
         if (!$registro) {
             return response()->json(['message' => 'Esta consulta ya no está disponible.'], 410);
+        }
+
+        // CU 15.4: sin registro en el Historial no se entrega el detalle (Excepción 4).
+        try {
+            Historial::registrar('visualizacion', 'consultas', $registro->id_consulta);
+        } catch (\Throwable $e) {
+            report($e);
+            return response()->json(['message' => 'El detalle no está disponible temporalmente.'], 503);
         }
 
         return response()->json([
@@ -424,6 +453,9 @@ class AdminController extends Controller
                 $escritor->close();
             }
 
+            // CU 15.4: se registra antes de entregar el archivo; sin registro no hay exportación.
+            Historial::registrar('exportacion', 'consultas');
+
             return response()->download($ruta, 'consultas-ingecon.' . $formato)
                 ->deleteFileAfterSend(true);
         } catch (\Throwable $e) {
@@ -455,6 +487,10 @@ class AdminController extends Controller
                 Consulta::query()->whereIn('id_consulta', $existentes->keys())->delete();
                 // RF58: se eliminan los datos del Visitante que ya no tiene otras Consultas.
                 Visitante::query()->whereIn('id_visitante', $existentes->unique()->values())->whereDoesntHave('consultas')->delete();
+                // CU 15.4, Excepción 3: solo el identificador de cada Consulta.
+                foreach ($existentes->keys() as $id) {
+                    Historial::registrar('eliminacion', 'consultas', $id);
+                }
                 return $existentes->keys();
             });
         } catch (\Throwable $e) {

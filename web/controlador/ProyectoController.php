@@ -6,6 +6,7 @@ use App\Http\Requests\StoreProyectoRequest;
 use App\Http\Requests\UpdateProyectoRequest;
 use App\Models\ImagenProyecto;
 use App\Models\Proyecto;
+use App\Services\Historial;
 use App\Services\StorageAdapter;
 use App\Support\CategoriasProyecto;
 use Illuminate\Http\Request;
@@ -196,6 +197,7 @@ class ProyectoController extends Controller
                         ]);
                     }
                 }
+                Historial::registrar('creacion', 'proyectos', $proyecto->id_proyecto, null, $proyecto->getAttributes());
             });
         } catch (\Throwable $e) {
             foreach ($archivosEscritos as $ruta) {
@@ -259,6 +261,7 @@ class ProyectoController extends Controller
         $archivosEscritos = [];
         try {
             DB::transaction(function () use ($proyecto, $datos, $request, &$archivosEscritos) {
+                $antes = $proyecto->getAttributes();
                 $this->db->update($proyecto, $datos);
                 foreach ($request->file('imagenes', []) as $file) {
                     $ruta = $this->storage->guardar($file, 'proyectos');
@@ -270,6 +273,7 @@ class ProyectoController extends Controller
                         'tipo_mime' => $file->getMimeType(),
                     ]);
                 }
+                Historial::registrar('modificacion', 'proyectos', $proyecto->id_proyecto, $antes, $proyecto->getAttributes());
             });
         } catch (\Throwable $e) {
             foreach ($archivosEscritos as $ruta) {
@@ -311,7 +315,11 @@ class ProyectoController extends Controller
         }
 
         try {
-            $this->db->update($registro, $data);
+            DB::transaction(function () use ($registro, $data) {
+                $antes = $registro->getAttributes();
+                $this->db->update($registro, $data);
+                Historial::registrar('modificacion', 'proyectos', $registro->id_proyecto, $antes, $registro->getAttributes());
+            });
         } catch (\Throwable $e) {
             return back()->withErrors(['estado_publicacion' => 'No se pudo actualizar la visibilidad del proyecto.']);
         }
@@ -331,6 +339,7 @@ class ProyectoController extends Controller
                 $rutas = $imagenes->pluck('imagen')->all();
                 foreach ($imagenes as $imagen) $this->db->delete($imagen);
                 $this->db->delete($registro);
+                Historial::registrar('eliminacion', 'proyectos', $registro->id_proyecto, $registro->getAttributes());
                 return $rutas;
             });
         } catch (\Throwable $e) {
@@ -351,8 +360,17 @@ class ProyectoController extends Controller
 
     public function destroyImage(ImagenProyecto $imagen)
     {
+        // Primero la base y el Historial; el archivo se borra solo si ambos se guardaron.
+        try {
+            DB::transaction(function () use ($imagen) {
+                $this->db->delete($imagen);
+                Historial::registrar('modificacion', 'proyectos', $imagen->id_proyecto, ['imagen' => $imagen->nombre_archivo], ['imagen' => null]);
+            });
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['imagen' => 'No se pudo eliminar la imagen.']);
+        }
         $this->storage->borrar($imagen->imagen);
-        $this->db->delete($imagen);
         return back()->with('success', 'Imagen eliminada.');
     }
 }

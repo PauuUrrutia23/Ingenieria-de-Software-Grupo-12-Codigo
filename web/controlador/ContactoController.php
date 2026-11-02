@@ -8,10 +8,14 @@ use App\Http\Requests\StoreConsultaRequest;
 use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 
 class ContactoController extends Controller
 {
     private const LIMITE_CONSULTAS_24H = 5;
+    // RNF19: cinco envíos registrados por hora desde una misma IP.
+    private const LIMITE_ENVIOS_POR_IP = 5;
+    private const VENTANA_IP_SEGUNDOS = 3600;
 
     public function __construct(
         private DBRouterController $db,
@@ -22,6 +26,20 @@ class ContactoController extends Controller
     public function store(StoreConsultaRequest $request)
     {
         $datos = $request->validated();
+
+        // RNF19 / CU 1.1, Excepción 8: un envío que completa el campo trampa se rechaza con el mensaje genérico.
+        if (filled($request->input('sitio_referencia'))) {
+            return back()->withErrors(['mensaje' => 'La solicitud no pudo ser procesada. Intente nuevamente.'])->withInput();
+        }
+
+        // RNF19: la IP solo se usa como clave cifrada de este control, nunca junto a la Consulta,
+        // y el contador expira a la hora (CU 1.1, Excepción 7).
+        $claveIp = 'contacto:' . hash('sha256', (string) $request->ip());
+        if (RateLimiter::tooManyAttempts($claveIp, self::LIMITE_ENVIOS_POR_IP)) {
+            return back()->withErrors([
+                'mensaje' => 'Alcanzó el límite de envíos permitidos por hora. Espere antes de intentar nuevamente.',
+            ])->withInput();
+        }
 
         try {
             $consultasRecientes = $this->db->query(Consulta::class)
@@ -79,6 +97,8 @@ class ContactoController extends Controller
                 'mensaje' => 'El envío no pudo completarse. Por favor, intente nuevamente.',
             ])->withInput();
         }
+
+        RateLimiter::hit($claveIp, self::VENTANA_IP_SEGUNDOS);
 
         $confirmacionEnviada = $this->notificaciones->notificarConsultaRecibida($visitante->email, $consulta);
         $alertaEnviada = $this->notificaciones->notificarNuevaConsultaAdministracion($consulta);

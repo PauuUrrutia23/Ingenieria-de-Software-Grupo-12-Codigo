@@ -160,7 +160,13 @@ class AuthController extends Controller
         }
 
         try {
-            DB::transaction(fn () => $this->db->update($admin, ['password_hash' => Hash::make($request->password)]));
+            // RNF21 / CU 28.2: se cierran las demás sesiones de la cuenta y se conserva la que está en uso.
+            $tokenActual = hash('sha256', (string) $request->session()->get('sesion_ingecon'));
+            DB::transaction(function () use ($admin, $request, $tokenActual) {
+                $this->db->update($admin, ['password_hash' => Hash::make($request->password)]);
+                Sesion::query()->where('id_admin', $admin->id_admin)->where('estado', 'activa')
+                    ->where('token_hash', '!=', $tokenActual)->update(['estado' => 'cerrada']);
+            });
         } catch (\Throwable $e) {
             report($e);
             return back()->withErrors(['password' => 'No se pudo actualizar la contraseña. Intente nuevamente.']);
@@ -239,6 +245,8 @@ class AuthController extends Controller
                 if (!$token || !$token->administrador) return false;
                 $this->db->update($token->administrador, ['password_hash' => Hash::make($request->password)]);
                 $this->db->update($token, ['usado_en' => Carbon::now()]);
+                // RNF21 / CU 31.2: se cierran todas las sesiones abiertas de la cuenta.
+                Sesion::query()->where('id_admin', $token->id_admin)->where('estado', 'activa')->update(['estado' => 'cerrada']);
                 return true;
             });
         } catch (\Throwable $e) {
