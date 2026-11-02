@@ -94,6 +94,8 @@ Route::middleware(['auth', CheckAdminSession::class])->group(function () {
         Route::post('admin/productos', [ProductoAdminController::class, 'store'])->name('admin.productos.store');
         Route::put('admin/productos/{producto}', [ProductoAdminController::class, 'update'])
             ->whereNumber('producto')->name('admin.productos.update');
+        Route::delete('admin/productos/{producto}', [ProductoAdminController::class, 'destroy'])
+            ->whereNumber('producto')->name('admin.productos.destroy');
         Route::get('admin/contenido/create', [AdminController::class, 'contenidoCreate'])->name('admin.contenido.create');
         Route::post('admin/contenido', [AdminController::class, 'contenidoStore'])->name('admin.contenido.store');
         Route::get('admin/contenido/{contenido}/edit', [AdminController::class, 'contenidoEdit'])->name('admin.contenido.edit');

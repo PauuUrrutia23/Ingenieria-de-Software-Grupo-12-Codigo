@@ -12,7 +12,7 @@ class Rnf17Test extends TestCase
     public function test_constantes_vigentes()
     {
         $this->assertSame(500, Rnf17::LOGO_MAX_KB);
-        $this->assertSame(2048, Rnf17::IMAGEN_MAX_KB);
+        $this->assertSame(5120, Rnf17::IMAGEN_MAX_KB);
         $this->assertSame(['jpg', 'jpeg', 'png'], Rnf17::MIMES_IMAGEN);
         $this->assertStringNotContainsString('webp', Rnf17::mimesImagen());
         $this->assertStringNotContainsString('mp4', Rnf17::mimesImagen());
@@ -34,9 +34,9 @@ class Rnf17Test extends TestCase
         $this->assertTrue(Validator::make(['a' => $webp], ['a' => Rnf17::reglasImagen()])->fails());
     }
 
-    public function test_reglas_rechazan_imagen_mayor_a_2mb()
+    public function test_reglas_rechazan_imagen_mayor_a_5mb()
     {
-        $grande = UploadedFile::fake()->image('obra.jpg')->size(2100);
+        $grande = UploadedFile::fake()->image('obra.jpg')->size(5200);
 
         $this->assertTrue(Validator::make(['a' => $grande], ['a' => Rnf17::reglasImagen()])->fails());
     }

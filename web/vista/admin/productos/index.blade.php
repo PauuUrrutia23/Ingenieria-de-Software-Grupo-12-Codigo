@@ -23,7 +23,10 @@
                         <h2 class="font-display text-xl">{{ $producto->nombre }}</h2>
                         <p class="text-sm text-mute">{{ $producto->componentes->count() }} componentes</p>
                     </div>
-                    <button type="button" class="ig-btn ig-btn-secondary" @click="abrirEditar({{ $producto->id_producto }})">Editar</button>
+                    <div class="flex gap-2">
+                        <button type="button" class="ig-btn ig-btn-secondary" @click="abrirEditar({{ $producto->id_producto }})">Editar</button>
+                        <button type="button" class="ig-btn ig-btn-secondary" @click="abrirEliminar({{ $producto->id_producto }}, @js($producto->nombre))">Eliminar</button>
+                    </div>
                 </div>
             @empty
                 <p class="p-8 text-mute">Aún no hay productos.</p>
@@ -36,7 +39,7 @@
                 <input type="hidden" name="formulario_producto" value="crear">
                 <div><label class="ig-label" for="nuevo-nombre">Nombre</label><input id="nuevo-nombre" name="nombre" value="{{ old('formulario_producto') === 'crear' ? old('nombre') : '' }}" required maxlength="150" class="ig-input"></div>
                 <div><label class="ig-label" for="nueva-descripcion">Descripción</label><textarea id="nueva-descripcion" name="descripcion" required class="ig-input" rows="4">{{ old('formulario_producto') === 'crear' ? old('descripcion') : '' }}</textarea></div>
-                <div><label class="ig-label" for="nueva-imagen">Imagen JPG o PNG, máximo 2 MB</label><input id="nueva-imagen" name="imagen" type="file" accept=".jpg,.jpeg,.png" required class="ig-input"></div>
+                <div><label class="ig-label" for="nueva-imagen">Imagen JPG o PNG, máximo 5 MB</label><input id="nueva-imagen" name="imagen" type="file" accept=".jpg,.jpeg,.png" required class="ig-input"></div>
                 <div>
                     <label class="ig-label">Componentes</label>
                     <template x-for="(nombre, i) in componentesCrear" :key="i">
@@ -48,10 +51,23 @@
             </form>
         </x-modal>
 
+        <x-modal show="eliminar" titulo="Eliminar producto" ancho="max-w-md">
+            <p class="text-mute-deep mb-6 leading-relaxed">
+                ¿Confirma que desea eliminar <strong x-text="paraEliminar.nombre" class="text-carbon font-semibold"></strong>?
+                Dejará de mostrarse en el sitio y esta acción no se puede deshacer.
+            </p>
+            <form :action="`{{ url('admin/productos') }}/${paraEliminar.id}`" method="POST" class="flex justify-end gap-3">
+                @csrf @method('DELETE')
+                <button type="button" class="ig-btn ig-btn-secondary" @click="eliminar = false">Cancelar</button>
+                <button type="submit" class="ig-btn ig-btn-primary">Sí, eliminar</button>
+            </form>
+        </x-modal>
+
         <x-modal show="editar" titulo="Editar producto" ancho="max-w-2xl" :errores="old('formulario_producto') === 'editar'">
             <form :action="`{{ url('admin/productos') }}/${producto.id}`" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf @method('PUT')
                 <input type="hidden" name="formulario_producto" value="editar">
+                <input type="hidden" name="producto_id" :value="producto.id">
                 <div><label class="ig-label" for="editar-nombre">Nombre</label><input id="editar-nombre" name="nombre" x-model="producto.nombre" required maxlength="150" class="ig-input"></div>
                 <div><label class="ig-label" for="editar-descripcion">Descripción</label><textarea id="editar-descripcion" name="descripcion" x-model="producto.descripcion" required class="ig-input" rows="4"></textarea></div>
                 <div><label class="ig-label" for="editar-imagen">Reemplazar imagen, si corresponde</label><input id="editar-imagen" name="imagen" type="file" accept=".jpg,.jpeg,.png" class="ig-input"></div>
@@ -72,9 +88,15 @@
         return {
           crear: @js(old('formulario_producto') === 'crear'),
           editar: @js(old('formulario_producto') === 'editar'),
+          eliminar: false,
+          paraEliminar: { id: null, nombre: '' },
           aviso: '',
           componentesCrear: @js(old('formulario_producto') === 'crear' ? old('componentes', []) : []),
           producto: { id: @js(old('producto_id')), nombre: @js(old('formulario_producto') === 'editar' ? old('nombre', '') : ''), descripcion: @js(old('formulario_producto') === 'editar' ? old('descripcion', '') : ''), componentes: @js(old('formulario_producto') === 'editar' ? old('componentes', []) : []) },
+          abrirEliminar(id, nombre) {
+            this.paraEliminar = { id, nombre };
+            this.eliminar = true;
+          },
           async abrirEditar(id) {
             this.aviso = 'Cargando producto…';
             try {

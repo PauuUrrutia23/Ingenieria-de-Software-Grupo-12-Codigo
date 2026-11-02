@@ -14,9 +14,12 @@ return new class extends Migration
         $driver = DB::getDriverName();
 
         // RF13, RF45, RF46: Sitio Web del Colaborador.
-        Schema::table('colaboradores', function (Blueprint $table) {
-            $table->string('sitio_web', 300)->nullable()->after('tipo_mime');
-        });
+        // RF13, RF45, RF46: Sitio Web del Colaborador.
+if (!Schema::hasColumn('colaboradores', 'sitio_web')) {
+    Schema::table('colaboradores', function (Blueprint $table) {
+        $table->string('sitio_web', 300)->nullable()->after('tipo_mime');
+    });
+}
 
         // RF39: constancia de aceptación. RNF24: fecha del último cambio de estado.
         Schema::table('consultas', function (Blueprint $table) {

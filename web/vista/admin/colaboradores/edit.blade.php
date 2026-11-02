@@ -18,7 +18,7 @@
 
         <div>
             <label for="nombre-comercial" class="ig-label">Nombre Comercial</label>
-            <input id="nombre-comercial" type="text" name="nombre_comercial" value="{{ $colaborador->nombre_comercial }}"
+            <input id="nombre-comercial" type="text" name="nombre_comercial" value="{{ old('nombre_comercial', $colaborador->nombre_comercial) }}"
                    class="ig-field-box" required>
         </div>
 
@@ -42,7 +42,7 @@
 
         <div class="flex items-center gap-3 pt-2">
             <button type="submit" class="ig-btn ig-btn-primary !py-2.5 !px-5">Actualizar</button>
-            <a href="{{ route('admin.colaboradores.index') }}" class="ig-btn ig-btn-secondary !py-2.5 !px-5">Cancelar</a>
+            <a href="{{ route('admin.colaboradores.index') }}" data-cancelar class="ig-btn ig-btn-secondary !py-2.5 !px-5">Cancelar</a>
         </div>
     </form>
 </x-admin-layout>

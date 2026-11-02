@@ -133,11 +133,43 @@
       (() => {
         let cambiosSinGuardar = false;
         document.querySelectorAll('form').forEach((form) => {
+          if (form.hasAttribute('data-sin-aviso')) return;
           if (!form.querySelector('input:not([type=hidden]), textarea, select')) return;
           form.addEventListener('input', () => { cambiosSinGuardar = true; });
           form.addEventListener('change', () => { cambiosSinGuardar = true; });
-          form.addEventListener('submit', () => { cambiosSinGuardar = false; });
         });
+
+        // Un solo envío por formulario: mientras la solicitud se procesa, los botones
+        // quedan bloqueados y cualquier clic adicional se descarta (evita duplicados).
+        // Se escucha en document (fase de burbuja) para saber si otro manejador ya canceló el envío.
+        const desbloquear = (form) => {
+          delete form.dataset.enviando;
+          form.querySelectorAll('[data-bloqueado]').forEach((boton) => {
+            boton.disabled = false;
+            boton.removeAttribute('aria-busy');
+            boton.removeAttribute('data-bloqueado');
+          });
+        };
+        document.addEventListener('submit', (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement)) return;
+          if (form.dataset.enviando === '1') { event.preventDefault(); return; }
+          if (event.defaultPrevented) return;
+          form.dataset.enviando = '1';
+          cambiosSinGuardar = false;
+          // Diferido para no excluir del envío el valor del botón pulsado.
+          setTimeout(() => {
+            form.querySelectorAll('button[type=submit], input[type=submit]').forEach((boton) => {
+              boton.disabled = true;
+              boton.setAttribute('aria-busy', 'true');
+              boton.setAttribute('data-bloqueado', '');
+            });
+          }, 0);
+        });
+        window.addEventListener('pageshow', (event) => {
+          if (event.persisted) document.querySelectorAll('form[data-enviando]').forEach(desbloquear);
+        });
+
         window.addEventListener('beforeunload', (event) => {
           if (!cambiosSinGuardar) return;
           event.preventDefault();
@@ -146,12 +178,27 @@
         document.addEventListener('click', (event) => {
           const enlace = event.target.closest('a[href]');
           if (!enlace || !cambiosSinGuardar || enlace.target === '_blank') return;
+          // mailto:/tel: abren otra aplicación y no abandonan la página.
+          if (/^(mailto|tel):/i.test(enlace.getAttribute('href') || '')) return;
+          // «Cancelar» ya es la decisión de descartar: no se pregunta nada.
+          if (enlace.hasAttribute('data-cancelar')) { cambiosSinGuardar = false; return; }
           if (window.confirm('Hay cambios sin guardar. ¿Desea abandonar esta página?')) {
             cambiosSinGuardar = false;
           } else {
             event.preventDefault();
           }
         }, true);
+
+        // Confirmación al publicar u ocultar un proyecto desde el listado.
+        window.igConfirmarVisibilidad = (select) => {
+          const publicar = select.value === 'publicado';
+          const pregunta = publicar ? '¿Desea publicar este proyecto?' : '¿Desea ocultar este proyecto?';
+          if (window.confirm(pregunta)) {
+            select.form.requestSubmit();
+          } else {
+            select.value = select.dataset.original;
+          }
+        };
       })();
       lucide.createIcons();
     </script>

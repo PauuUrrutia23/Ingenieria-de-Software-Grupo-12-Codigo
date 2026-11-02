@@ -113,4 +113,33 @@ class ProductoAdminController extends Controller
         }
         return redirect()->route('admin.productos.index')->with('success', 'Producto actualizado.');
     }
+
+    public function destroy(int $producto)
+    {
+        try {
+            $ruta = DB::transaction(function () use ($producto) {
+                $registro = Producto::query()->whereKey($producto)->lockForUpdate()->first();
+                if (!$registro) return null;
+                $ruta = $registro->imagen;
+                $registro->componentes()->delete();
+                $registro->delete();
+                return $ruta ?: false;
+            });
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['producto' => 'No se pudo eliminar el producto.']);
+        }
+        if ($ruta === null) {
+            return redirect()->route('admin.productos.index')
+                ->withErrors(['producto' => 'El producto ya no está disponible.']);
+        }
+        if ($ruta) {
+            try {
+                $this->storage->borrar($ruta);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+        return redirect()->route('admin.productos.index')->with('success', 'Producto eliminado.');
+    }
 }

@@ -46,9 +46,9 @@
 
                 <div class="flex flex-col flex-1 p-5">
                     <div class="flex items-center gap-2 mb-3 flex-wrap">
-                        <form action="{{ route('admin.proyectos.visibilidad', $p) }}" method="POST" class="leading-none">
+                        <form action="{{ route('admin.proyectos.visibilidad', $p) }}" method="POST" class="leading-none" data-sin-aviso>
                             @csrf @method('PATCH')
-                            <select name="estado_publicacion" onchange="this.form.submit()"
+                            <select name="estado_publicacion" data-original="{{ $p->estado_publicacion }}" onchange="igConfirmarVisibilidad(this)"
                                     aria-label="Visibilidad de {{ $p->nombre_obra }}"
                                     class="ig-badge cursor-pointer appearance-none border-0 pr-7 py-1 pl-3 align-middle focus:outline-none
                                     {{ $p->estado_publicacion === 'publicado' ? 'ig-badge-ok' : 'ig-badge-warn' }}"
@@ -140,7 +140,7 @@
 
                 <div>
                     <label for="pr-imagenes" class="ig-label">
-                        Fotografías de la obra <span class="normal-case tracking-normal text-mute">(máx. 15, hasta 2 MB c/u)</span>
+                        Fotografías de la obra <span class="normal-case tracking-normal text-mute">(máx. 15, hasta 5 MB c/u)</span>
                     </label>
                     <label for="pr-imagenes" class="flex flex-col items-center justify-center gap-2 border border-dashed border-line-strong bg-paper p-6 cursor-pointer transition-colors hover:border-wood text-center">
                         <i data-lucide="upload" class="h-7 w-7 text-mute"></i>
@@ -181,7 +181,7 @@
                     <div><label for="editar-proyecto-longitud" class="ig-label">Longitud (opcional)</label><input id="editar-proyecto-longitud" type="number" step="any" min="-180" max="180" name="longitud" x-model="editado.longitud" class="ig-field-box"></div>
                     <div class="sm:col-span-2"><label for="editar-proyecto-estado" class="ig-label">Visibilidad</label><select id="editar-proyecto-estado" name="estado_publicacion" x-model="editado.estado_publicacion" class="ig-field-box"><option value="borrador">Borrador</option><option value="publicado">Publicado</option></select></div>
                     <div class="sm:col-span-2"><label for="editar-proyecto-desc" class="ig-label">Descripción Técnica</label><textarea id="editar-proyecto-desc" name="descripcion_tecnica" rows="3" x-model="editado.descripcion_tecnica" class="ig-field-box" required></textarea></div>
-                    <div class="sm:col-span-2"><label for="editar-proyecto-imagenes" class="ig-label">Agregar fotografías (máximo 15 en total, 2 MB cada una)</label><input id="editar-proyecto-imagenes" type="file" name="imagenes[]" multiple accept="image/jpeg,image/png" class="ig-field-box"></div>
+                    <div class="sm:col-span-2"><label for="editar-proyecto-imagenes" class="ig-label">Agregar fotografías (máximo 15 en total, 5 MB cada una)</label><input id="editar-proyecto-imagenes" type="file" name="imagenes[]" multiple accept="image/jpeg,image/png" class="ig-field-box"></div>
                 </div>
                 <p class="text-xs text-mute" x-text="`${editado.imagenes_count || 0} fotografía(s) existentes. Para gestionar fotografías individuales, use la página de edición completa.`"></p>
                 <p x-show="errorEdicion" x-text="errorEdicion" class="ig-error" role="alert"></p>
@@ -259,9 +259,9 @@
             if (archivos.length > 15) {
               this.errorImagenes = 'Se permiten como máximo 15 fotografías por obra.';
             } else {
-              const pesada = archivos.find(f => f.size > 2 * 1024 * 1024);
+              const pesada = archivos.find(f => f.size > 5 * 1024 * 1024);
               if (pesada) {
-                this.errorImagenes = `"${pesada.name}" supera los 2 MB permitidos por imagen.`;
+                this.errorImagenes = `"${pesada.name}" supera los 5 MB permitidos por imagen.`;
               }
             }
 
@@ -297,8 +297,8 @@
             const archivos = [...(document.getElementById('editar-proyecto-imagenes')?.files || [])];
             if (archivos.length + (this.editado.imagenes_count || 0) > 15) {
               this.errorEdicion = 'El proyecto no puede superar 15 fotografías en total.';
-            } else if (archivos.some(archivo => archivo.size > 2 * 1024 * 1024)) {
-              this.errorEdicion = 'Cada fotografía debe pesar como máximo 2 MB.';
+            } else if (archivos.some(archivo => archivo.size > 5 * 1024 * 1024)) {
+              this.errorEdicion = 'Cada fotografía debe pesar como máximo 5 MB.';
             }
             if (this.errorEdicion) evento.preventDefault();
           },

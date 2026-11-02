@@ -36,7 +36,7 @@
 
         <div class="flex items-center gap-3 pt-2">
             <button type="submit" class="ig-btn ig-btn-primary !py-2.5 !px-5">Guardar</button>
-            <a href="{{ route('admin.colaboradores.index') }}" class="ig-btn ig-btn-secondary !py-2.5 !px-5">Cancelar</a>
+            <a href="{{ route('admin.colaboradores.index') }}" data-cancelar class="ig-btn ig-btn-secondary !py-2.5 !px-5">Cancelar</a>
         </div>
     </form>
 </x-admin-layout>

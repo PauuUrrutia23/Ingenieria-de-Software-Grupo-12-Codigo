@@ -7,7 +7,7 @@ final class Rnf17
 {
     public const LOGO_MAX_KB = 500;
 
-    public const IMAGEN_MAX_KB = 2048;
+    public const IMAGEN_MAX_KB = 5120;
 
     public const CONTENIDO_IMAGEN_MAX_KB = 5120;
 
@@ -30,14 +30,30 @@ final class Rnf17
         return implode(',', self::MIMES_IMAGEN);
     }
 
+    // Valida el contenido real del archivo (JPG o PNG). El MIME que reporta finfo
+    // varía según la cámara o el programa que generó el JPG (image/jpeg, image/pjpeg,
+    // image/mpo...), por eso se revisa la firma de la imagen y no solo el MIME.
+    public static function reglaJpgPng(): \Closure
+    {
+        return function ($attribute, $archivo, $fail) {
+            if (!$archivo instanceof \Illuminate\Http\UploadedFile || !$archivo->isValid()) {
+                return;
+            }
+            $info = @getimagesize($archivo->getRealPath());
+            if ($info === false || !in_array($info[2] ?? null, [IMAGETYPE_JPEG, IMAGETYPE_PNG], true)) {
+                $fail('El archivo debe ser una imagen JPG o PNG válida.');
+            }
+        };
+    }
+
     public static function reglasImagen(): array
     {
-        return ['file', 'mimetypes:image/jpeg,image/png', 'max:' . self::IMAGEN_MAX_KB];
+        return ['file', self::reglaJpgPng(), 'max:' . self::IMAGEN_MAX_KB];
     }
 
     public static function reglasLogo(): array
     {
-        return ['file', 'mimetypes:image/jpeg,image/png', 'max:' . self::LOGO_MAX_KB];
+        return ['file', self::reglaJpgPng(), 'max:' . self::LOGO_MAX_KB];
     }
 
     public static function reglasContenido(): array

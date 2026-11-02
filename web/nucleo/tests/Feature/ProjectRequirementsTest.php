@@ -42,11 +42,11 @@ class ProjectRequirementsTest extends TestCase
         $this->assertDatabaseHas('proyectos', ['nombre_obra' => 'Obra 2MB']);
     }
 
-    public function test_imagen_mayor_a_2mb_es_rechazada()
+    public function test_imagen_mayor_a_5mb_es_rechazada()
     {
         Storage::fake('public');
         $admin = Administrador::factory()->editorContenido()->create();
-        $grande = UploadedFile::fake()->image('obra.jpg')->size(2100);
+        $grande = UploadedFile::fake()->image('obra.jpg')->size(5200);
 
         $this->loginAdmin($admin)
             ->post('/admin/proyectos', $this->datos([$grande], 'Obra grande'))

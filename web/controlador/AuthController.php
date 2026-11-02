@@ -159,6 +159,10 @@ class AuthController extends Controller
             return back()->withErrors(['password_actual' => 'La contraseña actual no es correcta.']);
         }
 
+        if (Hash::check($request->password, $admin->password_hash)) {
+            return back()->withErrors(['password' => 'La nueva contraseña debe ser distinta de la actual.']);
+        }
+
         try {
             DB::transaction(fn () => $this->db->update($admin, ['password_hash' => Hash::make($request->password)]));
         } catch (\Throwable $e) {

@@ -61,7 +61,7 @@
         </div>
 
         <div class="border-t border-line px-6 py-4 flex items-center justify-end gap-3">
-            <a href="{{ route('admin.certificados.index') }}" class="ig-btn ig-btn-secondary">Cancelar</a>
+            <a href="{{ route('admin.certificados.index') }}" data-cancelar class="ig-btn ig-btn-secondary">Cancelar</a>
             <button type="submit" class="ig-btn ig-btn-primary">Guardar</button>
         </div>
     </form>

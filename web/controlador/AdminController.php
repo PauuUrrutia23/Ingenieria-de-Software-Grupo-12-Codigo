@@ -114,7 +114,16 @@ class AdminController extends Controller
                 $data['logotipo'] = $logoNuevo;
                 $data['tipo_mime'] = $request->file('logotipo')->getMimeType();
             }
-            DB::transaction(fn () => $this->db->update($colaborador, $data));
+            // Solo se escriben los campos del formulario: lo guardado coincide con lo ingresado.
+            $cambios = [
+                'nombre_comercial' => $data['nombre_comercial'],
+                'sitio_web' => $data['sitio_web'] ?? null,
+            ];
+            if ($logoNuevo) {
+                $cambios['logotipo'] = $data['logotipo'];
+                $cambios['tipo_mime'] = $data['tipo_mime'];
+            }
+            DB::transaction(fn () => $this->db->update($colaborador, $cambios));
         } catch (\Throwable $e) {
             if ($logoNuevo) {
                 try { $this->storage->borrar($logoNuevo); } catch (\Throwable $cleanupError) { report($cleanupError); }

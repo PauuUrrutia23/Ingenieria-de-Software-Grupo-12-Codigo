@@ -183,7 +183,16 @@ class PublicContentRequirementsTest extends TestCase
         ]);
     }
 
-    public function test_fases_industriales_llegan_agrupadas_en_orden_canonico()
+    public function test_fases_con_titulo_distinto_y_mas_de_tres_se_muestran()
+    {
+        foreach (['Corte', 'Secado', 'Pintura', 'Despacho'] as $i => $n) {
+            $this->filaFase($n, "Texto $n.", $i + 1);
+        }
+
+        $this->get('/')->assertViewHas('fasesIndustriales', fn ($f) => $f->keys()->all() === ['Corte', 'Secado', 'Pintura', 'Despacho']);
+    }
+
+    public function test_fases_industriales_llegan_todas_agrupadas_por_titulo_y_orden()
     {
         $this->filaFase('Ensamblado', 'Armado.', 1);
         $this->filaFase('Descortezado', 'Preparación.', 2);
@@ -193,7 +202,7 @@ class PublicContentRequirementsTest extends TestCase
 
         $this->get('/')->assertStatus(200)->assertViewHas('fasesIndustriales', function ($fases) {
             return $fases->keys()->all() === [
-                'Descortezado', 'Impregnación Vacío-Presión', 'Ensamblado',
+                'Ensamblado', 'Descortezado', 'Impregnación Vacío-Presión',
             ] && $fases->get('Descortezado')->count() === 2;
         });
     }

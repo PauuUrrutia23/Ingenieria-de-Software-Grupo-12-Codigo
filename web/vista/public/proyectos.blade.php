@@ -189,6 +189,12 @@
     </div>
 
     <script>
+      // Leaflet no debe vivir dentro del estado reactivo de Alpine: el proxy de Alpine
+      // envuelve el mapa y los marcadores y rompe el cálculo de posiciones al hacer zoom.
+      let mapaLeaflet = null;
+      let capaMarcadores = null;
+      const marcadoresPorId = {};
+
       function galeriaProyectos() {
         return {
           filtroActivo: @js((bool) $hayFiltros),
@@ -202,8 +208,6 @@
 
           _peticion: null,
           _detallePeticion: null,
-          _mapa: null,
-          _marcadores: {},
 
           init() {
             document.getElementById('resultados-proyectos')
@@ -212,6 +216,9 @@
                 if (card) this.abrirFicha(Number(card.dataset.proyectoId));
               });
             this.iniciarMapa();
+            // Acceso desde la portada: /proyectos?proyecto=ID abre directamente la ficha.
+            const solicitado = Number(new URLSearchParams(window.location.search).get('proyecto'));
+            if (Number.isInteger(solicitado) && solicitado > 0) this.abrirFicha(solicitado);
           },
 
           async abrirFicha(id) {
@@ -228,7 +235,7 @@
                 signal: peticion.signal,
               });
               if (respuesta.status === 410) {
-                if (this._marcadores[id]) this._mapa.removeLayer(this._marcadores[id]);
+                if (marcadoresPorId[id] && capaMarcadores) capaMarcadores.removeLayer(marcadoresPorId[id]);
                 this.aviso = 'Este proyecto ya no está disponible. Actualice la galería.';
                 return;
               }
@@ -255,6 +262,11 @@
           cerrarFicha() {
             this.fichaAbierta = false;
             document.body.style.overflow = '';
+            const url = new URL(window.location.href);
+            if (url.searchParams.has('proyecto')) {
+              url.searchParams.delete('proyecto');
+              history.replaceState(null, '', url.pathname + url.search + url.hash);
+            }
           },
 
           iniciarMapa() {
@@ -264,11 +276,12 @@
             }
 
             try {
-              this._mapa = L.map('mapa-proyectos').setView([-35.6, -71.5], 5);
+              mapaLeaflet = L.map('mapa-proyectos').setView([-35.6, -71.5], 5);
               L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 18,
                 attribution: '&copy; OpenStreetMap contributors',
-              }).on('tileerror', () => { this.mapaError = true; }).addTo(this._mapa);
+              }).on('tileerror', () => { this.mapaError = true; }).addTo(mapaLeaflet);
+              capaMarcadores = L.layerGroup().addTo(mapaLeaflet);
 
               const datos = JSON.parse(document.getElementById('marcadores-proyectos').textContent);
               this.actualizarMarcadores(datos);
@@ -278,9 +291,10 @@
           },
 
           actualizarMarcadores(datos) {
-            if (!this._mapa) return;
-            Object.values(this._marcadores).forEach((marcador) => this._mapa.removeLayer(marcador));
-            this._marcadores = {};
+            if (!mapaLeaflet || !capaMarcadores) return;
+            // Se vacía la capa completa y se redibuja, así ningún marcador del filtro anterior queda huérfano.
+            capaMarcadores.clearLayers();
+            Object.keys(marcadoresPorId).forEach((id) => delete marcadoresPorId[id]);
             const puntos = [];
 
             for (const proyecto of datos) {
@@ -288,17 +302,19 @@
               const lng = Number(proyecto.longitud);
               if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) continue;
 
-              const marcador = L.marker([lat, lng]).addTo(this._mapa);
+              const marcador = L.marker([lat, lng]);
               const etiqueta = document.createElement('span');
               etiqueta.textContent = `${proyecto.nombre} · ${proyecto.anio}`;
               marcador.bindTooltip(etiqueta);
               marcador.on('click', () => this.abrirFicha(Number(proyecto.id)));
-              this._marcadores[proyecto.id] = marcador;
+              capaMarcadores.addLayer(marcador);
+              marcadoresPorId[proyecto.id] = marcador;
               puntos.push([lat, lng]);
             }
 
-            if (puntos.length === 1) this._mapa.setView(puntos[0], 9);
-            if (puntos.length > 1) this._mapa.fitBounds(puntos, { padding: [24, 24] });
+            mapaLeaflet.invalidateSize();
+            if (puntos.length === 1) mapaLeaflet.setView(puntos[0], 9);
+            if (puntos.length > 1) mapaLeaflet.fitBounds(puntos, { padding: [24, 24] });
             this.sinMarcadores = puntos.length === 0;
           },
 
@@ -332,7 +348,7 @@
               if (window.lucide) lucide.createIcons();
               if (window.igRefrescarContenidoDinamico) window.igRefrescarContenidoDinamico(document.getElementById('resultados-proyectos'));
 
-              if (this._mapa) {
+              if (mapaLeaflet) {
                 try {
                   const respMapa = await fetch('/proyectos/marcadores?' + params.toString(), {
                     headers: { 'Accept': 'application/json' }, signal: peticion.signal,

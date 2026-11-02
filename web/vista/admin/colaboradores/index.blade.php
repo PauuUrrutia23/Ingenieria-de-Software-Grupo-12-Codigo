@@ -101,6 +101,7 @@
             <form :action="'{{ url('admin/colaboradores') }}/' + seleccionado.id" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf @method('PUT')
                 <input type="hidden" name="_modal" value="editar">
+                <input type="hidden" name="_colaborador_id" :value="seleccionado.id">
                 <div>
                     <label for="editar-nombre" class="ig-label">Nombre Comercial</label>
                     <input id="editar-nombre" type="text" name="nombre_comercial" x-model="seleccionado.nombre"
@@ -156,6 +157,10 @@
             @if($errors->any() && old('_modal') === 'crear')
               this.crear = true;
             @endif
+            @if($errors->any() && old('_modal') === 'editar')
+              this.seleccionado = { id: @js(old('_colaborador_id')), nombre: @js(old('nombre_comercial')), logo: '', sitio_web: @js(old('sitio_web')) };
+              this.editar = true;
+            @endif
             ['crear', 'editar', 'eliminar'].forEach(v => {
               this.$watch(v, () => this.$nextTick(() => window.lucide && lucide.createIcons()));
             });
@@ -175,7 +180,7 @@
             }
           },
           abrirEliminar(id, nombre) {
-            this.seleccionado = { id, nombre, logo: '' };
+            this.seleccionado = { id, nombre, logo: '', sitio_web: '' };
             this.eliminar = true;
           },
         };

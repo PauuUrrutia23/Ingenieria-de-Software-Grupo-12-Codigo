@@ -119,7 +119,7 @@
                         <label for="cert-imagen" class="ig-label">Imagen Representativa</label>
                         <input id="cert-imagen" type="file" name="imagen" accept="image/*"
                                class="block w-full cursor-pointer border border-line bg-surface p-2 text-sm text-mute-deep file:mr-3 file:border-0 file:bg-carbon file:px-3 file:py-1.5 file:font-mono file:text-[0.625rem] file:uppercase file:tracking-[0.14em] file:text-white hover:border-line-strong">
-                        <p class="text-xs text-mute mt-1.5">Máximo 2 MB (RNF17).</p>
+                        <p class="text-xs text-mute mt-1.5">Máximo 5 MB (RNF17).</p>
                     </div>
                     <div>
                         <label for="cert-pdf" class="ig-label">Archivo PDF adjunto (opcional)</label>

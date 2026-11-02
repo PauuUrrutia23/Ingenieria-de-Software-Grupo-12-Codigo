@@ -15,11 +15,9 @@ class InstitucionalCtrl extends Controller
     private const SECCION_TERMINOS = 'terminos';
     private const SECCION_FICHA_CONECTORES = 'ficha_conectores';
     private const SECCION_UBICACION = 'ubicacion';
-    private const FASES_INDUSTRIALES = [
-        'Descortezado',
-        'Impregnación Vacío-Presión',
-        'Ensamblado',
-    ];
+    // Fecha real de la última modificación del texto de Términos y Condiciones.
+    // Actualizar solo cuando cambie el documento (formato AAAA-MM-DD).
+    private const TERMINOS_ULTIMA_ACTUALIZACION = '2026-10-03';
 
     public function __construct(private DBRouterController $db, private StorageAdapter $storage)
     {
@@ -69,6 +67,7 @@ class InstitucionalCtrl extends Controller
     {
         return view('legal.terminos', [
             'terminosUrl' => $this->urlTerminosVigente(),
+            'ultimaActualizacion' => \Illuminate\Support\Carbon::createFromFormat('Y-m-d', self::TERMINOS_ULTIMA_ACTUALIZACION),
         ]);
     }
 
@@ -145,6 +144,7 @@ class InstitucionalCtrl extends Controller
                 ->where('seccion', $seccion)
                 ->where('activo', true)
                 ->orderBy('orden')
+                ->orderBy('id_contenido')
                 ->get()
                 ->map(function (Contenido $registro) {
                     $registro->setAttribute('imagen_url', $this->urlImagen($registro->archivo, $registro->tipo_mime));
@@ -156,18 +156,12 @@ class InstitucionalCtrl extends Controller
         }
     }
 
+    // Se publican todas las fases creadas en el panel, sea cual sea su título o su cantidad.
+    // Los registros con el mismo título forman una sola fase (texto + sus imágenes o videos).
     private function fasesIndustriales()
     {
-        $porNombre = $this->contenidosPorSeccion('fases_industriales')->groupBy('titulo');
-        $ordenadas = [];
-
-        foreach (self::FASES_INDUSTRIALES as $nombre) {
-            if ($porNombre->has($nombre)) {
-                $ordenadas[$nombre] = $porNombre->get($nombre);
-            }
-        }
-
-        return collect($ordenadas);
+        return $this->contenidosPorSeccion('fases_industriales')
+            ->groupBy(fn (Contenido $registro) => trim((string) $registro->titulo) !== '' ? trim($registro->titulo) : 'Fase');
     }
 
     private function productosPublicos()

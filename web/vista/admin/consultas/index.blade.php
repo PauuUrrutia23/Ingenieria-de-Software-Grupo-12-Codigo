@@ -162,7 +162,10 @@
                 <div>
                     <span class="ig-meta block mb-2">Datos de contacto</span>
                     <p class="text-sm text-carbon font-medium" x-text="c.nombre"></p>
-                    <a :href="'mailto:' + c.email" class="text-sm text-wood-deep hover:text-carbon underline underline-offset-2" x-text="c.email"></a>
+                    <template x-if="c.email">
+                        <a :href="'mailto:' + c.email" class="text-sm text-wood-deep hover:text-carbon underline underline-offset-2" x-text="c.email"></a>
+                    </template>
+                    <p x-show="!c.email" x-cloak class="text-sm text-mute">Sin correo registrado</p>
                 </div>
 
                 <div>

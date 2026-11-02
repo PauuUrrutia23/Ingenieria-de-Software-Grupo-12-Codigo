@@ -58,14 +58,14 @@
             </div>
 
             <div>
-                <label for="c-imagenes" class="ig-label">Imágenes (Múltiples, max 2MB c/u)</label>
+                <label for="c-imagenes" class="ig-label">Imágenes (Múltiples, máx. 5 MB c/u)</label>
                 <input id="c-imagenes" type="file" name="imagenes[]" multiple accept="image/jpeg,image/png"
                        class="block w-full cursor-pointer border border-line bg-surface p-2 text-sm text-mute-deep file:mr-3 file:border-0 file:bg-carbon file:px-3 file:py-1.5 file:font-mono file:text-[0.625rem] file:uppercase file:tracking-[0.14em] file:text-white hover:border-line-strong">
             </div>
         </div>
 
         <div class="border-t border-line px-6 py-4 flex items-center justify-end gap-3">
-            <a href="{{ route('admin.proyectos.index') }}" class="ig-btn ig-btn-secondary">Cancelar</a>
+            <a href="{{ route('admin.proyectos.index') }}" data-cancelar class="ig-btn ig-btn-secondary">Cancelar</a>
             <button type="submit" class="ig-btn ig-btn-primary">Guardar Proyecto</button>
         </div>
     </form>
