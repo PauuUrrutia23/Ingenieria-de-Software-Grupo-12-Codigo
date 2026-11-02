@@ -58,7 +58,7 @@
 - Blade + Tailwind + Alpine.js — **no** SPA, **no** Vue/React, **no** API REST separada (todo server-rendered).
 - Auth de administración con **Laravel's built-in session auth** (guard `web`, no Sanctum/Passport — no hay API pública que lo justifique).
 - Sin colas (`QUEUE_CONNECTION=sync`): el hosting no permite workers persistentes. Los correos se envían de forma síncrona vía `sendmail`.
-- Sin Job scheduler persistente: los respaldos van por **Cron Job de cPanel** ejecutando un Artisan Command (`php artisan backup:run`), no por el scheduler de Laravel corriendo en background.
+- Sin proceso persistente: un único **Cron Job de cPanel** ejecuta `php artisan schedule:run` cada minuto, y el scheduler de Laravel decide qué corre. Hoy: `backup:run` a las 02:00 (RNF14, borra copias de más de 30 días) y `consultas:depurar` a las 03:00 (RNF24).
 - Todas las subidas de archivos (imágenes, PDFs) van a `storage/app/public` con symlink (`php artisan storage:link`), nunca a la BD como BLOB (excepto restricciones RT-02).
 
 ### 1.1 Diagrama de Componentes oficial (`Ingecon_Diagrama_Componentes_hosting_cPanel.drawio`)
@@ -177,7 +177,8 @@ app/
 │   ├── PasswordResetLink.php          # CU30.1
 │   └── AccountLocked.php              # CU33.1
 └── Console/Commands/
-    └── BackupDatabase.php             # Cron + mysqldump
+    ├── BackupDatabase.php             # RNF14: mysqldump (clave por MYSQL_PWD) + retención de 30 días
+    └── DepurarConsultas.php           # RNF24: borrado automático de Consultas
 
 resources/
 ├── views/
@@ -581,8 +582,9 @@ dependen de M5 (todo Personal de Administración pasa por `CU 27.1`).
    `Blade::raw` sin `e()`/`{{ }}` en contenido de usuario.
 4. **RNF10**: revisar que ninguna vista muestre stack traces (config `APP_DEBUG=false` en prod,
    páginas 404/500 personalizadas).
-5. **RNF14**: `BackupDatabase` command probado manualmente (`php artisan backup:run` genera
-   dump en carpeta fuera de `public_html`); documentar el Cron Job de cPanel.
+5. **RNF14**: `backup:run` genera el volcado en `config('backup.directorio')` (fuera de `public_html`),
+   borra las copias de más de 30 días y está programado a las 02:00; en cPanel basta el Cron Job de
+   `schedule:run`. Si `mysqldump` no está en el PATH, definir `MYSQLDUMP_PATH`.
 6. **RNF11**: helper/blade directive que calcule `now()->year - 1994` para "años de
    experiencia" en el layout público.
 7. Ejecutar `php artisan test` completo — **todas** las 64 CU con verde.
@@ -591,7 +593,7 @@ dependen de M5 (todo Personal de Administración pasa por `CU 27.1`).
 9. `npm run build` para producción, verificar assets versionados (Vite manifest).
 10. Deploy: `composer install --no-dev --optimize-autoloader`, `php artisan config:cache`,
     `php artisan route:cache`, subir por FTP/Administrador de Archivos cPanel, configurar
-    Cron Jobs (backup) y AutoSSL.
+    el Cron Job de `schedule:run` (respaldos y depuración de Consultas) y AutoSSL.
 
 ---
 
