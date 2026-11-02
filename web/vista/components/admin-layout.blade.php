@@ -6,11 +6,7 @@
     <meta name="theme-color" content="#111315">
     <meta name="robots" content="noindex, nofollow">
     <title>Panel de Gestión - {{ config('app.name', 'Ingecon') }}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@200;300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="h-full antialiased font-sans bg-paper text-carbon">
 
@@ -154,7 +150,6 @@
           }
         }, true);
       })();
-      lucide.createIcons();
     </script>
 </body>
 </html>

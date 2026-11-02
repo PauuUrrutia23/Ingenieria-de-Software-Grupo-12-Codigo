@@ -23,7 +23,8 @@ class NotificationService
         } catch (\Throwable $e) {
             Log::warning('No se pudo notificar el bloqueo de cuenta.', [
                 'id_admin' => $admin->id_admin,
-                'motivo' => $e->getMessage(),
+                'error' => get_class($e),
+                'codigo' => $e->getCode(),
             ]);
         }
     }
@@ -36,7 +37,8 @@ class NotificationService
         } catch (\Throwable $e) {
             Log::warning('No se pudo enviar el acuse de recibo de la consulta.', [
                 'id_consulta' => $consulta->id_consulta,
-                'motivo' => $e->getMessage(),
+                'error' => get_class($e),
+                'codigo' => $e->getCode(),
             ]);
             return false;
         }
@@ -73,7 +75,8 @@ class NotificationService
                     Log::warning('No se pudo avisar una nueva consulta a un administrador.', [
                         'id_consulta' => $consulta->id_consulta,
                         'id_admin' => $admin->id_admin,
-                        'motivo' => $e->getMessage(),
+                        'error' => get_class($e),
+                        'codigo' => $e->getCode(),
                     ]);
                 }
             }
@@ -81,7 +84,8 @@ class NotificationService
         } catch (\Throwable $e) {
             Log::warning('No se pudieron resolver los destinatarios de una nueva consulta.', [
                 'id_consulta' => $consulta->id_consulta,
-                'motivo' => $e->getMessage(),
+                'error' => get_class($e),
+                'codigo' => $e->getCode(),
             ]);
             return false;
         }

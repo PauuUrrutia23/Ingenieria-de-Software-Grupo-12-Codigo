@@ -34,6 +34,12 @@
                             gestión comercial de su solicitud. Los registros quedan almacenados en la base de datos interna de
                             Ingecon y son visibles únicamente para el Personal de Administración autorizado.
                         </p>
+                        {{-- RNF22: única carga desde un servidor de terceros. --}}
+                        <p class="ig-lede mt-5">
+                            Las fuentes, íconos y librerías de este sitio se sirven desde sus propios servidores. La única
+                            excepción es el Mapa Interactivo de la página de Proyectos, que obtiene las imágenes del mapa desde
+                            OpenStreetMap; al visualizarlo, su navegador envía a ese servicio su dirección IP.
+                        </p>
                     </section>
                     <div class="ig-rule my-14" aria-hidden="true"></div>
 

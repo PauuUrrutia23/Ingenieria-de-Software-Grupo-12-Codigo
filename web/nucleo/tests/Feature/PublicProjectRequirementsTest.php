@@ -110,7 +110,7 @@ class PublicProjectRequirementsTest extends TestCase
         $this->get('/proyectos')->assertStatus(200)
             ->assertSee('data-proyecto-id="'.$proyecto->id_proyecto.'"', false)
             ->assertSee('id="mapa-proyectos"', false)
-            ->assertSee('leaflet@1.9.4', false)
+            ->assertSee('/build/assets/mapa-', false)
             ->assertDontSee('data-proyecto="', false);
     }
 

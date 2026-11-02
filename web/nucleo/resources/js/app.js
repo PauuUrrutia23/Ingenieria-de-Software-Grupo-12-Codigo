@@ -1,6 +1,12 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
 import focus from '@alpinejs/focus';
+import { createIcons } from 'lucide';
+import icons from './iconos';
+
+// RNF22: íconos servidos desde el propio sitio. Se mantiene window.lucide.createIcons() para las vistas que lo llaman.
+window.lucide = { createIcons: (opciones = {}) => createIcons({ icons, ...opciones }) };
+window.lucide.createIcons();
 
 Alpine.plugin(focus);
 

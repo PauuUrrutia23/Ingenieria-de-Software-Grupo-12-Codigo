@@ -7,17 +7,8 @@
     <title>{{ $titulo ?? config('app.name', 'Ingecon') }}</title>
     <meta name="description" content="{{ $descripcion ?? 'Ingecon: industrialización de la madera y construcción prefabricada. Estructuras, conectores metálicos y terminaciones con control de calidad certificado.' }}">
     <meta name="theme-color" content="#111315">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@200;300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @if($leaflet)
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-              integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    @endif
-    <script src="https://unpkg.com/lucide@latest"></script>
+    {{-- El mapa va antes que app.js: Alpine arranca ahí y el componente del mapa necesita window.L. --}}
+    @vite($leaflet ? ['resources/js/mapa.js', 'resources/css/app.css', 'resources/js/app.js'] : ['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="antialiased font-sans text-carbon flex flex-col min-h-screen bg-paper">
 
@@ -201,8 +192,5 @@
         </div>
     </footer>
 
-    <script>
-      lucide.createIcons();
-    </script>
 </body>
 </html>
