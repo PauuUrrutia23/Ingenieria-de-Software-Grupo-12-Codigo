@@ -44,6 +44,16 @@ class Certificado extends Model
         return $q->where(fn ($w) => $w->whereNull('fecha_vencimiento')->orWhere('fecha_vencimiento', '>=', $hoy));
     }
 
+    // RNF20: vencen entre hoy y los próximos 30 días.
+    public function scopePorVencer(Builder $q): Builder
+    {
+        $hoy = Carbon::today();
+        // whereDate compara solo el día también en SQLite, donde la fecha se guarda con hora.
+        return $q->whereDate('fecha_vencimiento', '>=', $hoy->toDateString())
+            ->whereDate('fecha_vencimiento', '<=', $hoy->copy()->addDays(30)->toDateString())
+            ->orderBy('fecha_vencimiento');
+    }
+
     public function getEstadoAttribute(): string
     {
         return $this->fecha_vencimiento && $this->fecha_vencimiento->lt(Carbon::today()) ? 'vencido' : 'vigente';

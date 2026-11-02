@@ -15,6 +15,21 @@
         </div>
         <div class="ig-rule mb-8"></div>
 
+        {{-- RNF20: Certificaciones cuya Fecha de Vencimiento se cumple dentro de los próximos 30 días. --}}
+        @if($porVencer->isNotEmpty())
+            <div data-aviso-vencimiento role="status" class="mb-6 border border-line-strong bg-paper-deep px-5 py-4 text-sm text-carbon">
+                <p class="flex items-center gap-2 font-medium mb-2">
+                    <i data-lucide="alert-triangle" class="h-4 w-4 shrink-0 text-wood-deep"></i>
+                    {{ $porVencer->count() === 1 ? 'Una certificación vence' : $porVencer->count() . ' certificaciones vencen' }} en los próximos 30 días
+                </p>
+                <ul class="list-disc list-inside space-y-0.5 text-mute-deep">
+                    @foreach($porVencer as $c)
+                        <li>{{ $c->nombre }} vence el {{ $c->fecha_vencimiento->format('d/m/Y') }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         @if(session('success'))
             <div class="mb-6 flex items-center gap-3 border border-line bg-surface px-5 py-3 text-sm text-carbon">
                 <i data-lucide="check-circle-2" class="h-5 w-5 shrink-0 text-wood-deep"></i>

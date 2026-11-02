@@ -72,7 +72,8 @@ class CertificadoController extends Controller
     public function index()
     {
         $certificados = $this->db->query(Certificado::class)->orderBy('id_certificado', 'desc')->paginate(15);
-        return view('admin.certificados.index', compact('certificados'));
+        $porVencer = $this->db->query(Certificado::class)->porVencer()->get();
+        return view('admin.certificados.index', compact('certificados', 'porVencer'));
     }
 
     public function create()
