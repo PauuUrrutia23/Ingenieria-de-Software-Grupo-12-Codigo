@@ -15,11 +15,6 @@ class InstitucionalCtrl extends Controller
     private const SECCION_TERMINOS = 'terminos';
     private const SECCION_FICHA_CONECTORES = 'ficha_conectores';
     private const SECCION_UBICACION = 'ubicacion';
-    private const FASES_INDUSTRIALES = [
-        'Descortezado',
-        'Impregnación Vacío-Presión',
-        'Ensamblado',
-    ];
 
     public function __construct(private DBRouterController $db, private StorageAdapter $storage)
     {
@@ -98,7 +93,7 @@ class InstitucionalCtrl extends Controller
             return null;
         }
 
-        $url = $registro->enlace ?? env('DOCS_CONECTORES_URL');
+        $url = $registro->enlace ?? config('services.docs_conectores.url');
 
         return ($url && $url !== '#') ? $url : null;
     }
@@ -156,18 +151,10 @@ class InstitucionalCtrl extends Controller
         }
     }
 
+    // CU 43.4: cada fase con contenido activo, agrupada por nombre y en el orden de su campo orden.
     private function fasesIndustriales()
     {
-        $porNombre = $this->contenidosPorSeccion('fases_industriales')->groupBy('titulo');
-        $ordenadas = [];
-
-        foreach (self::FASES_INDUSTRIALES as $nombre) {
-            if ($porNombre->has($nombre)) {
-                $ordenadas[$nombre] = $porNombre->get($nombre);
-            }
-        }
-
-        return collect($ordenadas);
+        return $this->contenidosPorSeccion('fases_industriales')->groupBy('titulo');
     }
 
     private function productosPublicos()

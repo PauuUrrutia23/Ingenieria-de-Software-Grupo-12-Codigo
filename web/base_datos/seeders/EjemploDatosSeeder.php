@@ -65,7 +65,7 @@ class EjemploDatosSeeder extends Seeder
             Contenido::create([
                 'seccion' => 'documentacion',
                 'titulo' => 'Ficha técnica Conectores Metálicos (documento de demostración)',
-                'enlace' => env('DOCS_CONECTORES_URL', EnlacesInstitucionalesSeeder::DOC_DEMO),
+                'enlace' => config('services.docs_conectores.url') ?: EnlacesInstitucionalesSeeder::DOC_DEMO,
                 'activo' => true,
                 'orden' => 0,
                 'id_admin' => $admin->id_admin,

@@ -32,7 +32,7 @@ class CertificadoController extends Controller
 
     public function descargar(Certificado $certificado)
     {
-        if (!$certificado->archivo_pdf || !$this->storage->existe($certificado->archivo_pdf)) {
+        if ($certificado->estado !== 'vigente' || !$certificado->archivo_pdf || !$this->storage->existe($certificado->archivo_pdf)) {
             return redirect()
                 ->route('public.certificaciones')
                 ->with('doc_no_disponible', 'El documento solicitado no está disponible por el momento.');

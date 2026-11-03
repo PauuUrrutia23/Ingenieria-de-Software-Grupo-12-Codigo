@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // RF10: documentación técnica de Conectores si el Panel de gestión no tiene un enlace activo.
+    'docs_conectores' => [
+        'url' => env('DOCS_CONECTORES_URL'),
+    ],
+
 ];

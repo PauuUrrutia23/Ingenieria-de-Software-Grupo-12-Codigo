@@ -10,10 +10,13 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
+    private const LIMITE_RECUPERACIONES_POR_HORA = 5;
+
     private const REGLAS_PASSWORD = ['required', 'string', 'min:8', 'confirmed',
         'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[^a-zA-Z0-9]/'];
 
@@ -177,8 +180,21 @@ class AuthController extends Controller
     public function sendResetLink(Request $request)
     {
         $request->validate(['correo' => ['required', 'email']]);
+        $generico = 'Si el correo ingresado corresponde a una cuenta, le enviamos un enlace de recuperación.';
 
-        $admin = $this->db->query(Administrador::class)->where('correo', $request->correo)->first();
+        // Cinco solicitudes por hora por correo. Al superarlo se responde igual, para no revelar si la cuenta existe.
+        $clave = 'recuperacion:' . hash('sha256', mb_strtolower((string) $request->correo));
+        if (RateLimiter::tooManyAttempts($clave, self::LIMITE_RECUPERACIONES_POR_HORA)) {
+            return back()->with('success', $generico);
+        }
+        RateLimiter::hit($clave, 3600);
+
+        try {
+            $admin = $this->db->query(Administrador::class)->where('correo', $request->correo)->first();
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['correo' => 'La recuperación no está disponible temporalmente. Intente nuevamente.']);
+        }
 
         if ($admin) {
             $token = Str::random(64);
@@ -207,7 +223,7 @@ class AuthController extends Controller
             }
         }
 
-        return back()->with('success', 'Si el correo ingresado corresponde a una cuenta, le enviamos un enlace de recuperación.');
+        return back()->with('success', $generico);
     }
 
     public function showResetForm(string $token)

@@ -68,7 +68,7 @@ Route::middleware(['auth', CheckAdminSession::class])->group(function () {
     Route::middleware('permiso:editar_contenido')->group(function () {
         Route::get('admin/proyectos/{proyecto}/detalle-edicion', [ProyectoController::class, 'detalleEdicion'])
             ->whereNumber('proyecto')->name('admin.proyectos.detalle-edicion');
-        Route::resource('admin/proyectos', ProyectoController::class)->names('admin.proyectos');
+        Route::resource('admin/proyectos', ProyectoController::class)->except(['show'])->names('admin.proyectos');
         Route::delete('admin/imagenes/{imagen}', [ProyectoController::class, 'destroyImage'])->name('admin.imagenes.destroy');
 
         Route::patch('admin/proyectos/{proyecto}/visibilidad', [ProyectoController::class, 'updateVisibilidad'])

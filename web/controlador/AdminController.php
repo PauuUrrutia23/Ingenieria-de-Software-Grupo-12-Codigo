@@ -255,10 +255,11 @@ class AdminController extends Controller
         $data['seccion'] = $seccion;
         $data['id_admin'] = Auth::id();
         $data['activo'] = true;
-        $data['orden'] = $data['orden'] ?? 0;
 
         $rutaNueva = null;
         try {
+            // El formulario no pide orden: el elemento nuevo queda al final de su sección.
+            $data['orden'] = (int) $this->db->query(Contenido::class)->where('seccion', $seccion)->max('orden') + 1;
             if ($request->hasFile('archivo')) {
                 $rutaNueva = $this->storage->guardar($request->file('archivo'), 'contenido');
                 $data['archivo'] = $rutaNueva;
@@ -280,8 +281,16 @@ class AdminController extends Controller
             ->with('success', 'Contenido agregado correctamente.');
     }
 
+    // La ficha de Conectores y los Términos se cargan por seeder: el Panel de gestión no los edita ni los borra.
+    private function exigirSeccionDelPanel(Contenido $contenido): void
+    {
+        abort_unless(in_array($contenido->seccion, self::SECCIONES, true), 404);
+    }
+
     public function contenidoEdit(Contenido $contenido)
     {
+        $this->exigirSeccionDelPanel($contenido);
+
         return view('admin.contenido.edit', [
             'contenido' => $contenido,
             'nombresSeccion' => self::NOMBRES_SECCION,
@@ -290,6 +299,7 @@ class AdminController extends Controller
 
     public function contenidoUpdate(Request $request, Contenido $contenido)
     {
+        $this->exigirSeccionDelPanel($contenido);
         $data = $request->validate(
             $this->contenidoReglas($contenido->seccion),
             self::MENSAJES_CONTENIDO,
@@ -328,10 +338,17 @@ class AdminController extends Controller
     {
         try {
             $registro = $this->db->query(Contenido::class)->find($contenido);
-            if (!$registro) {
-                return redirect()->route('admin.contenido.index')
-                    ->withErrors(['contenido' => 'El contenido ya no está disponible.']);
-            }
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['contenido' => 'No se pudo eliminar el contenido.']);
+        }
+        if (!$registro) {
+            return redirect()->route('admin.contenido.index')
+                ->withErrors(['contenido' => 'El contenido ya no está disponible.']);
+        }
+        $this->exigirSeccionDelPanel($registro);
+
+        try {
             $seccion = $registro->seccion;
             $archivo = $registro->archivo;
             $this->db->transaccion(function () use ($registro) {

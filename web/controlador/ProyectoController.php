@@ -364,13 +364,22 @@ class ProyectoController extends Controller
     {
         // Primero la base y el Historial; el archivo se borra solo si ambos se guardaron.
         try {
-            $this->db->transaccion(function () use ($imagen) {
+            $borrada = $this->db->transaccion(function () use ($imagen) {
+                // CU 48.2: un proyecto publicado no puede quedar sin fotografías.
+                $proyecto = $this->db->query(Proyecto::class)->whereKey($imagen->id_proyecto)->lockForUpdate()->first();
+                if ($proyecto?->estado_publicacion === 'publicado' && $proyecto->imagenes()->count() <= 1) {
+                    return false;
+                }
                 $this->db->delete($imagen);
                 Historial::registrar('modificacion', 'proyectos', $imagen->id_proyecto, ['imagen' => $imagen->nombre_archivo], ['imagen' => null]);
+                return true;
             });
         } catch (\Throwable $e) {
             report($e);
             return back()->withErrors(['imagen' => 'No se pudo eliminar la imagen.']);
+        }
+        if (!$borrada) {
+            return back()->withErrors(['imagen' => 'Un proyecto publicado debe conservar al menos una fotografía.']);
         }
         $this->storage->borrar($imagen->imagen);
         return back()->with('success', 'Imagen eliminada.');
