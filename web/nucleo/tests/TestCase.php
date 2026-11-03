@@ -11,6 +11,26 @@ abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
 
+    private float $inicioPrueba;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->inicioPrueba = microtime(true);
+    }
+
+    // La exportación borra su archivo al enviarlo; en las pruebas la respuesta no se envía,
+    // así que se borran aquí los archivos que generó esta prueba.
+    protected function tearDown(): void
+    {
+        foreach (glob(storage_path('app/exports/consultas-*')) ?: [] as $archivo) {
+            if (filemtime($archivo) >= floor($this->inicioPrueba)) {
+                @unlink($archivo);
+            }
+        }
+        parent::tearDown();
+    }
+
     protected function loginAdmin($admin, ?string $guard = null)
     {
         $token = Str::random(48);

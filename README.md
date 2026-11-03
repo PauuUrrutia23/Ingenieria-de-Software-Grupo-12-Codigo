@@ -2,10 +2,10 @@
 
 Sistema web para Ingecon (industrialización de la madera y construcción prefabricada):
 portafolio público de proyectos, certificaciones, colaboradores, formulario de contacto y
-Panel de Gestión administrativo. Implementa el **100% de los Incrementos 1 y 2** definidos en
-[`REQUISITOS.md`](REQUISITOS.md) (38 Requerimientos Funcionales, 17 No Funcionales y 64 Casos
-de Uso) — ver también [`ARQUITECTURA.md`](ARQUITECTURA.md) para el modelo de datos y el plan de
-fases. Este README cubre cómo instalar y correr el proyecto tal como está.
+Panel de Gestión administrativo. Implementa los **Incrementos 1 a 4** resumidos en
+[`REQUISITOS.md`](REQUISITOS.md) (59 Requerimientos Funcionales, 24 No Funcionales y 92 Casos
+de Uso) — ver también [`ARQUITECTURA.md`](ARQUITECTURA.md) para los componentes y el modelo de
+datos. Este README cubre cómo instalar y correr el proyecto tal como está.
 
 ## Stack
 
@@ -85,10 +85,13 @@ web/
     ├── public/              # index, proyectos, certificaciones, colaboradores, producto
     │   └── partials/        # fragmento de galería reutilizado por el filtrado dinámico (RF21)
     ├── admin/               # dashboard, proyectos, certificados, colaboradores, consultas,
-    │                        # contenido (FAQ/Opiniones/Banner/Fases), password
+    │                        # contenido (FAQ/Banner/Fases/Ubicación/Documentación), productos,
+    │                        # administradores (cuentas y permisos), historial, password
     ├── auth/                # login (Ventana Modal), reset-password
     ├── legal/               # términos y condiciones
-    └── emails/              # consulta_recibida, cuenta_bloqueada, recuperacion_password
+    ├── errors/              # 403, 404, 419, 500 y archivo demasiado grande
+    └── emails/              # consulta_recibida, nueva_consulta_admin, cuenta_bloqueada,
+                             # recuperacion_password
 
 scripts/                      # helpers de INICIAR_INGECON.bat (habilitar extensiones de PHP)
 REQUISITOS.md                 # requerimientos y casos de uso (documentación, fuera de web/)
@@ -187,11 +190,14 @@ Cambiar esta contraseña antes de cualquier despliegue real.
 |---|---|---|
 | `POST` | `/logout` | Cerrar sesión |
 | `GET` | `/admin/dashboard` | Panel principal |
-| `resource` | `/admin/proyectos` | CRUD de proyectos + `PATCH /admin/proyectos/{p}/visibilidad` (Borrador ⇄ Publicado) + `DELETE /admin/imagenes/{imagen}` |
-| `resource` | `/admin/certificados` | CRUD de certificados |
+| `resource` (sin `show`) | `/admin/proyectos` | CRUD de proyectos + `PATCH /admin/proyectos/{p}/visibilidad` (Borrador ⇄ Publicado) + `DELETE /admin/imagenes/{imagen}` |
+| `resource` (sin `show`) | `/admin/certificados` | CRUD de certificados (RF26, RF56) |
 | `resource` | `/admin/colaboradores` | CRUD de colaboradores |
-| `resource` (parcial) | `/admin/consultas` | Listado paginado, detalle y actualización de estado |
-| `resource` (parcial) | `/admin/contenido` | Gestión de FAQ, Opiniones, Banner de Inicio y Fases Industriales |
+| `resource` (parcial) | `/admin/consultas` | Listado paginado, detalle, estado y prioridad, exportación CSV/XLSX de las seleccionadas (RF42) y eliminación (RF58) |
+| `resource` (parcial) | `/admin/contenido` | Gestión de FAQ, Banner de Inicio, Fases Industriales, Ubicación y Documentación técnica |
+| `GET` / `POST` / `PUT` | `/admin/productos` | Productos del inicio (RF43) |
+| `GET` / `POST` / `PATCH` / `DELETE` | `/admin/administradores` | Cuentas de Administrador y sus permisos (RF52, RF53, RF59; solo jefe) |
+| `GET` | `/admin/historial` | Historial de Cambios con filtros y detalle (RF15; solo jefe) |
 | `GET` / `PUT` | `/admin/password` | Cambio de contraseña del administrador autenticado |
 
 Ver `web/nucleo/routes/web.php` para el detalle exacto, o `php artisan route:list` (parado en
@@ -201,10 +207,10 @@ Ver `web/nucleo/routes/web.php` para el detalle exacto, o `php artisan route:lis
 
 ## Estado de la implementación
 
-Los 38 Requerimientos Funcionales, los 17 No Funcionales y los 64 Casos de Uso de
-`REQUISITOS.md` (Incrementos 1 y 2 completos) están implementados y verificados en vivo. Los
-requisitos No Funcionales de infraestructura (RNF07 disponibilidad, RNF14 respaldos, RNF15
-concurrencia) son responsabilidad del hosting cPanel de producción y no aplican al código.
+Los 59 Requerimientos Funcionales y los 92 Casos de Uso de `REQUISITOS.md` (Incrementos 1 a 4)
+están implementados. Los respaldos (RNF14) y la depuración de Consultas (RNF24) corren con un Cron
+Job de cPanel que ejecuta `php artisan schedule:run` cada minuto. La disponibilidad (RNF07) y la
+concurrencia (RNF15) dependen del hosting cPanel de producción.
 
 ---
 
@@ -215,11 +221,19 @@ cd web/nucleo
 php artisan test
 ```
 
-70 tests / 182 aserciones, cubriendo formulario de contacto, autenticación y bloqueo de cuenta,
-filtros de proyectos, certificaciones, gestión de colaboradores/proyectos/certificados,
-recuperación de contraseña, gestión de contenido multimedia y reglas de negocio (límites de
+362 pruebas PHP, cubriendo formulario de contacto, autenticación y bloqueo de cuenta, permisos,
+Historial de Cambios, filtros de proyectos, certificaciones, gestión de colaboradores, proyectos,
+productos y contenido, respaldos, depuración de Consultas y reglas de negocio (límites de
 archivos, validación de PDF real, dominios de correo, etc.). Corren contra una base SQLite en
-memoria — la base de datos de desarrollo no se toca.
+memoria — la base de datos de desarrollo no se toca — y no escriben en el log real.
+
+Las pruebas de JavaScript (filtros, selección de consultas, versiones fijas de librerías) se
+corren con Node:
+
+```bash
+cd web/nucleo
+node --test tests/Js/*.mjs
+```
 
 ---
 

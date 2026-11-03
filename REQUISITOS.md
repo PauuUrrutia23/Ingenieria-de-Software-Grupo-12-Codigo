@@ -1,14 +1,13 @@
-# Ingecon — Requisitos, Casos de Uso y Stack (Incrementos 1, 2 y 3)
+# Ingecon — Requisitos, Casos de Uso y Stack (Incrementos 1 a 4)
 
-> **Alcance vigente:** Incrementos 1 + 2 + 3 — **55 Requerimientos Funcionales** (16 I1 + 23 I2 + 16 I3), 17 RNF.
-> **Obligatorios:** RF55 (Banner), CU27.2 (recuperación de contraseña) y CU40.2 (responsable de Consulta).
-> **RNF17:** logotipos ≤500 KB; fotografías/imágenes ≤2 MB; sólo JPG/JPEG/PNG. No se declaran válidos WebP ni MP4.
-
-> Consolidado a partir de: `Grupo 12 - Documento_0.docx`, `Grupo 12 - incremento1.docx`,
-> `Grupo 12 - Incremento 2.docx`, `Dimensión Técnica Ingecon_v1.2_mod.docx`.
-> Las secciones de casos de uso de Incrementos 1 y 2 conservan la especificación
-> histórica. La tabla de Incremento 3 y el estado de verificación se actualizan abajo.
-> El cierre exige además las comprobaciones manuales y de entorno del plan granular.
+> **Alcance vigente:** Incrementos 1 a 4 — **59 Requerimientos Funcionales** (16 I1 + 23 I2 + 15 I3 + 5 I4),
+> **24 Requerimientos No Funcionales** y **92 Casos de Uso**.
+>
+> **Fuente oficial:** la carpeta `incremento4/carpeta_final` del equipo (`doc0` y `incremento1` a `incremento4`:
+> `rf.docx`, `rf_esa.docx`, `cu.docx`; `doc0/rnf.docx`; `Dimensión Técnica_actual.docx`; diagramas de
+> secuencia v2, de componentes, de despliegue y la Vista Lógica de BD). Las tablas de este archivo se
+> generaron desde esos documentos el 03-11-2026; el texto completo de cada Caso de Uso, con su flujo y sus
+> excepciones, está en `cu.docx`.
 
 ---
 
@@ -16,636 +15,152 @@
 
 | Capa | Tecnología |
 |---|---|
-| Lógica de negocio | **Laravel 10** (PHP, hasta 8.1), patrón MVC, **Eloquent ORM** |
-| Presentación | **HTML5 + Tailwind CSS + Alpine.js** (reactividad ligera, sin frameworks pesados) |
-| Datos | **MySQL 5.6** (motor del hosting compartido cPanel) — sin NoSQL |
-| Mapa | **Leaflet.js + OpenStreetMap** (42 KB, sin APIs de pago tipo Google Maps) |
-| Correo | **sendmail** (binario del servidor) + reenviador cPanel — sin SMTP de terceros |
-| Hash de contraseñas | **Argon2id** (extensión `sodium`) con **bcrypt** como fallback si `sodium` no está disponible |
-| Validación de PDF | Extensión nativa **`finfo`** de PHP (verifica MIME real + cabecera del archivo) |
+| Lógica de negocio | **Laravel 10** (PHP hasta 8.1), patrón MVC, **Eloquent ORM** |
+| Presentación | **HTML5 + Tailwind CSS + Alpine.js** |
+| Datos | **MySQL 5.6** (motor del hosting compartido cPanel), sin NoSQL |
+| Mapa | **Leaflet.js + OpenStreetMap**, sin APIs de pago |
+| Correo | **sendmail** del servidor + reenviador cPanel, sin SMTP de terceros |
+| Hash de contraseñas | **Argon2id**, con **bcrypt** si el PHP del hosting no lo trae |
+| Validación de PDF | Extensión nativa **`finfo`** de PHP (tipo MIME real + cabecera `%PDF-`) |
 | Exportación CSV/Excel | **Spatie Simple Excel** |
-| Respaldos | **Cron Jobs + `mysqldump`**, retención 7 días, fuera de `public_html` |
+| Respaldos | **Cron Job de cPanel + `mysqldump`**, fuera de `public_html` (retención según RNF14) |
 | Control de versiones | **Git** |
-| Hosting | cPanel compartido, plan `hnegocio`, servidor `dohko` (Apache 2.4.67, AutoSSL) |
+| Hosting | cPanel compartido, plan `hnegocio`, servidor `dohko` (Apache 2.4.67, AutoSSL), sin SSH |
 
-**Prohibido explícitamente:** NoSQL, CMS/no-code (WordPress, Wix), microservicios, APIs de pago (Google Maps, SMTP comercial).
+**Prohibido explícitamente:** NoSQL, CMS o herramientas sin código (WordPress, Wix), microservicios, APIs de pago (Google Maps, SMTP comercial).
 
-**Reglas duras a respetar en el código:**
-- Imágenes de proyecto: máx. **15 por obra**, máx. **2 MB** cada una, sólo JPG/JPEG/PNG (RT-02, CU48.1, RNF17).
-- Logotipos: máx. **500 KB**; Fotografías: máx. **2 MB** (RNF17).
-- Bloqueo de cuenta: **5 intentos fallidos → 60 min de bloqueo** + correo de aviso (RF33).
-- Consultas: máx. **5 consultas pendientes por visitante en 24 h** (CU 1.1, Excepción 3).
-- Contraseña: mín. 8 caracteres, 1 mayúscula, 1 minúscula, 1 número (+ carácter especial en CU28.1).
-- Paginación de consultas: bloques de **10 registros** (RF36).
-- PDF debe cumplir **ISO 32000-1** (RNF06) y validarse con `finfo`, no por extensión.
+**Reglas que aplica el código:**
+- Imágenes de proyecto: máx. **15 por obra**, máx. **2 MB** cada una, solo JPG/JPEG/PNG (RT-02, RNF17).
+- Logotipos: máx. **500 KB**; imágenes: máx. **2 MB**; solo JPG/JPEG/PNG (RNF17).
+- PDF: tipo real PDF verificado con `finfo`, máx. 5 MB (RNF04).
+- Bloqueo de cuenta: **5 intentos fallidos → 60 min** + correo de aviso (RF33).
+- Contraseñas: mín. 8 caracteres con mayúscula, minúscula, número y carácter especial (RNF06).
+- Formulario de Contacto: máx. **5 envíos por hora por IP** y campo oculto anti-bots (RNF19).
+- Respaldos: cada 24 h, se borran a los **30 días** (RNF14). La Dimensión Técnica dice 7 días; el código sigue al RNF.
 
 ---
 
-## 1. Roles del sistema (definiciones DS-01 a DS-04)
+## 1. Roles del sistema
 
 - **Visitante**: usuario público sin autenticación.
-- **Administrador**: usuario interno autenticado, gestiona contenido/consultas.
-- **Administrador Jefe**: máximo privilegio, cuenta sembrada directo en BD, además crea/elimina cuentas de Administrador (RF52/RF53 del Incremento 3, vigente).
-- **Personal de Administración (DS-04)**: término que agrupa a Administrador + Administrador Jefe.
+- **Administrador**: usuario interno autenticado; lo que puede hacer depende de sus permisos (RF59).
+- **Administrador jefe**: todos los permisos; además crea y elimina cuentas (RF52, RF53), asigna permisos (RF59) y consulta el Historial de Cambios (RF15).
+- **Personal de Administración**: término que agrupa a Administrador y Administrador jefe.
 
 ---
 
-## 2. Requerimientos Funcionales — Incremento 1 (16 RF, Prioridad 1)
+## 2. Requerimientos Funcionales — Incremento 1 (16 RF)
 
-| ID | Descripción |
-|---|---|
-| **RF01** | Permitir al Visitante enviar una Consulta de contacto, registrada en BD. |
-| **RF06** | Notificar al Visitante mediante Mensaje del Sistema cuando campos del formulario no cumplan validaciones. |
-| **RF11** | Mostrar ícono de menú en inicio que despliega el Menú Lateral con enlaces a Proyectos, Certificaciones y Colaboradores (contenido desde BD). |
-| **RF12** | Mantener visible la Barra de Navegación Fija durante el scroll; al seleccionar opción, desplaza a la sección correspondiente. |
-| **RF19** | Filtrar proyectos por texto libre, comparando Nombre de Obra y Ubicación Geográfica (coincidencia parcial/total). |
-| **RF20** | Filtrar proyectos por categoría: Construcción, Industrial o Terminaciones/Servicios. |
-| **RF23** | Mostrar Ventana Modal con especificaciones técnicas de un proyecto (Nombre, Descripción Técnica, Ubicación) al hacer clic en su imagen. |
-| **RF24** | Mostrar tarjeta por Certificación vigente (Imagen, Nombre Normativa, Descripción, Organismo Certificador con enlace a nueva pestaña). |
-| **RF25** | Permitir descargar el PDF de una Certificación (previsualización en nueva pestaña); si no tiene documento, ocultar la opción. |
-| **RF27** | Autenticar al Personal de Administración con credenciales en Ventana Modal para acceder al Panel de Gestión. |
-| **RF32** | Cerrar sesión del Personal de Administración, invalidando el Token de Sesión, redirige a inicio. |
-| **RF33** | Bloquear temporalmente (60 min) la cuenta y notificar por correo tras 5 intentos fallidos de login. |
-| **RF45** | Registrar un nuevo Colaborador (Nombre Comercial + Logotipo) vía Formulario en Ventana Modal. |
-| **RF47** | Eliminar un registro de Colaborador desde el Módulo de Colaboradores. |
-| **RF48** | Registrar un nuevo Proyecto (Nombre + Fotografías) en estado "Borrador" vía Formulario en Ventana Modal. |
-| **RF49** | Editar los detalles de un Proyecto existente (datos precargados en el Formulario). |
+| ID | Nombre | Descripción | Casos de Uso |
+|---|---|---|---|
+| RF01 | Registro de datos | El sistema debe permitir al Visitante enviar una Consulta de contacto, asegurando que la información sea registrada en la Base de Datos para su posterior gestión. | CU 1.1 – Enviando consulta |
+| RF06 | Notificación de Error | El sistema debe notificar al Visitante mediante un Mensaje del Sistema cuando uno o más de los campos ingresados no cumplan con las validaciones establecidas. | CU 6.1 – Mostrando error de validación<br>CU 6.2 – Mostrando error por campo de texto inválido |
+| RF11 | Navegación Lateral | El sistema debe mostrar un icono de menú en la interfaz de la página de inicio que, al ser activado mediante una Acción de Usuario, despliegue el Menú Lateral con Enlaces que redirijan a páginas dedicadas de cada sección: Proyectos, Certificaciones y Colaboradores, cuyo contenido se obtiene desde la Base de Datos al cargar dicha página. | CU 11.1 – Desplegando Menú Lateral<br>CU 11.2 – Visualizando Colaboradores |
+| RF12 | Navegación Interna | El sistema debe mantener visible la Barra de Navegación Fija durante el desplazamiento vertical y, al seleccionar una opción mediante una Acción de Usuario, desplazar la vista hacia la sección correspondiente dentro de la misma página. Dicha barra se renderiza junto con la página de inicio, cuyas secciones se construyen con datos obtenidos desde la Base de Datos. | CU 12.1 – Navegando en la Barra de Acceso Rápido |
+| RF19 | Búsqueda por Texto | El sistema debe permitir al Visitante en la sección de proyectos ingresar una cadena de texto en la Barra de Búsqueda y procesarla para filtrar proyectos comparando los campos Nombre de la Obra y Ubicación Geográfica, mostrando únicamente coincidencias parciales o totales. | CU 19.1 – Filtrando proyectos por texto |
+| RF20 | Filtro Categórico | El sistema debe permitir al Visitante filtrar proyectos por tipo (Construcción, Industrial o Terminaciones/Servicios), mostrando exclusivamente aquellos que coincidan con la categoría seleccionada. | CU 20.1 – Filtrando proyectos por categoría |
+| RF23 | Visualización de Detalles | El sistema debe mostrar una Ventana Modal con las especificaciones técnicas de un proyecto al detectar una Acción de Usuario sobre su tarjeta, incluyendo Nombre de la Obra, Descripción Técnica y Ubicación Geográfica. Ver Ejemplo en Anexo, Figura 11.12: “Proyectos: Detalles Técnicos” | CU 23.1 – Consultando especificaciones de proyecto |
+| RF24 | Vitrina de Certificaciones | El sistema debe mostrar al Visitante, en la sección "Certificaciones", una tarjeta por cada Certificación en estado Vigente registrada en la Base de Datos, compuesta por su Imagen Representativa, el Nombre de la Normativa, una Descripción breve de lo que acredita y el Organismo Certificador que la respalda. El Organismo Certificador debe presentarse como un Enlace seleccionable que, al ser activado mediante una Acción de Usuario, abra el sitio del organismo en una nueva pestaña del navegador. | CU 24.1 – Visualizando Certificaciones |
+| RF25 | Descarga de Archivos | El sistema debe permitir al Visitante descargar el Archivo PDF Estándar asociado a una Certificación mediante una Acción de Usuario. Al seleccionar la opción de descarga, el sistema debe abrir el documento PDF en una nueva pestaña del navegador para su previsualización, desde donde el Visitante podrá realizar la descarga del archivo. Si la Certificación no posee un documento asociado, el sistema no debe mostrar la opción de visualización o descarga. | CU 25.1 – Descargando Certificados técnicos<br>CU 25.2 – Previsualizando Certificado PDF en el navegador |
+| RF27 | Control de Acceso | El sistema debe permitir al Personal de Administración autenticar su identidad ingresando sus Credenciales de acceso en una Ventana Modal para acceder al Panel de Gestión. Ver Ejemplo en Anexo, Figura 11.14: “Administrador: Inicio De Sesión” | CU 27.1 – Autenticando Personal de Administración |
+| RF32 | Cierre de Sesión | El sistema debe permitir al Personal de Administración cerrar sesión mediante una Acción de Usuario, invalidando el Token de Sesión activo y redirigiendo al usuario a la página de inicio. | CU 32.1 – Cerrando Sesión |
+| RF33 | Bloqueo de Seguridad | El sistema debe proteger la cuenta del Personal de Administración bloqueando temporalmente su acceso por 60 minutos y notificándole a su correo tras 5 intentos fallidos de inicio de sesión. | CU 33.1 – Bloqueando Cuenta por Seguridad |
+| RF45 | Gestión de colaboradores | El sistema debe permitir al Personal de Administración registrar un nuevo Colaborador desde el Módulo de Colaboradores al realizar una Acción de usuario sobre el botón “Agregar Colaborador”, desplegando un Formulario de Colaborador dentro de una Ventana Modal para ingresar los campos Nombre Comercial y Logotipo y, de forma opcional, el Sitio Web del Colaborador, validando que cumple los formatos correctos. Ver Ejemplo en Anexo, Figura 11.19: “Administrador: Edición De Colaboradores” | CU 45.1 – Registrando nuevos Colaboradores<br>CU 45.2 – Listando Colaboradores en el Módulo |
+| RF47 | Eliminando Colaboradores | El sistema debe permitir al Personal de Administración eliminar un registro de Colaborador desde el Módulo de Colaboradores al realizar una Acción de Usuario sobre el icono “Eliminar”, eliminando el registro de la Base de Datos y su vista en el Módulo de Colaboradores. | CU 47.1 – Eliminando Colaborador |
+| RF48 | Registrando Proyectos | El sistema debe permitir al Personal de Administración registrar un nuevo Proyecto desde el Módulo de Proyectos. Al realizar una Acción de Usuario sobre el botón "Nuevo Proyecto", el sistema debe desplegar el Formulario de Proyecto en una Ventana Modal para ingresar los campos Nombre de Proyecto e Imágenes para luego guardarlos en la Base de Datos. | CU 48.1 – Registrando proyectos como borrador<br>CU 48.2 – Publicando Proyectos<br>CU 48.3 – Listando Proyectos en el Módulo |
+| RF49 | Editando Información del Proyecto | El sistema debe permitir al Personal de Administración modificar los detalles de un Proyecto existente. Al interactuar mediante una Acción de Usuario con el botón "Editar Información" en la tarjeta del proyecto, el sistema debe desplegar el Formulario de Proyecto en una Ventana Modal con los datos actuales precargados para su actualización en la Base de Datos. | CU 49.1 – Editando información del proyecto |
 
-## 3. Requerimientos Funcionales — Incremento 2 (23 RF, Prioridad 2)
+---
 
-| ID | Descripción |
-|---|---|
-| **RF02** | Permitir acceso al documento de Términos y Condiciones / Política de Privacidad desde enlace en el pie de página (nueva pestaña). |
-| **RF03** | Mostrar el enlace de ubicación vigente desde contenido persistido en el pie de página. |
-| **RF04** | Exigir aceptación de Términos y Condiciones (checkbox) para habilitar el envío del Formulario de Contacto. |
-| **RF05** | Solicitar confirmación de envío (Ventana Modal) antes de enviar el Formulario de Contacto. |
-| **RF08** | Permitir vaciar simultáneamente todos los campos del Formulario (botón "Limpiar"). |
-| **RF09** | Confirmar envío exitoso de la consulta mediante Ventana Modal, solo tras verificar coincidencia de ID en BD. |
-| **RF10** | Mostrar enlace en el encabezado de inicio que redirige a la documentación técnica de Conectores Metálicos. |
-| **RF18** | Filtrar proyectos por Ubicación Geográfica (menú desplegable + botón "Aplicar Filtros"). |
-| **RF21** | Permitir aplicar múltiples filtros de proyectos simultáneamente, actualizando resultados dinámicamente. |
-| **RF26** | Registrar una nueva Certificación (Nombre Normativa, Descripción, Imagen, Organismo Certificador + enlace, PDF opcional) vía Ventana Modal. |
-| **RF28** | Permitir cambiar contraseña estando autenticado (Contraseña Actual, Nueva, Confirmación + reglas de seguridad). |
-| **RF29** | Iniciar recuperación de contraseña ("Olvidé mi contraseña") desde Ventana Modal. |
-| **RF30** | Generar y enviar Enlace seguro de recuperación al correo institucional. |
-| **RF31** | Restablecer contraseña mediante Formulario validado por Token de Sesión del enlace de recuperación. |
-| **RF34** | Mostrar en el Menú Lateral (solo Personal de Administración) accesos a Módulo comercial, Gestión de proyectos, Colaboradores, Panel de gestión y Certificados. |
-| **RF36** | Paginar el historial de Consultas del Módulo comercial en bloques de 10 registros. |
-| **RF39** | Leer el contenido completo de una Consulta específica en Ventana Modal. |
-| **RF41** | Actualizar el estado de una Consulta a "Pendiente", "En Proceso" o "Finalizada". |
-| **RF43** | Añadir/actualizar contenido multimedia (imágenes, videos, textos) en FAQ, Opiniones, Banner de Inicio y Fases Industriales. |
-| **RF44** | Eliminar registros de imagen/video/descripción de las secciones informativas (con confirmación previa). |
-| **RF46** | Editar un Colaborador existente (Formulario precargado en Ventana Modal). |
-| **RF50** | Gestionar visibilidad de Proyecto (Borrador = oculto / Publicado = visible en interfaz pública) desde menú desplegable en la tarjeta. |
-| **RF51** | Eliminar un Proyecto (borra permanentemente registro + imágenes de BD y de la vista). |
+## 3. Requerimientos Funcionales — Incremento 2 (23 RF)
 
-## 4. Requerimientos No Funcionales (comunes a Incremento 1 y 2)
+| ID | Nombre | Descripción | Casos de Uso |
+|---|---|---|---|
+| RF02 | Acceso a Términos y Condiciones | El sistema debe permitir al Visitante acceder al documento de Términos y Condiciones y Política de Privacidad mediante una Acción de Usuario en el enlace interactivo en el pie de página, asegurando que se abra en una nueva pestaña del navegador. | CU 2.1 – Visualizando Términos, Condiciones y Políticas de Privacidad |
+| RF04 | Aceptando Términos y Condiciones | El sistema debe exigir al Visitante la aceptación de los Términos, Condiciones y Políticas de Privacidad mediante una casilla de selección interactiva en el Formulario de Contacto para permitir el envío de la consulta. | CU 4.1 – Aceptando Términos, Condiciones y Políticas de Privacidad |
+| RF05 | Confirmación de Envío | El sistema debe solicitar al Visitante una confirmación de envío antes de enviar el formulario mediante una Ventana Modal que se despliegue al realizar una Acción de Usuario sobre el botón ‘’Enviar’’. | CU 5.1 – Solicitando confirmación de envío |
+| RF08 | Limpiar Formulario | El sistema debe permitir al Visitante vaciar simultáneamente todos los campos del Formulario: Nombre, Apellido, Email y Mensaje mediante una Acción de Usuario sobre el botón “Limpiar”. | CU 8.1 – Limpiando formulario |
+| RF09 | Feedback de Éxito | El sistema debe confirmar al Visitante el envío exitoso de su consulta mediante una Ventana Modal. Esta confirmación se mostrará únicamente después de verificar que la ID de la consulta enviada coincida con la ID registrada en la base de datos. | CU 9.1 – Mostrando confirmación de envío |
+| RF10 | Acceso a documentación técnica | El sistema debe mostrar en el encabezado de la página de inicio un Enlace visible que, al interactuar con él mediante una Acción de Usuario, abra en una nueva pestaña del navegador la página de documentación técnica de Conectores Metálicos, la cual debe presentar la Descripción del Producto, su Materialización, su Finalidad y los Tamaños disponibles, acompañados de su Imagen Representativa, recuperando la información desde la Base de Datos. | CU 10.1 – Accediendo a documentación técnica |
+| RF18 | Filtro Geográfico | El sistema debe permitir al Visitante en la sección de proyectos desde el menú desplegable seleccionar mediante una Acción de Usuario una Ubicación Geográfica desde una lista de opciones predefinidas, al activar el botón “Aplicar Filtros” mediante una Acción de Usuario, procesar la consulta y actualizar la vista mostrando exclusivamente los proyectos que coincidan con dicho criterio. | CU 18.1 – Filtrando proyectos por ubicación |
+| RF21 | Filtros Combinados | El sistema debe permitir al visitante aplicar múltiples filtros de forma simultánea, actualizando dinámicamente los resultados mostrados. | CU 21.1 – Aplicando filtros combinados de proyectos |
+| RF26 | Registrar Certificaciones | El sistema debe permitir al Personal de Administración registrar una nueva Certificación desde el Panel de Gestión, desplegando el Formulario de Certificación en una Ventana Modal para ingresar el Nombre de la Normativa, la Descripción, la Imagen Representativa, el Organismo Certificador y su Enlace, la Fecha de Emisión y, de forma opcional, la Fecha de Vencimiento, permitiendo adjuntar de forma opcional un Archivo PDF Estándar. | CU 26.1 – Registrando Certificados |
+| RF28 | Seguridad de Contraseña | El sistema debe permitir al Personal de Administración, estando autenticado en el Panel de Gestión, cambiar su contraseña. Al seleccionar mediante una Acción de Usuario la opción "Cambiar Contraseña", el sistema debe desplegar el Formulario de Cambio de Contraseña, solicitando la Contraseña Actual, la Nueva Contraseña y su Confirmación. Al seleccionar mediante una Acción de Usuario el botón "Enviar", el sistema debe validar que la Contraseña Actual sea correcta, que la Nueva Contraseña coincida con su Confirmación, y que cumpla con las reglas de seguridad establecidas. Si alguna de estas validaciones falla, el sistema debe rechazar el cambio e indicar al usuario el motivo del error. | CU 28.1 – Solicitando el cambio de contraseña<br>CU 28.2 – Confirmando el cambio de contraseña |
+| RF29 | Solicitud de Recuperación | El sistema debe permitir al Personal de Administración iniciar el proceso de recuperación de contraseña. Al seleccionar mediante una Acción de Usuario el botón "Olvidé mi contraseña", el sistema debe desplegar el Formulario de Recuperación de Contraseña dentro de una Ventana Modal. | CU 29.1 – Iniciando recuperación desde ventana modal |
+| RF30 | Generación de Token | El sistema debe generar y enviar un Enlace seguro de recuperación al correo institucional del Personal de Administración cuando este complete el campo "Email" y envíe el Formulario de Recuperación de Contraseña mediante una Acción de Usuario sobre el botón "Enviar". | CU 30.1 – Enviando enlace seguro de recuperación |
+| RF31 | Restablecimiento de Clave | El sistema debe permitir al Personal de Administración restablecer su contraseña. Al seleccionar mediante una Acción de Usuario el Enlace seguro de recuperación recibido en su correo institucional, el sistema debe validar el Token de Sesión asociado al enlace y, de ser válido, desplegar un Formulario de Restablecimiento que permita al Administrador actualizar su Contraseña, validando que cumpla con las reglas de seguridad establecidas. | CU 31.1 – Validando el Enlace seguro de recuperación<br>CU 31.2 – Restableciendo la contraseña desde el Formulario |
+| RF34 | Navegación Privada | El sistema debe mostrar en el Menú Lateral, exclusivamente para el Personal de Administración, las opciones de Módulo comercial, Gestión de proyectos, Colaboradores, Panel de gestión y Certificados y, exclusivamente para el Administrador jefe, las opciones de Administración e Historial de Cambios, permitiendo el acceso a cada módulo mediante Enlaces. | CU 34.1 – Navegando por módulos administrativos<br>CU 34.2 – Accediendo al Módulo comercial<br>CU 34.3 – Accediendo al Módulo de Gestión de proyectos<br>CU 34.4 – Accediendo al Módulo de Colaboradores<br>CU 34.5 – Accediendo al Panel de gestión<br>CU 34.6 – Accediendo al Módulo de Certificados |
+| RF36 | Listado y Paginación | El sistema debe permitir al Personal de Administración navegar por el historial de Consultas en el Módulo comercial utilizando un sistema de Paginación en bloques de 10 registros. | CU 36.1 – Listando el primer bloque de Consultas<br>CU 36.2 – Navegando entre bloques de Consultas |
+| RF39 | Vista de Detalles | El sistema debe permitir al Personal de Administración leer el contenido de una Consulta específica desplegándola en una Ventana Modal, mostrando además la fecha y hora de su envío y la constancia de aceptación de los Términos y Condiciones y Política de Privacidad por parte del Visitante. | CU 39.1 – Consultando Detalle de una Consulta |
+| RF41 | Actualización de Estado | El sistema debe permitir al Personal de Administración actualizar el estado de una Consulta a “Pendiente”, “En Proceso” o “Finalizada” mediante una Ventana Modal. | CU 41.1 – Actualizando estado de consultas |
+| RF43 | Añadir Contenido | El sistema debe permitir al Personal de Administración añadir y actualizar archivos multimedia como imágenes y textos descriptivos en las secciones de FAQ, Banner de Inicio, Fases Industriales y Productos mediante el Panel de Gestión. | CU 43.1 – Añadiendo y Actualizando contenido multimedia en la Sección de Productos<br>CU 43.2 – Añadiendo contenido multimedia en la Sección de Preguntas Frecuentes<br>CU 43.3 – Añadiendo contenido multimedia en la Sección de Banner<br>CU 43.4 – Añadiendo contenido multimedia en la Sección de Fases Industriales<br>CU 43.5 – Actualizando contenido multimedia en la sección de Preguntas Frecuentes<br>CU 43.6 – Actualizando contenido multimedia en la sección de Banner<br>CU 43.7 – Actualizando contenido multimedia en la sección de Fases Industriales |
+| RF44 | Eliminar Contenido | El sistema debe permitir al Personal de Administración eliminar registros de imagen y descripciones de las secciones informativas del sitio desde el Panel de Gestión, previa confirmación de la Acción. | CU 44.1 – Eliminando Contenido Multimedia<br>CU 44.2 – Eliminando contenido multimedia en la Sección de Preguntas Frecuentes<br>CU 44.3 – Eliminando contenido multimedia en la Sección de Banner<br>CU 44.4 – Eliminando contenido multimedia en la Sección de Fases Industriales |
+| RF46 | Gestión de colaboradores | El sistema debe permitir al Personal de Administración editar un Colaborador existente desde el Módulo de Colaboradores, realizando una Acción de Usuario sobre el botón “Editar”, el sistema despliega el Formulario de Colaborador dentro de una Ventana Modal precargando los campos Nombre Comercial, Logotipo y Sitio Web del Colaborador actuales para su modificación, validando que cumple los formatos correctos. | CU 46.1 – Editando colaboradores |
+| RF50 | Editando Visibilidad del Proyecto | El sistema debe permitir al Personal de Administración gestionar la visibilidad de un Proyecto mediante un menú desplegable en su tarjeta. Los proyectos en estado "Borrador" deben permanecer ocultos en la interfaz pública, siendo visibles únicamente aquellos en estado "Publicado". | CU 50.1 – Editando visibilidad del proyecto |
+| RF51 | Eliminando Proyecto | El sistema debe permitir al Personal de Administración eliminar un Proyecto. Al realizar una Acción de Usuario sobre el ícono de "Papelera", el sistema borra permanentemente el registro y sus imágenes asociadas de la Base de Datos y remueve la tarjeta de la vista. | CU 51.1 – Eliminando proyecto |
+| RF55 | Despliegue del Banner | El sistema debe mostrar al Visitante, al cargar la página de inicio, el Banner de Inicio con la Imagen y el Texto Descriptivo vigentes registrados en la Base de Datos. | CU 55.1 – Visualizando el Banner de Inicio |
+
+---
+
+## 4. Requerimientos Funcionales — Incremento 3 (15 RF)
+
+| ID | Nombre | Descripción | Casos de Uso |
+|---|---|---|---|
+| RF03 | Acceso a la ubicación | El sistema debe permitir al Visitante consultar la ubicación del establecimiento mediante un enlace interactivo en el pie de página, asegurando que la información se abra en una nueva pestaña del navegador. | CU 3.1 – Consultando Ubicación Geográfica de la Empresa |
+| RF07 | Envío automático al correo | El sistema debe enviar automáticamente un correo electrónico de confirmación al Visitante una vez que la consulta haya sido registrada exitosamente, informando que su solicitud fue recibida y será gestionada por el equipo correspondiente. | CU 7.1 – Notificando Confirmación por Correo |
+| RF13 | Despliegue Dinámico | El sistema debe permitir al Visitante interactuar mediante una Acción de Usuario con un carrusel de desplazamiento horizontal para explorar dinámicamente los Logotipos y el Nombre Comercial de las empresas de la sección Colaboradores registradas en la Base de Datos. Al realizar una Acción de Usuario sobre el Logotipo de un Colaborador que tenga Sitio Web del Colaborador registrado, el sistema debe abrir dicho sitio en una nueva pestaña del navegador. | CU 13.1 – Explorando Carrusel de Colaboradores |
+| RF14 | Interactividad de Interfaz | El sistema debe mostrar una sección de preguntas frecuentes y desplegar dinámicamente la respuesta asociada cuando el Visitante seleccione una pregunta mediante una Acción de Usuario. | CU 14.1 – Visualizando Preguntas Frecuentes |
+| RF16 | Navegación de Pestañas | El sistema debe mostrar una sección estructurada mediante un Menú de Pestañas que incluya las etapas Descortezado, Impregnación Vacío-Presión y Ensamblado, permitiendo al Visitante seleccionar una etapa mediante una Acción de Usuario. | CU 16.1 – Visualizando Fases Industriales |
+| RF17 | Imágenes de las fases industriales | El sistema debe permitir al Visitante visualizar Imágenes descriptivas acompañadas de una Descripción breve en cada una de las fases industriales, tales como Descortezado, Impregnación Vacío-Presión y Ensamblado, ampliando la Imagen seleccionada en una Ventana Modal mediante una Acción de Usuario. | CU 17.1 – Viendo Imágenes de las Fases Industriales<br>CU 17.2 – Ampliando una Imagen de Fase Industrial en Ventana Modal |
+| RF22 | Geolocalización | El sistema debe permitir al Visitante explorar la ubicación geográfica de los proyectos para visualizarlos en un Mapa Interactivo, después de ejecutar una acción de filtrado de proyectos. | CU 22.1 – Explorando proyectos en mapa<br>CU 22.2 – Consultando detalle de proyecto desde el mapa |
+| RF35 | Alerta de Sistema | El sistema debe notificar al Personal de Administración mediante un correo electrónico automático cada vez que se reciba y registre una nueva Consulta en la Base de Datos. | CU 35.1 – Alertando Nueva Consulta Comercial |
+| RF37 | Ordenamiento de Datos | El sistema debe permitir al Personal de Administración ordenar las Consultas en el Módulo comercial según la Fecha ingresada, mediante una Acción de Usuario sobre el control de ordenamiento. | CU 37.1 – Organizando Consultas por Fecha |
+| RF38 | Búsqueda Interna | El sistema debe permitir al Personal de Administración buscar Consultas en el Módulo comercial ingresando texto libre en la Barra de Búsqueda; al activar el icono de búsqueda mediante una Acción de Usuario, se mostrará una lista de coincidencias parciales o totales contenidas en el campo Mensaje. | CU 38.1 – Filtrando consultas por palabra clave |
+| RF40 | Asignación de Prioridad | El sistema debe permitir al Personal de Administración asignar un nivel de prioridad (Baja, Media, Alta) a cada Consulta mediante una Ventana Modal, registrando automáticamente como Administrador responsable al último Personal de Administración que modifique su prioridad o su estado, y mostrándolo en el campo "Responsable". | CU 40.1 – Asignando Prioridad a Consultas<br>CU 40.2 – Registrando Administrador Responsable de una Consulta |
+| RF42 | Exportación de Datos | El sistema debe permitir al Personal de Administración que tenga asignado el permiso “Exportar Consultas” exportar en formato CSV o Excel las Consultas que haya seleccionado en el Módulo comercial. Al existir al menos una Consulta seleccionada, el sistema debe habilitar la opción “Exportar” en la barra superior del listado y, al elegir el formato mediante una Acción de Usuario, generar un archivo descargable que contenga solo esas Consultas. | CU 42.1 – Exportando Listado de Consultas en CSV<br>CU 42.2 – Exportando Listado de Consultas en Excel |
+| RF52 | Creación de cuenta de Administrador | El sistema debe permitir al Administrador jefe crear nuevas cuentas de Administrador ingresando el Correo Institucional y una Contraseña en el formulario de creación dentro del Módulo de Administración. | CU 52.1 – Creando cuenta de Administrador<br>CU 52.2 – Listando cuentas de Administrador |
+| RF53 | Eliminación de cuenta de Administrador | El sistema debe permitir al Administrador jefe eliminar cuentas de Administrador desde el Módulo de Administración. | CU 53.1 – Eliminando cuenta de Administrador |
+| RF54 | Vitrina de Productos | El sistema debe mostrar al Visitante, en la sección Productos de la página de inicio, una tarjeta por cada Producto registrado en la Base de Datos, compuesta por su Imagen, el Nombre del Producto, una Descripción breve y el listado de Componentes que lo integran. | CU 54.1 – Visualizando Productos |
+
+---
+
+## 5. Requerimientos Funcionales — Incremento 4 (5 RF)
+
+| ID | Nombre | Descripción | Casos de Uso |
+|---|---|---|---|
+| RF15 | Consultando Historial de Cambios | El sistema debe permitir exclusivamente al Administrador jefe acceder al Módulo de Historial de Cambios mediante el Enlace correspondiente del Menú Lateral, mostrando un listado de las acciones de visualización del detalle de Consultas, de creación, edición y eliminación de contenido, Proyectos, Colaboradores, Certificaciones y cuentas de Administrador, de eliminación y exportación de Consultas y de asignación de permisos realizadas por el Personal de Administración, indicando su fecha y hora, el Correo Institucional del responsable, la acción realizada y el módulo afectado. Asimismo, debe permitir filtrar los registros mediante accesos rápidos por tipo de acción (exportaciones, eliminaciones, modificaciones, creaciones y visualizaciones de detalle), un campo de búsqueda por texto, el responsable, el módulo y un rango de fechas, y consultar el detalle de cada registro en una Ventana Modal mediante una Acción de Usuario sobre el botón “Ver detalles”, mostrando los valores anteriores y nuevos cuando corresponda, sin incluir el contenido de los mensajes ni los datos de los Visitantes. Los registros del Historial de Cambios deben conservarse aunque la cuenta de Administrador responsable sea eliminada, y ningún usuario debe poder modificarlos ni eliminarlos desde el sistema. | CU 15.1 – Consultando Historial de Cambios<br>CU 15.2 – Filtrando registros del Historial de Cambios<br>CU 15.3 – Consultando el detalle de un registro del Historial de Cambios<br>CU 15.4 – Registrando una acción en el Historial de Cambios |
+| RF56 | Eliminando Certificados | El sistema debe permitir al Personal de Administración eliminar una Certificación registrada desde el Módulo de Certificados, solicitando su confirmación en una Ventana Modal antes de borrarla de la Base de Datos y retirarla de la sección "Certificaciones". | CU 56.1 – Eliminando Certificados |
+| RF57 | Seleccionando Consultas | El sistema debe mostrar en el Módulo comercial una Casilla de Selección junto a cada Consulta del listado que, al ser activada mediante una Acción de Usuario, marque esa Consulta como seleccionada, y una Casilla de Selección general sobre el listado que, al ser activada, seleccione todas las Consultas visibles en la página actual. Al existir una o más Consultas seleccionadas, el sistema debe habilitar en la barra superior del listado, junto a la Casilla de Selección general, las opciones "Exportar" y "Eliminar", esta última representada con el icono de papelera, que se muestran según los permisos “Exportar Consultas” y “Eliminar Consultas” asignados a la cuenta y aplicarán la acción únicamente sobre las Consultas seleccionadas. | CU 57.1 – Seleccionando Consultas individualmente<br>CU 57.2 – Seleccionando todas las Consultas de la página |
+| RF58 | Eliminando Consultas | El sistema debe permitir al Personal de Administración con el permiso “Eliminar Consultas” eliminar las Consultas seleccionadas en el Módulo comercial mediante una Acción de Usuario sobre la opción “Eliminar” de la barra superior del listado, la cual solo se muestra a las cuentas con dicho permiso y se habilita al existir al menos una Consulta seleccionada, solicitando su confirmación en una Ventana Modal antes de borrarlas de la Base de Datos y retirarlas del listado de Consultas. Al eliminar una Consulta, el sistema debe eliminar también los datos del Visitante asociado (Nombre, Apellido y Email) cuando este no tenga otras Consultas registradas. | CU 58.1 – Eliminando Consultas |
+| RF59 | Asignando Permisos | El sistema debe permitir al Administrador jefe gestionar las cuentas de Administrador y sus permisos desde el Módulo de Administración, mediante una tabla paginada que muestre el Correo Institucional de cada cuenta junto a una Casilla de Selección por cada permiso: “Editar Contenido”, que habilita la gestión del contenido del sitio, de Colaboradores, de Proyectos y de Certificados; “Exportar Consultas” y “Eliminar Consultas”. Al activar o desactivar una casilla mediante una Acción de Usuario, el sistema debe registrar el cambio en la Base de Datos y aplicarlo a la cuenta correspondiente, mostrando u ocultando en el Panel de Administración las opciones asociadas a cada permiso. Cada fila debe incluir la acción “Eliminar Cuenta”, representada con el icono de papelera, y la tabla debe contar con el botón “Agregar Administrador” para registrar nuevas cuentas. | CU 59.1 – Asignando permisos a una cuenta de Administrador<br>CU 59.2 – Restringiendo funciones según los permisos de la cuenta |
+
+---
+
+## 6. Requerimientos No Funcionales (24)
 
 | ID | Categoría | Descripción |
 |---|---|---|
-| RNF01 | Seguridad | Contraseñas siempre con Hash Criptográfico unidireccional, nunca texto plano. |
-| RNF02 | Sesión | Autenticación con Token de Sesión, expiración automática por inactividad/cierre. |
-| RNF03 | Autorización | Acceso al Panel de Gestión restringido exclusivamente al Personal de Administración. |
-| RNF04 | Control | Verificar tipo/tamaño/formato de archivos antes de almacenar; rechazar si no es PDF estándar. |
-| RNF05 | Protección | Validar y sanitizar todos los datos de entrada (anti código malicioso / XSS-SQLi). |
-| RNF06 | Estandarización | Documentos deben cumplir formato PDF (ISO 32000-1). |
-| RNF07 | Disponibilidad | ≥ 99.5% mensual para interfaz pública y Panel de Gestión. |
-| RNF08 | Adaptabilidad | Interfaz responsiva: escritorio, móvil, tablet. |
-| RNF09 | Rapidez | Respuesta a Acción de Usuario ≤ 2 segundos en condiciones normales. |
-| RNF10 | Usabilidad | Mensajes del Sistema claros, sin exponer info técnica/errores internos. |
-| RNF11 | Automatización | Calcular y mostrar años de experiencia de la empresa dinámicamente (desde 1994). |
-| RNF12 | Almacenamiento | Persistencia garantizada de todos los datos en BD. |
-| RNF13 | Validación | Validar todos los datos de entrada antes de procesarlos. |
-| RNF14 | Respaldo | Copia de seguridad de BD al menos cada 24 horas. |
-| RNF15 | Rendimiento | Tiempo de respuesta < 3 s con ≥ 100 usuarios concurrentes. |
-| RNF16 | Compatibilidad | Compatible con navegadores modernos (Chrome, Edge, Brave recientes). |
-| RNF17 | Control | Peso máximo de archivos gráficos: 500 KB (Logotipos), 2 MB (Fotografías). |
-
----
-
-## 5. Casos de Uso — Incremento 1
-
-> Fuente: `Grupo 12 - incremento1.docx`, sección 5 (contenido ya redactado y completo).
-
-### CU 1.1 – Enviando consulta (RF01)
-- **Actor:** Visitante
-- **Resumen:** Enviar consulta de contacto desde la página pública, registrando datos del visitante y la consulta.
-- **Precondición:** Visitante en la página pública, Formulario de Contacto visible.
-- **Descripción:** El sistema presenta el formulario → Visitante ingresa Nombre, Apellido, Email, Mensaje → sistema valida → si es válido, registra en BD y confirma.
-- **Excepciones:**
-  1. Campos obligatorios en blanco → error, reintentar.
-  2. Mensaje < 10 caracteres → error, reintentar.
-  3. Visitante supera 5 consultas pendientes en las últimas 24h → bloqueo del insert, aviso de límite alcanzado.
-  4. Dominio de correo inválido → rechaza transacción, pide correo válido.
-  5. Formato de correo inválido (ej. `texto@texto.texto`) → error, reintentar.
-  6. Conexión a internet inestable → error, reintentar.
-- **Poscondición:** Consulta registrada en BD.
-
-### CU 6.1 – Mostrando error de validación (RF06)
-- **Actor:** Visitante
-- **Resumen:** Informar al Visitante cuando datos del formulario no cumplen reglas de validación.
-- **Descripción:** Vista envía datos al Controlador → contrasta reglas de validación en BD → si falla, retorna mensajes por campo, no registra hasta corregir.
-- **Excepciones:**
-  1. Controlador no logra procesar la información → error, reintentar.
-  2. Errores de validación desde infraestructura → mensajes por campo, formulario activo.
-  3. Respuesta de validación sin detalle por campo → mensaje general.
-  4. BD MySQL sin capacidad de almacenamiento → aviso de congestión temporal del servidor.
-
-### CU 11.1 – Desplegando Menú Lateral (RF11)
-- **Actor:** Visitante
-- **Resumen:** Abrir Menú Lateral y navegar a páginas dedicadas de cada sección (contenido desde BD).
-- **Excepciones:**
-  1. Falla la consulta a BD → contenido vacío, estado informativo.
-  2. Sección sin registros → estado vacío.
-
-### CU 11.2 – Visualizando Colaboradores (dependiente de CU 11.1)
-- **Actor:** Visitante
-- **Resumen:** Acceder a la página de Colaboradores y ver logos/nombres desde BD.
-- **Excepciones:**
-  1. Falla consulta BD → colección vacía, estado informativo.
-  2. No existen colaboradores registrados → mensaje "aún no hay colaboradores".
-
-### CU 12.1 – Navegando en la Barra de Acceso Rápido (RF12)
-- **Actor:** Visitante
-- **Resumen:** Desplazarse entre secciones mediante barra de navegación siempre visible.
-- **Excepciones:**
-  1. Falla consulta BD de alguna sección → esa sección en estado vacío, barra operativa.
-  2. Sección sin registros → sección vacía, sin afectar navegación.
-
-### CU 19.1 – Filtrando proyectos por texto (RF19)
-- **Actor:** Visitante
-- **Resumen:** Buscar proyectos con texto libre comparando Nombre de Obra y Ubicación.
-- **Excepciones:**
-  1. Cadena solo espacios / insuficiente → limpia filtro, muestra todos los publicados.
-  2. Falla consulta BD → búsqueda no disponible temporalmente.
-  3. Sin coincidencias → galería vacía con mensaje.
-  4. Imágenes de algunos proyectos no cargan → se omite solo la miniatura afectada.
-
-### CU 20.1 – Filtrando proyectos por categoría (RF20)
-- **Actor:** Visitante
-- **Resumen:** Filtrar galería por categoría (Construcción, Industrial, Terminaciones/Servicios).
-- **Excepciones:**
-  1. Categoría sin proyectos publicados → estado "No se encontraron proyectos" + opción ver todos.
-  2. Falla BD → sin resultados, sección operativa.
-
-### CU 23.1 – Consultando especificaciones de proyecto (RF23)
-- **Actor:** Visitante
-- **Resumen:** Ver ficha técnica + imágenes de una obra en Ventana Modal sin perder posición en galería.
-- **Dependencias:** CU 19.1, CU 20.1
-- **Excepciones:**
-  1. Proyecto pasó a Borrador o fue eliminado mientras se navegaba → cierra modal sin interrumpir galería.
-  2. Falla consulta de detalle → cierra modal, sección operativa.
-  3. Visitante cierra modal antes de terminar de cargar → cancela visualización.
-
-### CU 24.1 – Visualizando Certificaciones (RF24)
-- **Actor:** Visitante
-- **Resumen:** Ver tarjetas de certificaciones vigentes y acceder al sitio del organismo certificador.
-- **Excepciones:**
-  1. No existen certificaciones → estado vacío informativo.
-  2. Falla consulta BD → colección vacía, estado vacío.
-
-### CU 25.1 – Descargando Certificados técnicos (RF25)
-- **Actor:** Visitante
-- **Resumen:** Descargar el PDF de certificación ya abierto en previsualización.
-- **Dependencia:** CU 25.2
-- **Excepciones:**
-  1. Pérdida de conexión durante transferencia → descarta archivo parcial, reintentar.
-  2. Enlace temporal caducado → se reemite el archivo desde BD.
-  3. Navegador bloquea descarga → informar autorizar en el navegador.
-  4. Certificado sin nombre de archivo válido → sistema genera nombre seguro.
-
-### CU 25.2 – Previsualizando Certificado PDF en el navegador
-- **Actor:** Visitante
-- **Dependencia:** CU 24.1
-- **Excepciones:**
-  1. Certificado no existe en BD → documento no disponible.
-  2. PDF vacío/nulo en BD → previsualización no disponible.
-  3. Falla BD → previsualización no disponible temporalmente.
-
-### CU 27.1 – Autenticando Personal de Administración (RF27)
-- **Actor:** Personal de Administración
-- **Descripción:** Modal de autenticación → credenciales al Controlador → valida contra BD → crea Sesión y concede acceso.
-- **Excepciones:**
-  1. Modal no carga → indisponibilidad temporal.
-  2. Cuenta bloqueada temporalmente → informa tiempo restante.
-  3. Credenciales no coinciden → mensaje genérico de acceso denegado.
-  4. BD no responde → no crea sesión, registra incidente.
-
-### CU 27.2 – Rechazando credenciales incorrectas
-- **Actor:** Personal de Administración
-- **Dependencias:** CU 27.1, CU 33.1
-- **Excepciones:**
-  1. Credenciales correctas → concede acceso (termina flujo de rechazo).
-  2. Cuenta llega a 5 intentos fallidos → bloqueo temporal.
-  3. No existe cuenta asociada al correo → mensaje genérico (no revela si existe).
-  4. BD no permite actualizar contador de intentos → registra falla, informa error.
-
-### CU 32.1 – Cerrando Sesión (RF32)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Excepciones:**
-  1. Sesión ya expiró antes del cierre → cierra sesión local, redirige a inicio.
-  2. Token de Sesión no coincide con registro activo → deniega operación protegida.
-  3. BD no permite actualizar estado de Sesión → registra inconsistencia, cierra sesión local igual.
-  4. Solicitud de cierre no pasa validación de seguridad → rechaza acción.
-
-### CU 33.1 – Bloqueando Cuenta por Seguridad (RF33)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Descripción:** Al alcanzar 5 intentos fallidos, bloquea 60 min y notifica al correo institucional.
-- **Excepciones:**
-  1. BD no permite actualizar contador → mantiene denegado, registra incidente.
-  2. Bloqueo ya activo → informa tiempo restante sin reiniciar periodo.
-  3. Correo institucional no disponible → aplica bloqueo, omite solo la notificación.
-  4. Servicio de correo no responde → mantiene bloqueo, notificación queda pendiente.
-
-### CU 45.1 – Registrando nuevos Colaboradores (RF45)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Excepciones:**
-  1. Nombre Comercial vacío → rechaza antes de tocar BD.
-  2. Logotipo con formato no permitido → rechaza, pide corregir archivo.
-  3. BD no permite almacenar → error, formulario permanece abierto.
-  4. Sesión administrativa expira durante el registro → redirige a login antes de guardar.
-
-### CU 45.2 – Listando Colaboradores en el Módulo
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Excepciones:**
-  1. Falla consulta BD → mensaje "listado no disponible".
-  2. No existen colaboradores → estado vacío.
-
-### CU 47.1 – Eliminando Colaborador (RF47)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Excepciones:**
-  1. Colaborador ya no existe (eliminado previamente) → actualiza listado.
-  2. BD no permite eliminar → informa falla, mantiene tarjeta visible.
-  3. Sesión administrativa expiró → deniega, redirige a login.
-
-### CU 48.1 – Registrando proyectos como borrador (RF48)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Excepciones:**
-  1. Nombre de Proyecto vacío → rechaza antes de tocar BD.
-  2. Imagen > 2 MB → rechaza.
-  3. Más de 15 imágenes adjuntas → bloquea, informa límite.
-  4. Imagen con formato inválido o dañada → rechaza, pide formato válido.
-  5. BD no puede almacenar proyecto/imagen → error, formulario abierto.
-  6. Ninguna imagen pudo procesarse → revierte (elimina proyecto), pide reintentar.
-  7. Sesión administrativa expiró → deniega, redirige a login.
-
-### CU 48.2 – Publicando Proyectos
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Excepciones:**
-  1. Campos obligatorios incompletos → detiene, señala datos faltantes.
-  2. Foto > 2 MB → rechaza, pide imagen más liviana.
-  3. Más de 15 fotografías → impide carga del excedente.
-  4. Archivo no es imagen válida / formato incompatible → descarta, pide JPG/JPEG/PNG.
-  5. Inactividad > 2 horas en el panel → restringe acceso, pide reingresar credenciales.
-  6. Tiempo de seguridad de la conexión caducado → remueve permisos temporales, redirige a inicio.
-
-### CU 48.3 – Listando Proyectos en el Módulo
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Excepciones:**
-  1. Falla consulta BD → mensaje "listado no disponible".
-  2. No existen proyectos registrados → estado vacío.
-
-### CU 49.1 – Editando información del proyecto (RF49)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Excepciones:**
-  1. Proyecto no se puede recuperar de BD → cancela edición.
-  2. Cambios no cumplen validaciones → errores, formulario abierto.
-  3. Imágenes nuevas superan límite o formato inválido → rechaza archivos afectados.
-  4. Sesión administrativa expira durante edición → redirige a login, evita guardar cambios no autorizados.
-
----
-
-## 6. Casos de Uso — Incremento 2
-
-> Fuente: `Casos_de_Uso_Incremento_2_WIP.docx` (versión de trabajo más reciente y detallada,
-> reemplaza lo que se había tomado de `Documento_0.docx` en la primera pasada — ver nota de
-> comparación al final de esta sección). Cubre los 22 RF de Incremento 2, pero varios se
-> desglosan en sub-casos de uso más granulares (28→28.1/28.2, 31→31.1/31.2, 34→34.1...34.6,
-> 36→36.1/36.2, 43→43.1...43.9, 44→44.1...44.5), totalizando **42 CU**.
-
-### CU 2.1 – Visualizando Términos, Condiciones y Políticas de Privacidad (RF02)
-- **Actor:** Visitante
-- **Descripción:** Acción sobre el enlace del pie de página → Controlador recupera la URL vigente del documento desde BD → Vista abre el documento en nueva pestaña.
-- **Excepciones:**
-  1. Enlace no responde por error de renderizado del pie de página → informa y solicita reintentar.
-  2. Falla la consulta BD de la URL del documento → informa que no está disponible temporalmente.
-  3. Navegador bloquea la apertura de la nueva pestaña → aviso para permitir ventanas emergentes o enlace directo alternativo.
-- **Poscondición:** Documento se muestra en nueva pestaña.
-
-### CU 4.1 – Aceptando Términos, Condiciones y Políticas de Privacidad (RF04)
-- **Actor:** Visitante
-- **Dependencia:** CU 1.1
-- **Descripción:** Casilla de aceptación junto al botón "Enviar"; al marcarla se habilita el envío.
-- **Excepciones:**
-  1. Casilla no se renderiza correctamente → informa y solicita recargar página.
-  2. Visitante desmarca la casilla tras marcarla → deshabilita nuevamente "Enviar".
-  3. Intenta enviar sin marcar la casilla → bloquea envío del lado del Controlador, resalta casilla.
-
-### CU 5.1 – Solicitando confirmación de envío (RF05)
-- **Actor:** Visitante
-- **Dependencia:** CU 1.1
-- **Descripción:** Al presionar "Enviar" con formulario válido, despliega Ventana Modal de confirmación antes de transmitir al Controlador.
-- **Excepciones:**
-  1. Formulario tiene errores de validación pendientes → no despliega el modal, señala campos con error.
-  2. Visitante cierra el modal sin elegir opción → se interpreta como cancelación, formulario se conserva activo.
-  3. Confirma el envío pero la conexión se interrumpe antes de llegar al Controlador → informa que no se completó, solicita reintentar.
-
-### CU 8.1 – Limpiando formulario (RF08)
-- **Actor:** Visitante
-- **Dependencia:** CU 1.1
-- **Descripción:** Botón "Limpiar" vacía Nombre, Apellido, Email y Mensaje; además restablece la casilla de T&C y deshabilita "Enviar".
-- **Excepciones:**
-  1. Se presiona "Limpiar" sin haber ingresado datos → sin efectos visibles.
-  2. Se presiona "Limpiar" mientras un envío está en curso → se ignora hasta finalizar la operación.
-
-### CU 9.1 – Mostrando confirmación de envío (RF09)
-- **Actor:** Visitante
-- **Dependencia:** CU 5.1
-- **Descripción:** Tras registrar la Consulta, verifica que la ID retornada coincida con la registrada en BD antes de mostrar el modal de éxito.
-- **Excepciones:**
-  1. BD no logra registrar la Consulta → informa que el envío no pudo completarse.
-  2. ID retornada no coincide con la registrada → no muestra confirmación, solicita reintentar envío.
-  3. Visitante cierra el modal antes de leerlo → limpia el formulario y vuelve al estado inicial.
-
-### CU 10.1 – Accediendo a documentación técnica (RF10)
-- **Actor:** Visitante
-- **Descripción:** Enlace del encabezado solicita la URL vigente al Controlador (desde BD) y redirige.
-- **Excepciones:**
-  1. Enlace no responde por error de carga del encabezado → informa que la acción no pudo ejecutarse.
-  2. URL registrada en BD no disponible o eliminada → informa que la documentación no está disponible temporalmente.
-  3. Navegador bloquea la redirección → ofrece enlace directo manual.
-
-### CU 18.1 – Filtrando proyectos por ubicación (RF18)
-- **Actor:** Visitante
-- **Dependencia:** CU 20.1
-- **Descripción:** Menú desplegable de Ubicación Geográfica + botón "Aplicar Filtros" → Controlador filtra por ubicación y estado Publicado.
-- **Excepciones:**
-  1. Se presiona "Aplicar Filtros" sin seleccionar ubicación → galería sin cambios, solicita seleccionar opción.
-  2. Falla la consulta a BD → filtrado no disponible temporalmente.
-  3. Ubicación seleccionada sin proyectos publicados → estado "No se encontraron proyectos".
-
-### CU 21.1 – Aplicando filtros combinados de proyectos (RF21)
-- **Actor:** Visitante
-- **Dependencias:** CU 19.1, CU 20.1, CU 18.1
-- **Descripción:** Combina texto + categoría + ubicación en una sola consulta contra BD, actualiza dinámicamente sin recargar.
-- **Excepciones:**
-  1. Criterios contradictorios sin intersección válida → informa que no hay proyectos que cumplan todos los criterios.
-  2. Consulta combinada falla por indisponibilidad del servicio → mantiene el último resultado válido mostrado.
-  3. Visitante cambia un criterio mientras una consulta anterior está en proceso → cancela la solicitud previa, procesa solo la combinación más reciente.
-
-### CU 26.1 – Registrando Certificados (RF26)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Descripción:** Formulario en Ventana Modal (Nombre Normativa, Descripción, Imagen, Organismo Certificador + enlace, PDF opcional).
-- **Excepciones:**
-  1. Nombre de la Normativa u Organismo Certificador vacíos → rechaza antes de tocar BD, resalta campos obligatorios.
-  2. Imagen Representativa con formato inválido o excede peso permitido → descarta archivo, solicita una válida.
-  3. PDF adjunto dañado o no corresponde al formato → rechaza el archivo, permite continuar sin el documento.
-  4. BD no permite almacenar la Certificación → error, formulario permanece abierto, registra falla.
-
-### CU 28.1 – Solicitando el cambio de contraseña (RF28, parte 1)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Descripción:** Opción "Cambiar Contraseña" → Controlador verifica sesión activa → despliega Formulario (Contraseña Actual, Nueva, Confirmación).
-- **Excepciones:**
-  1. Opción no disponible en el Panel → informa indisponibilidad temporal, solicita reintentar.
-  2. Sesión administrativa expiró → deniega acceso al formulario, redirige a login.
-
-### CU 28.2 – Confirmando el cambio de contraseña (RF28, parte 2)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 28.1
-- **Descripción:** Al enviar, valida Contraseña Actual, coincidencia Nueva/Confirmación y reglas de seguridad; si todo pasa, actualiza BD.
-- **Excepciones:**
-  1. Algún campo vacío → rechaza antes de contactar al Controlador, resalta campos faltantes.
-  2. Contraseña Actual incorrecta → rechaza el cambio, informa el motivo.
-  3. Nueva Contraseña no coincide con su Confirmación → rechaza, solicita reingresar.
-  4. Nueva Contraseña no cumple reglas de seguridad → rechaza, indica requisitos.
-  5. BD no permite actualizar → error, formulario permanece abierto.
-
-### CU 29.1 – Iniciando recuperación desde ventana modal (RF29)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Descripción:** Botón "Olvidé mi contraseña" en el modal de login → despliega Formulario de Recuperación (campo Email) en Ventana Modal.
-- **Excepciones:**
-  1. Modal de recuperación no carga correctamente → informa indisponibilidad temporal, mantiene acceso al login habitual.
-
-### CU 30.1 – Enviando enlace seguro de recuperación (RF30)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 29.1
-- **Descripción:** Verifica correo en BD, genera Enlace seguro asociado a un Token de Sesión y lo envía al correo institucional.
-- **Excepciones:**
-  1. Campo Email vacío o formato inválido → rechaza, solicita correo válido.
-  2. Correo no corresponde a cuenta registrada → mensaje genérico de confirmación (no revela si existe, por seguridad).
-  3. BD no permite generar/almacenar el Token de Sesión → error, solicita reintentar.
-  4. Servicio de correo institucional no responde → registra incidente, informa que el envío podría demorar.
-
-### CU 31.1 – Validando el Enlace seguro de recuperación (RF31, parte 1)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 30.1
-- **Descripción:** Al abrir el enlace recibido, valida el Token de Sesión asociado antes de mostrar el Formulario de Restablecimiento.
-- **Excepciones:**
-  1. Token expiró → rechaza acceso, informa que debe solicitar un nuevo enlace.
-  2. Token ya fue utilizado previamente → invalida el intento, solicita nueva solicitud de recuperación.
-
-### CU 31.2 – Restableciendo la contraseña desde el Formulario (RF31, parte 2)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 31.1
-- **Descripción:** Ingresa Nueva Contraseña + Confirmación → valida coincidencia y reglas de seguridad → actualiza BD e invalida el Token utilizado.
-- **Excepciones:**
-  1. Nueva Contraseña no coincide con Confirmación → rechaza, solicita reingresar.
-  2. No cumple reglas de seguridad → rechaza, indica requisitos.
-  3. BD no permite actualizar la contraseña o invalidar el Token → error, solicita reintentar.
-
-### CU 34.1 – Navegando por módulos administrativos (RF34, overview)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Descripción:** Menú Lateral con enlaces "Módulo comercial", "Gestión de proyectos", "Colaboradores", "Panel de gestión" y "Certificados" (exclusivo del Personal de Administración); redirige al flujo CU 34.2–34.6 según selección.
-- **Excepciones:**
-  1. Sin permisos para algún módulo → oculta el enlace correspondiente.
-  2. Cambios sin guardar en el módulo actual → solicita confirmar abandono antes de navegar.
-  3. Sesión administrativa expiró → deniega acceso, redirige a login.
-  4. Consulta inicial del módulo falla → estado vacío informativo.
-
-### CU 34.2 – Accediendo al Módulo comercial
-- **Actor:** Personal de Administración · **Dependencia:** CU 34.1
-- **Descripción:** Consulta Consultas registradas en BD y renderiza el historial.
-- **Excepciones:** 1. Sesión expiró → login. 2. Falla consulta BD → estado vacío informativo. 3. Sin consultas registradas → mensaje "aún no hay registros".
-
-### CU 34.3 – Accediendo al Módulo de Gestión de proyectos
-- **Actor:** Personal de Administración · **Dependencia:** CU 34.1
-- **Descripción:** Consulta Proyectos registrados y renderiza tarjetas con su estado de visibilidad.
-- **Excepciones:** 1. Sesión expiró → login. 2. Falla consulta BD → estado vacío informativo. 3. Sin proyectos registrados → mensaje "aún no hay registros".
-
-### CU 34.4 – Accediendo al Módulo de Colaboradores
-- **Actor:** Personal de Administración · **Dependencia:** CU 34.1
-- **Descripción:** Consulta Colaboradores registrados y renderiza listado con Nombre Comercial y Logotipo.
-- **Excepciones:** 1. Sesión expiró → login. 2. Falla consulta BD → estado vacío informativo. 3. Sin colaboradores registrados → mensaje "aún no hay registros".
-
-### CU 34.5 – Accediendo al Panel de gestión
-- **Actor:** Personal de Administración · **Dependencia:** CU 34.1
-- **Descripción:** Consulta contenido multimedia registrado (FAQ, Opiniones, Banner, Fases Industriales) y lo renderiza.
-- **Excepciones:** 1. Sesión expiró → login. 2. Falla consulta BD → estado vacío informativo. 3. Sin contenido registrado → mensaje "aún no hay registros".
-
-### CU 34.6 – Accediendo al Módulo de Certificados
-- **Actor:** Personal de Administración · **Dependencia:** CU 34.1
-- **Descripción:** Consulta Certificaciones registradas y renderiza listado con Organismo Certificador.
-- **Excepciones:** 1. Sesión expiró → login. 2. Falla consulta BD → estado vacío informativo. 3. Sin certificaciones registradas → mensaje "aún no hay registros".
-
-### CU 36.1 – Listando el primer bloque de Consultas (RF36, parte 1)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Descripción:** Primer bloque de 10 Consultas ordenadas por fecha + total de páginas.
-- **Excepciones:**
-  1. Consulta inicial a BD falla → informa que el historial no está disponible.
-  2. Sin Consultas registradas → estado vacío informativo.
-
-### CU 36.2 – Navegando entre bloques de Consultas (RF36, parte 2)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 36.1
-- **Descripción:** Controles de paginación solicitan el bloque anterior/siguiente de 10 registros.
-- **Excepciones:**
-  1. Página solicitada fuera de rango → devuelve el bloque más cercano válido, corrige indicador.
-  2. Consulta del nuevo bloque falla → conserva el bloque mostrado previamente.
-
-### CU 39.1 – Consultando Detalle de una Consulta (RF39)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 36.1
-- **Descripción:** Selecciona una Consulta del listado → Ventana Modal con contenido completo.
-- **Excepciones:**
-  1. Consulta ya fue eliminada previamente → informa no disponible, actualiza listado.
-  2. Consulta del detalle falla por indisponibilidad del servicio → informa que el detalle no puede mostrarse temporalmente.
-
-### CU 41.1 – Actualizando estado de consultas (RF41)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 39.1
-- **Descripción:** Selector "Pendiente" / "En Proceso" / "Finalizada" dentro del modal de detalle; valida transición y actualiza BD.
-- **Excepciones:**
-  1. Selecciona el mismo estado ya vigente → no genera transacción.
-  2. BD no permite actualizar el estado → error, conserva estado anterior visible.
-
-### CU 43.1 – Añadiendo y Actualizando contenido multimedia (RF43, overview)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Descripción:** Selecciona sección (FAQ, Opiniones, Banner de Inicio, Fases Industriales) y operación (añadir/actualizar) → redirige a CU 43.2–43.9.
-- **Excepciones:**
-  1. Módulo no carga correctamente → informa indisponibilidad, solicita recargar.
-  2. Sin permisos sobre alguna sección → oculta la opción correspondiente.
-
-**Sub-casos de "Añadir" (uno por sección, mismo patrón: Formulario → validar → registrar en BD → actualizar vista):**
-- **CU 43.2** – Añadiendo en Preguntas Frecuentes (Pregunta + Respuesta + multimedia opcional). Dependencia: CU 43.1.
-  - Excepciones: 1) Pregunta/Respuesta vacías → rechaza. 2) Multimedia excede peso o formato no soportado → descarta archivo. 3) BD no permite almacenar → error, formulario abierto.
-- **CU 43.3** – Añadiendo en Banner (Imagen/Video + Texto Descriptivo). Dependencia: CU 43.1.
-  - Excepciones: 1) Archivo excede peso o formato incompatible → rechaza. 2) Texto Descriptivo vacío → rechaza. 3) BD no permite almacenar → error.
-- **CU 43.4** – Añadiendo en Fases Industriales (Nombre Fase + Texto + Imagen/Video). Dependencia: CU 43.1.
-  - Excepciones: 1) Nombre/Texto vacíos → rechaza. 2) Archivo excede peso/formato no compatible → rechaza. 3) BD no permite almacenar → error.
-- **CU 43.5** – Añadiendo en Opiniones (Nombre Cliente + Testimonio + imagen opcional). Dependencia: CU 43.1.
-  - Excepciones: 1) Nombre/Testimonio vacíos → rechaza. 2) Multimedia excede peso/formato no soportado → descarta. 3) BD no permite almacenar → error.
-
-**Sub-casos de "Actualizar" (uno por sección, mismo patrón: precarga Formulario → editar → validar → actualizar BD):**
-- **CU 43.6** – Actualizando en Preguntas Frecuentes. Dependencia: CU 43.2.
-  - Excepciones: 1) Entrada eliminada previamente → informa, actualiza listado. 2) Falla consulta de datos actuales → cancela edición. 3) Campos vacíos o archivo con formato no permitido → rechaza guardado. 4) BD no permite actualizar → error.
-- **CU 43.7** – Actualizando en Banner. Dependencia: CU 43.3.
-  - Excepciones: 1) Elemento eliminado previamente → informa, actualiza listado. 2) Falla consulta de datos actuales → cancela. 3) Archivo excede peso o Texto vacío → rechaza. 4) BD no permite actualizar → error.
-- **CU 43.8** – Actualizando en Fases Industriales. Dependencia: CU 43.4.
-  - Excepciones: 1) Fase eliminada previamente → informa, actualiza listado. 2) Falla consulta de datos actuales → cancela. 3) Archivo con formato no permitido o Texto vacío → rechaza. 4) BD no permite actualizar → error.
-- **CU 43.9** – Actualizando en Opiniones. Dependencia: CU 43.5.
-  - Excepciones: 1) Testimonio eliminado previamente → informa, actualiza listado. 2) Falla consulta de datos actuales → cancela. 3) Campos vacíos o archivo con formato no permitido → rechaza. 4) BD no permite actualizar → error.
-
-### CU 44.1 – Eliminando Contenido Multimedia (RF44, overview)
-- **Actor:** Personal de Administración
-- **Dependencia:** CU 27.1
-- **Descripción:** Ícono "Eliminar" + Ventana Modal de confirmación → Controlador verifica sesión y elimina de BD.
-- **Excepciones:**
-  1. Registro ya eliminado previamente → informa, actualiza listado.
-  2. BD no permite eliminar → error, mantiene registro visible.
-  3. Sesión administrativa expira durante la confirmación → deniega, redirige a login.
-
-**Sub-casos por sección (mismo patrón: ícono "Eliminar" → confirmar en modal → eliminar registro + archivo multimedia asociado de BD):**
-- **CU 44.2** – Eliminando en Preguntas Frecuentes. Dependencia: CU 44.1. Excepciones: 1) Ya eliminada por otra sesión → informa. 2) BD no permite eliminar entrada/archivo → error.
-- **CU 44.3** – Eliminando en Banner. Dependencia: CU 44.1. Excepciones: 1) Ya eliminado por otra sesión → informa. 2) BD no permite eliminar → error.
-- **CU 44.4** – Eliminando en Fases Industriales. Dependencia: CU 44.1. Excepciones: 1) Ya eliminada por otra sesión → informa. 2) BD no permite eliminar → error.
-- **CU 44.5** – Eliminando en Opiniones. Dependencia: CU 44.1. Excepciones: 1) Ya eliminado por otra sesión → informa. 2) BD no permite eliminar testimonio/archivo → error.
-
-### CU 46.1 – Editando colaboradores (RF46)
-- **Actor:** Personal de Administración
-- **Dependencias:** CU 27.1, CU 45.1
-- **Descripción:** Botón "Editar" → Formulario precargado (Nombre Comercial, Logotipo) en Ventana Modal → valida y actualiza BD.
-- **Excepciones:**
-  1. Colaborador eliminado previamente → informa, actualiza directorio.
-  2. Falla consulta de datos actuales → cancela proceso de edición.
-  3. Nombre Comercial vacío o Logotipo con formato no permitido → rechaza guardado, resalta campo.
-  4. Sesión administrativa expira durante la edición → redirige a login, evita guardar cambios no autorizados.
-
-### CU 50.1 – Editando visibilidad del proyecto (RF50)
-- **Actor:** Personal de Administración
-- **Dependencias:** CU 27.1, CU 48.1
-- **Descripción:** Menú desplegable en la tarjeta (Borrador ⇄ Publicado); Publicado = visible al público, Borrador = oculto.
-- **Excepciones:**
-  1. Selecciona el mismo estado ya vigente → sin transacción, tarjeta sin cambios.
-  2. BD no permite actualizar el estado de visibilidad → error, conserva estado anterior.
-
-### CU 51.1 – Eliminando proyecto (RF51)
-- **Actor:** Personal de Administración
-- **Dependencias:** CU 27.1, CU 48.1
-- **Descripción:** Ícono "Papelera" + confirmación en modal → elimina permanentemente registro e imágenes asociadas de BD.
-- **Excepciones:**
-  1. Proyecto ya eliminado previamente por otra sesión → informa, actualiza listado.
-  2. Sesión administrativa expira durante la confirmación → deniega, redirige a login.
-  3. BD no permite eliminar el registro o alguna imagen asociada → error, mantiene tarjeta visible, registra falla.
-
-> **Nota de comparación con `Documento_0.docx`:** el contenido temático coincide (mismos 22
-> RF cubiertos), pero el WIP es una revisión más nueva: cambia/añade excepciones en casi
-> todos los CU (p. ej. CU 18.1 pasa de 2 a 3 excepciones, CU 30.1 de 2 a 4), corrige
-> dependencias (CU 18.1 ahora depende de CU 20.1, antes de "Ninguna") y —el cambio más
-> relevante para el diseño— **desglosa 6 requerimientos en 20 sub-casos de uso adicionales**
-> (RF28, RF31, RF34, RF36, RF43, RF44). Se usó el WIP como fuente definitiva.
-
----
-
-
-## 7. Notas para la reconstrucción
-
-1. **Entidades del modelo de datos** (según MERE de Incremento 1-2): `Visitante`, `Consulta`,
-   `Administrador`, `Sesion`, `Recuperacion_Password`, `Proyecto`, `Imagen_Proyecto`,
-   `Certificado`, `Colaborador`, `Contenido`. 3FN, sin atributos repetidos ni dependencias
-   transitivas.
-2. **RF07** y **RF13–RF17** pertenecen al Incremento 3 vigente. Su implementación
-   se describe en la sección siguiente; las comprobaciones de entorno siguen pendientes.
-3. El Administrador Jefe y la gestión de cuentas (CU 52.1, CU 53.1) forman parte
-   del Incremento 3 vigente.
-4. Todos los flujos "Personal de Administración" dependen de **CU 27.1** (autenticación) como
-   precondición transversal — implementar el middleware de auth de Laravel primero.
-## 8. Requerimientos Funcionales — Incremento 3 (16 RF)
-
-| ID | Implementación vigente |
-|---|---|
-| RF07 | Acuse de consulta al visitante tras persistirla; el resultado del envío se refleja en el mensaje. |
-| RF13 | Carrusel y nombres comerciales de colaboradores persistidos. |
-| RF14 | Preguntas frecuentes vigentes desde `Contenido`. |
-| RF15 | Opiniones vigentes desde `Contenido`. |
-| RF16 | Fases industriales vigentes agrupadas y ordenadas. |
-| RF17 | Galería de imágenes de cada fase y ampliación en modal. |
-| RF22 | Mapa Leaflet con marcadores de proyectos publicados con coordenadas. |
-| RF35 | Alerta por correo a administradores activos tras nueva consulta; estado pendiente persistente si falla. |
-| RF37 | Orden del historial comercial por fecha. |
-| RF38 | Búsqueda textual en el historial comercial. |
-| RF40 | Registro del último administrador responsable cuando cambia prioridad o estado de una consulta. |
-| RF42 | Exportación de consultas en CSV y XLSX. |
-| RF52 | Listado y alta de administradores restringidos al Administrador Jefe. |
-| RF53 | Eliminación transaccional de administrador con conservación de datos de negocio. |
-| RF54 | Productos y componentes persistidos, visibles en la portada. |
-| RF55 | Banner vigente y dinámico en la portada. |
-
-La matriz `MATRIZ_RF_TESTS_INCREMENTO3.md` registra la implementación, pruebas
-automatizadas y validaciones manuales de RF01–RF55. La suite Laravel y el build
-han pasado en SQLite local; el cierre de Incremento 3 **aún no se acredita** hasta
-verificar MySQL 5.6, navegadores requeridos y los cinco paquetes secuenciales.
+| RNF01 | Seguridad | El sistema debe garantizar la confidencialidad e integridad de las credenciales de acceso del Personal de Administración en la Base de Datos. Para ello, el sistema debe persistir obligatoriamente toda Contraseña de Acceso utilizando un algoritmo de Hash Criptográfico unidireccional y seguro, impidiendo la visualización o almacenamiento de claves en texto plano. |
+| RNF02 | Sesión | El sistema debe gestionar la autenticación mediante Token de Sesión, asegurando su expiración automática tras inactividad o cierre de sesión, evitando accesos no autorizados. |
+| RNF03 | Autorización | El sistema debe restringir el acceso al Panel de Gestión exclusivamente al Personal de Administración, impidiendo el acceso a usuarios no autorizados, y verificar en el servidor, antes de ejecutar cada acción, que la cuenta tenga el permiso o el rol que esa acción requiere, sin limitarse a ocultar las opciones en la interfaz. |
+| RNF04 | Control | El sistema debe verificar tipo, tamaño y formato de los archivos antes de su almacenamiento, rechazando aquellos cuyo tipo no corresponda a PDF o cuyo tamaño exceda el límite permitido. |
+| RNF05 | Protección | El sistema debe validar y sanitizar todos los datos ingresados por el Usuario para prevenir la ejecución de código malicioso. |
+| RNF06 | Complejidad | El sistema debe exigir que toda Contraseña de Acceso del Personal de Administración tenga un mínimo de 8 caracteres e incluya al menos una letra mayúscula, una minúscula, un número y un carácter especial, rechazando el registro o el cambio de contraseñas que no cumplan estas reglas. |
+| RNF07 | Disponibilidad | El sistema debe garantizar una disponibilidad mínima del 99.5% mensual para la interfaz pública y el Panel de Gestión. |
+| RNF08 | Adaptabilidad | El sistema debe adaptar automáticamente su interfaz a dispositivos de escritorio, móviles y tabletas inteligentes. |
+| RNF09 | Rapidez | El sistema debe responder a cada Acción de Usuario en un tiempo máximo de 2 segundos en condiciones normales. |
+| RNF10 | Usabilidad | El sistema debe manejar errores mediante Mensajes del Sistema claros, evitando mostrar información técnica al Usuario. |
+| RNF11 | Automatización | El sistema debe calcular y mostrar dinámicamente los años de experiencia de la empresa basándose en el año 1994. |
+| RNF12 | Almacenamiento | El sistema debe garantizar la Persistencia de los datos en la Base de Datos. |
+| RNF13 | Validación | El sistema debe validar todos los datos ingresados por el Usuario antes de su procesamiento. |
+| RNF14 | Respaldo | El sistema debe realizar copias de seguridad de la Base de Datos al menos una vez cada 24 horas, conservando cada copia por un máximo de 30 días y eliminándola automáticamente al cumplirse ese plazo. |
+| RNF15 | Rendimiento | El sistema debe mantener tiempos de respuesta menores a 3 segundos con al menos 100 usuarios concurrentes. |
+| RNF16 | Compatibilidad | El sistema debe ser compatible con navegadores modernos como Chrome, Edge y Brave en sus versiones recientes. |
+| RNF17 | Control | El sistema debe restringir la carga de archivos gráficos a formatos optimizados para entornos web: JPG, JPEG, PNG. El peso máximo por archivo será de 500 KB para Logotipos y 2 MB para Imágenes. |
+| RNF18 | Privacidad | El sistema debe proporcionar al Visitante un canal de comunicación directa con la empresa, mediante el teléfono y el correo electrónico de contacto mostrados en el Pie de Página, a través del cual pueda ejercer los derechos que la ley le otorga sobre sus datos personales. La Política de Privacidad debe informar este canal y el plazo de respuesta de 30 días corridos. |
+| RNF19 | Seguridad | El sistema debe limitar el envío del Formulario de Contacto a un máximo de cinco envíos por hora desde una misma dirección IP e incorporar un campo oculto de detección de envíos automatizados validado en el servidor, rechazando los envíos que lo completen, sin depender de servicios de verificación de terceros. La dirección IP solo debe usarse para este control, sin guardarse junto a la Consulta ni conservarse por más de 24 horas. |
+| RNF20 | Control | El sistema debe mostrar al Personal de Administración, en el Módulo de Certificados, un aviso por cada Certificación cuya Fecha de Vencimiento se cumpla dentro de los próximos 30 días, indicando su Nombre de la Normativa y su Fecha de Vencimiento. |
+| RNF21 | Seguridad | El sistema debe invalidar todos los Tokens de Sesión activos de una cuenta del Personal de Administración, excepto el de la sesión en uso, cuando su contraseña sea cambiada o restablecida exitosamente. |
+| RNF22 | Privacidad | El sistema debe servir desde su propio servidor las fuentes tipográficas y las librerías que utiliza, sin cargarlas desde servidores de terceros, y fijar la versión exacta de cada librería, de modo que la navegación del Visitante no envíe su dirección IP a terceros, salvo en el Mapa Interactivo, lo que debe informarse en la Política de Privacidad. |
+| RNF23 | Privacidad | El sistema debe incluir en sus registros de errores únicamente identificadores y códigos de error, sin correos, nombres ni mensajes de los Visitantes o del Personal de Administración. |
+| RNF24 | Privacidad | El sistema debe eliminar automáticamente de la Base de Datos, sin requerir una Acción de Usuario, toda Consulta que cumpla 30 días desde que su estado cambió a “Finalizada” y toda Consulta que cumpla 6 meses sin cambios de estado, junto con los datos del Visitante asociado (Nombre, Apellido y Email) cuando este no tenga otras Consultas registradas. |

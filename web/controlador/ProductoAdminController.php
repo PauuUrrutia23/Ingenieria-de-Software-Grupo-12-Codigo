@@ -76,7 +76,6 @@ class ProductoAdminController extends Controller
     public function update(ProductoRequest $request, int $producto)
     {
         $datos = $request->validated();
-        $request->merge(['producto_id' => $producto]);
         $rutaNueva = null;
         $rutaAnterior = null;
         try {
