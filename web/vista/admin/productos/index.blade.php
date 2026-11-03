@@ -13,7 +13,7 @@
 
         <div class="flex justify-between items-center gap-4 mb-6">
             <p class="ig-meta">{{ $productos->count() }} productos</p>
-            <button type="button" class="ig-btn ig-btn-primary" @click="crear = true">Agregar producto</button>
+            <button type="button" class="ig-btn ig-btn-primary" @click="crear = true">Agregar Producto</button>
         </div>
 
         <div class="ig-card divide-y divide-line">
@@ -26,11 +26,13 @@
                     <button type="button" class="ig-btn ig-btn-secondary" @click="abrirEditar({{ $producto->id_producto }})">Editar</button>
                 </div>
             @empty
+                @unless(session('listado_no_disponible'))
                 <p class="p-8 text-mute">Aún no hay productos.</p>
+                @endunless
             @endforelse
         </div>
 
-        <x-modal show="crear" titulo="Agregar producto" ancho="max-w-2xl" :errores="old('formulario_producto') === 'crear'">
+        <x-modal show="crear" titulo="Agregar Producto" ancho="max-w-2xl" :errores="old('formulario_producto') === 'crear'">
             <form action="{{ route('admin.productos.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf
                 <input type="hidden" name="formulario_producto" value="crear">

@@ -101,7 +101,8 @@ class PermisosAdministradorTest extends TestCase
 
         $con = $this->loginAdmin($this->cuenta(['correo' => 'editor@ingecon.cl', 'perm_editar_contenido' => true]))
             ->get('/admin/dashboard')->assertOk();
-        foreach ($modulos as $ruta) {
+        // Productos no va en el Menú Lateral (RF34): se abre desde la pestaña del Panel de gestión (RF43).
+        foreach (array_diff($modulos, ['admin.productos.index']) as $ruta) {
             $con->assertSee('href="' . route($ruta) . '"', false);
         }
     }

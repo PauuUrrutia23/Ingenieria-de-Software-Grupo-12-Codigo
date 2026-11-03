@@ -11,7 +11,6 @@ use App\Services\StorageAdapter;
 use App\Support\Rnf17;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class AdminController extends Controller
@@ -29,7 +28,10 @@ class AdminController extends Controller
 
     public function colaboradoresIndex()
     {
-        $colaboradores = $this->db->query(Colaborador::class)->orderBy('id_colaborador', 'desc')->paginate(15);
+        $colaboradores = $this->cargarListado(
+            fn () => $this->db->query(Colaborador::class)->orderBy('id_colaborador', 'desc')->paginate(15),
+            $this->paginaVacia(15)
+        );
         return view('admin.colaboradores.index', compact('colaboradores'));
     }
 
@@ -54,7 +56,7 @@ class AdminController extends Controller
             $ruta = $this->storage->guardar($request->file('logotipo'), 'colaboradores');
             $data['logotipo'] = $ruta;
             $data['tipo_mime'] = $request->file('logotipo')->getMimeType();
-            DB::transaction(function () use ($data) {
+            $this->db->transaccion(function () use ($data) {
                 $colaborador = $this->db->create(Colaborador::class, $data);
                 Historial::registrar('creacion', 'colaboradores', $colaborador->id_colaborador, null, $colaborador->getAttributes());
             });
@@ -101,7 +103,7 @@ class AdminController extends Controller
         ]);
 
         try {
-            $colaborador = Colaborador::query()->find($colaboradore);
+            $colaborador = $this->db->query(Colaborador::class)->find($colaboradore);
         } catch (\Throwable $e) {
             return back()->withErrors(['colaborador' => 'No se pudo cargar el colaborador.']);
         }
@@ -118,7 +120,7 @@ class AdminController extends Controller
                 $data['logotipo'] = $logoNuevo;
                 $data['tipo_mime'] = $request->file('logotipo')->getMimeType();
             }
-            DB::transaction(function () use ($colaborador, $data) {
+            $this->db->transaccion(function () use ($colaborador, $data) {
                 $antes = $colaborador->getAttributes();
                 $this->db->update($colaborador, $data);
                 Historial::registrar('modificacion', 'colaboradores', $colaborador->id_colaborador, $antes, $colaborador->getAttributes());
@@ -139,11 +141,11 @@ class AdminController extends Controller
     public function colaboradoresDestroy(int $colaboradore)
     {
         try {
-            $registro = Colaborador::query()->find($colaboradore);
+            $registro = $this->db->query(Colaborador::class)->find($colaboradore);
             if (!$registro) return redirect()->route('admin.colaboradores.index')
                 ->withErrors(['colaborador' => 'El colaborador ya no está disponible.']);
             $logo = $registro->logotipo;
-            DB::transaction(function () use ($registro) {
+            $this->db->transaccion(function () use ($registro) {
                 $this->db->delete($registro);
                 Historial::registrar('eliminacion', 'colaboradores', $registro->id_colaborador, $registro->getAttributes());
             });
@@ -197,7 +199,7 @@ class AdminController extends Controller
         return [
             'titulo' => [isset($obligatorios['titulo']) ? 'required' : 'nullable', 'string', 'max:200'],
             'cuerpo' => [isset($obligatorios['cuerpo']) ? 'required' : 'nullable', 'string'],
-            'archivo' => array_merge(['nullable'], Rnf17::reglasContenido()),
+            'archivo' => array_merge(['nullable'], Rnf17::reglasImagen()),
         ];
     }
 
@@ -213,7 +215,10 @@ class AdminController extends Controller
             $seccionActual = 'faq';
         }
 
-        $contenidos = $this->db->query(Contenido::class)->where('seccion', $seccionActual)->orderBy('id_contenido')->get();
+        $contenidos = $this->cargarListado(
+            fn () => $this->db->query(Contenido::class)->where('seccion', $seccionActual)->orderBy('id_contenido')->get(),
+            collect()
+        );
 
         return view('admin.contenido.index', [
             'contenidos' => $contenidos,
@@ -259,7 +264,7 @@ class AdminController extends Controller
                 $data['archivo'] = $rutaNueva;
                 $data['tipo_mime'] = $request->file('archivo')->getMimeType();
             }
-            DB::transaction(function () use ($data) {
+            $this->db->transaccion(function () use ($data) {
                 $contenido = $this->db->create(Contenido::class, $data);
                 Historial::registrar('creacion', 'contenido', $contenido->id_contenido, null, $contenido->getAttributes());
             });
@@ -299,7 +304,7 @@ class AdminController extends Controller
                 $data['archivo'] = $rutaNueva;
                 $data['tipo_mime'] = $request->file('archivo')->getMimeType();
             }
-            DB::transaction(function () use ($contenido, $data) {
+            $this->db->transaccion(function () use ($contenido, $data) {
                 $antes = $contenido->getAttributes();
                 $this->db->update($contenido, $data);
                 Historial::registrar('modificacion', 'contenido', $contenido->id_contenido, $antes, $contenido->getAttributes());
@@ -322,14 +327,14 @@ class AdminController extends Controller
     public function contenidoDestroy(int $contenido)
     {
         try {
-            $registro = Contenido::query()->find($contenido);
+            $registro = $this->db->query(Contenido::class)->find($contenido);
             if (!$registro) {
                 return redirect()->route('admin.contenido.index')
                     ->withErrors(['contenido' => 'El contenido ya no está disponible.']);
             }
             $seccion = $registro->seccion;
             $archivo = $registro->archivo;
-            DB::transaction(function () use ($registro) {
+            $this->db->transaccion(function () use ($registro) {
                 $this->db->delete($registro);
                 Historial::registrar('eliminacion', 'contenido', $registro->id_contenido, $registro->getAttributes());
             });
@@ -358,7 +363,7 @@ class AdminController extends Controller
             ->when($q !== '', fn ($query) => $query->where('mensaje', 'like', '%' . $q . '%'))
             ->orderBy('created_at', $orden)
             ->orderBy('id_consulta', $orden);
-        $consultas = $consulta->paginate(10)->withQueryString();
+        $consultas = $this->cargarListado(fn () => $consulta->paginate(10)->withQueryString(), $this->paginaVacia(10));
 
         if ($consultas->total() > 0 && $consultas->currentPage() > $consultas->lastPage()) {
             return redirect()->route('admin.consultas.index', [
@@ -482,11 +487,11 @@ class AdminController extends Controller
         ])['ids'];
 
         try {
-            $existentes = DB::transaction(function () use ($ids) {
-                $existentes = Consulta::query()->whereIn('id_consulta', $ids)->lockForUpdate()->pluck('id_visitante', 'id_consulta');
-                Consulta::query()->whereIn('id_consulta', $existentes->keys())->delete();
+            $existentes = $this->db->transaccion(function () use ($ids) {
+                $existentes = $this->db->query(Consulta::class)->whereIn('id_consulta', $ids)->lockForUpdate()->pluck('id_visitante', 'id_consulta');
+                $this->db->query(Consulta::class)->whereIn('id_consulta', $existentes->keys())->delete();
                 // RF58: se eliminan los datos del Visitante que ya no tiene otras Consultas.
-                Visitante::query()->whereIn('id_visitante', $existentes->unique()->values())->whereDoesntHave('consultas')->delete();
+                $this->db->query(Visitante::class)->whereIn('id_visitante', $existentes->unique()->values())->whereDoesntHave('consultas')->delete();
                 // CU 15.4, Excepción 3: solo el identificador de cada Consulta.
                 foreach ($existentes->keys() as $id) {
                     Historial::registrar('eliminacion', 'consultas', $id);
@@ -520,8 +525,8 @@ class AdminController extends Controller
         ]);
 
         try {
-            $cambioReal = DB::transaction(function () use ($request, $consulta) {
-                $actual = Consulta::query()->whereKey($consulta->id_consulta)->lockForUpdate()->first();
+            $cambioReal = $this->db->transaccion(function () use ($request, $consulta) {
+                $actual = $this->db->query(Consulta::class)->whereKey($consulta->id_consulta)->lockForUpdate()->first();
                 if (!$actual) {
                     return null;
                 }

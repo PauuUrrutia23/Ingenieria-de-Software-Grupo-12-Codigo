@@ -9,6 +9,10 @@ use Illuminate\Pagination\LengthAwarePaginator;
 // RF15: Módulo de Historial de Cambios, solo para el Administrador jefe.
 class HistorialController extends Controller
 {
+    public function __construct(private DBRouterController $db)
+    {
+    }
+
     public function index(Request $request)
     {
         $tipo = array_key_exists($request->query('tipo'), HistorialCambio::TIPOS) ? $request->query('tipo') : 'todos';
@@ -25,7 +29,7 @@ class HistorialController extends Controller
                 ->withInput();
         }
 
-        $consulta = HistorialCambio::query();
+        $consulta = $this->db->query(HistorialCambio::class);
         if ($tipo !== 'todos') {
             $consulta->whereIn('accion', HistorialCambio::TIPOS[$tipo]);
         }
@@ -51,7 +55,7 @@ class HistorialController extends Controller
         $errorCarga = false;
         try {
             $registros = $consulta->orderByDesc('fecha_hora')->orderByDesc('id_historial')->paginate(15)->withQueryString();
-            $responsables = HistorialCambio::query()->distinct()->orderBy('correo_responsable')->pluck('correo_responsable');
+            $responsables = $this->db->query(HistorialCambio::class)->distinct()->orderBy('correo_responsable')->pluck('correo_responsable');
         } catch (\Throwable $e) {
             // CU 15.1, Excepción 2.
             report($e);
@@ -72,7 +76,7 @@ class HistorialController extends Controller
     public function detalle(int $registro)
     {
         try {
-            $r = HistorialCambio::query()->find($registro);
+            $r = $this->db->query(HistorialCambio::class)->find($registro);
         } catch (\Throwable $e) {
             return response()->json(['message' => 'El detalle no puede mostrarse temporalmente.'], 503);
         }

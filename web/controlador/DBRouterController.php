@@ -4,9 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as ConsultaTabla;
+use Illuminate\Support\Facades\DB;
 
+// Diagrama de Componentes y diagramas de secuencia (C_DBRouter): todo acceso a la Base de Datos pasa por aquí.
 class DBRouterController extends Controller
 {
+    public function transaccion(callable $operacion): mixed
+    {
+        return DB::transaction($operacion);
+    }
+
+    public function tabla(string $tabla): ConsultaTabla
+    {
+        return DB::table($tabla);
+    }
+
     public function query(string $modelo): Builder
     {
         return $modelo::query();

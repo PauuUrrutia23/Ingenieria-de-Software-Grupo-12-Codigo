@@ -11,7 +11,6 @@ use App\Services\StorageAdapter;
 use App\Support\CategoriasProyecto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\Rule;
 
@@ -161,7 +160,10 @@ class ProyectoController extends Controller
 
     public function index()
     {
-        $proyectos = $this->db->query(Proyecto::class)->with('imagenes')->orderBy('id_proyecto', 'desc')->paginate(15);
+        $proyectos = $this->cargarListado(
+            fn () => $this->db->query(Proyecto::class)->with('imagenes')->orderBy('id_proyecto', 'desc')->paginate(15),
+            $this->paginaVacia(15)
+        );
         return view('admin.proyectos.index', compact('proyectos'));
     }
 
@@ -181,7 +183,7 @@ class ProyectoController extends Controller
         $archivosEscritos = [];
 
         try {
-            DB::transaction(function () use ($request, $data, &$archivosEscritos) {
+            $this->db->transaccion(function () use ($request, $data, &$archivosEscritos) {
                 $proyecto = $this->db->create(Proyecto::class, $data);
 
                 if ($request->hasFile('imagenes')) {
@@ -223,7 +225,7 @@ class ProyectoController extends Controller
     public function detalleEdicion(int $proyecto)
     {
         try {
-            $registro = Proyecto::query()->withCount('imagenes')->find($proyecto);
+            $registro = $this->db->query(Proyecto::class)->withCount('imagenes')->find($proyecto);
         } catch (\Throwable $e) {
             report($e);
             return response()->json(['message' => 'No se pudo cargar el proyecto. Intente nuevamente.'], 503);
@@ -260,7 +262,7 @@ class ProyectoController extends Controller
         $datos = collect($request->validated())->except('imagenes')->all();
         $archivosEscritos = [];
         try {
-            DB::transaction(function () use ($proyecto, $datos, $request, &$archivosEscritos) {
+            $this->db->transaccion(function () use ($proyecto, $datos, $request, &$archivosEscritos) {
                 $antes = $proyecto->getAttributes();
                 $this->db->update($proyecto, $datos);
                 foreach ($request->file('imagenes', []) as $file) {
@@ -293,7 +295,7 @@ class ProyectoController extends Controller
         ]);
 
         try {
-            $registro = Proyecto::query()->find($proyecto);
+            $registro = $this->db->query(Proyecto::class)->find($proyecto);
         } catch (\Throwable $e) {
             report($e);
             return back()->withErrors(['estado_publicacion' => 'No se pudo consultar el proyecto. Intente nuevamente.']);
@@ -315,7 +317,7 @@ class ProyectoController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($registro, $data) {
+            $this->db->transaccion(function () use ($registro, $data) {
                 $antes = $registro->getAttributes();
                 $this->db->update($registro, $data);
                 Historial::registrar('modificacion', 'proyectos', $registro->id_proyecto, $antes, $registro->getAttributes());
@@ -332,8 +334,8 @@ class ProyectoController extends Controller
     public function destroy(int $proyecto)
     {
         try {
-            $rutas = DB::transaction(function () use ($proyecto) {
-                $registro = Proyecto::query()->whereKey($proyecto)->lockForUpdate()->first();
+            $rutas = $this->db->transaccion(function () use ($proyecto) {
+                $registro = $this->db->query(Proyecto::class)->whereKey($proyecto)->lockForUpdate()->first();
                 if (!$registro) return null;
                 $imagenes = $registro->imagenes;
                 $rutas = $imagenes->pluck('imagen')->all();
@@ -362,7 +364,7 @@ class ProyectoController extends Controller
     {
         // Primero la base y el Historial; el archivo se borra solo si ambos se guardaron.
         try {
-            DB::transaction(function () use ($imagen) {
+            $this->db->transaccion(function () use ($imagen) {
                 $this->db->delete($imagen);
                 Historial::registrar('modificacion', 'proyectos', $imagen->id_proyecto, ['imagen' => $imagen->nombre_archivo], ['imagen' => null]);
             });

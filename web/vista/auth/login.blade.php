@@ -111,7 +111,7 @@
                         <div class="flex items-center justify-between gap-4 pt-1">
                             <button type="button" @click="acceso = false; olvide = true"
                                     class="text-xs font-medium tracking-[0.08em] text-wood-deep hover:text-carbon transition-colors">
-                                ¿Olvidó su contraseña?
+                                Olvidé mi contraseña
                             </button>
                             <button type="submit" class="ig-btn ig-btn-primary">
                                 Iniciar Sesión

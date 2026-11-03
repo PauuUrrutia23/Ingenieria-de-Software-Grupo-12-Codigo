@@ -24,7 +24,10 @@
                 <label for="buscar-consultas" class="ig-label">Buscar en mensajes</label>
                 <input id="buscar-consultas" name="q" value="{{ $q }}" maxlength="200" class="ig-input" placeholder="Texto de la consulta">
             </div>
-            <button type="submit" class="ig-btn ig-btn-primary">Buscar</button>
+            {{-- RF38 / CU 38.1: se activa con el icono de búsqueda. --}}
+            <button type="submit" class="ig-btn ig-btn-primary !px-4" aria-label="Buscar en los mensajes" title="Buscar">
+                <i data-lucide="search" class="h-4 w-4"></i>
+            </button>
             @if($q !== '')
                 <a href="{{ route('admin.consultas.index', ['orden' => $orden]) }}" class="ig-btn ig-btn-secondary">Limpiar</a>
             @endif
@@ -62,10 +65,17 @@
                         <tr>
                             <th scope="col" class="px-5 py-3 w-10"><span class="sr-only">Selección</span></th>
                             <th scope="col" class="ig-meta px-5 py-3 font-normal whitespace-nowrap">
-                                <a href="{{ route('admin.consultas.index', ['q' => $q, 'orden' => $orden === 'asc' ? 'desc' : 'asc']) }}"
-                                   aria-label="Ordenar por fecha {{ $orden === 'asc' ? 'descendente' : 'ascendente' }}">
-                                    Fecha {{ $orden === 'asc' ? '↑' : '↓' }}
-                                </a>
+                                {{-- CU 37.1, Excepción 1: sin consultas el ordenamiento queda desactivado. --}}
+                                @if($consultas->total() > 0)
+                                    <a href="{{ route('admin.consultas.index', ['q' => $q, 'orden' => $orden === 'asc' ? 'desc' : 'asc']) }}"
+                                       aria-label="Ordenar por fecha {{ $orden === 'asc' ? 'descendente' : 'ascendente' }}">
+                                        Fecha {{ $orden === 'asc' ? '↑' : '↓' }}
+                                    </a>
+                                @else
+                                    <span aria-disabled="true" class="opacity-50 cursor-not-allowed">
+                                        Fecha {{ $orden === 'asc' ? '↑' : '↓' }}
+                                    </span>
+                                @endif
                             </th>
                             <th scope="col" class="ig-meta px-5 py-3 font-normal whitespace-nowrap">Visitante</th>
                             <th scope="col" class="ig-meta px-5 py-3 font-normal whitespace-nowrap">Estado</th>
@@ -124,6 +134,7 @@
                             </td>
                         </tr>
                         @empty
+                            @unless(session('listado_no_disponible'))
                         <tr><td colspan="7" class="px-5 py-16 text-center">
                             <div class="flex flex-col items-center">
                                 <i data-lucide="inbox" class="w-12 h-12 text-line-strong mb-3"></i>
@@ -131,6 +142,7 @@
                                 <p class="text-mute text-sm mt-1">{{ $q !== '' ? 'Pruebe con otro texto.' : 'Las consultas del formulario de contacto aparecerán aquí.' }}</p>
                             </div>
                         </td></tr>
+                            @endunless
                         @endforelse
                     </tbody>
                 </table>

@@ -15,16 +15,15 @@
             $active = request()->is($pattern);
             return compact('active', 'icon', 'label', 'href');
         };
-        // CU 59.2: los módulos de contenido solo se muestran con el permiso Editar Contenido.
+        // RF34 / CU 34.1: solo los módulos que nombra el RF. CU 59.2: los de contenido requieren Editar Contenido.
+        // Productos se gestiona como pestaña del Panel de gestión (RF43).
         $editaContenido = Auth::user()->puede('editar_contenido');
         $items = array_values(array_filter([
-            $navItem('admin/dashboard', 'layout-dashboard', 'Dashboard', '/admin/dashboard'),
             $editaContenido ? $navItem('admin/proyectos*', 'hard-hat', 'Gestión de proyectos', route('admin.proyectos.index')) : null,
             $editaContenido ? $navItem('admin/certificados*', 'shield-check', 'Certificados', route('admin.certificados.index')) : null,
             $editaContenido ? $navItem('admin/colaboradores*', 'handshake', 'Colaboradores', route('admin.colaboradores.index')) : null,
             $navItem('admin/consultas*', 'inbox', 'Módulo comercial', route('admin.consultas.index')),
             $editaContenido ? $navItem('admin/contenido*', 'layout-panel-left', 'Panel de gestión', route('admin.contenido.index')) : null,
-            $editaContenido ? $navItem('admin/productos*', 'package', 'Productos', route('admin.productos.index')) : null,
         ]));
         if (Auth::user()->rol === 'admin_jefe') {
             $items[] = $navItem('admin/administradores*', 'users', 'Administración', route('admin.administradores.index'));
@@ -120,6 +119,12 @@
                     </h1>
                 </header>
                 <div class="ig-rule mb-8" aria-hidden="true"></div>
+
+                @if(session('listado_no_disponible'))
+                    <p role="alert" class="mb-6 border border-line-strong bg-paper-deep px-5 py-3 text-sm text-wood-deep">
+                        No fue posible cargar el listado. Intente nuevamente más tarde.
+                    </p>
+                @endif
 
                 {{ $slot }}
             </div>

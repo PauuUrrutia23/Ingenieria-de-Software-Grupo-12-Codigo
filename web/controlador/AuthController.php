@@ -10,7 +10,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -95,8 +94,8 @@ class AuthController extends Controller
         }
 
         try {
-            $bloqueado = DB::transaction(function () use ($admin) {
-                $actual = Administrador::query()->whereKey($admin->id_admin)->lockForUpdate()->firstOrFail();
+            $bloqueado = $this->db->transaccion(function () use ($admin) {
+                $actual = $this->db->query(Administrador::class)->whereKey($admin->id_admin)->lockForUpdate()->firstOrFail();
                 $intentos = $actual->intentos_fallidos + 1;
                 $cambios = ['intentos_fallidos' => $intentos];
                 if ($intentos >= 5) $cambios['bloqueado_hasta'] = Carbon::now()->addMinutes(60);
@@ -162,9 +161,9 @@ class AuthController extends Controller
         try {
             // RNF21 / CU 28.2: se cierran las demás sesiones de la cuenta y se conserva la que está en uso.
             $tokenActual = hash('sha256', (string) $request->session()->get('sesion_ingecon'));
-            DB::transaction(function () use ($admin, $request, $tokenActual) {
+            $this->db->transaccion(function () use ($admin, $request, $tokenActual) {
                 $this->db->update($admin, ['password_hash' => Hash::make($request->password)]);
-                Sesion::query()->where('id_admin', $admin->id_admin)->where('estado', 'activa')
+                $this->db->query(Sesion::class)->where('id_admin', $admin->id_admin)->where('estado', 'activa')
                     ->where('token_hash', '!=', $tokenActual)->update(['estado' => 'cerrada']);
             });
         } catch (\Throwable $e) {
@@ -238,15 +237,15 @@ class AuthController extends Controller
         }
 
         try {
-            $actualizada = DB::transaction(function () use ($recuperacion, $request) {
-                $token = RecuperacionPassword::query()->whereKey($recuperacion->id_recuperacion)
+            $actualizada = $this->db->transaccion(function () use ($recuperacion, $request) {
+                $token = $this->db->query(RecuperacionPassword::class)->whereKey($recuperacion->id_recuperacion)
                     ->whereNull('usado_en')->where('expira_en', '>', Carbon::now())
                     ->lockForUpdate()->first();
                 if (!$token || !$token->administrador) return false;
                 $this->db->update($token->administrador, ['password_hash' => Hash::make($request->password)]);
                 $this->db->update($token, ['usado_en' => Carbon::now()]);
                 // RNF21 / CU 31.2: se cierran todas las sesiones abiertas de la cuenta.
-                Sesion::query()->where('id_admin', $token->id_admin)->where('estado', 'activa')->update(['estado' => 'cerrada']);
+                $this->db->query(Sesion::class)->where('id_admin', $token->id_admin)->where('estado', 'activa')->update(['estado' => 'cerrada']);
                 return true;
             });
         } catch (\Throwable $e) {

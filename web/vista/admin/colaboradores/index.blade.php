@@ -50,11 +50,13 @@
                 </button>
             </article>
             @empty
+                @unless(session('listado_no_disponible'))
             <div class="col-span-full flex flex-col items-center justify-center py-20 text-center">
                 <i data-lucide="handshake" class="w-14 h-14 text-line-strong mb-4"></i>
                 <p class="text-mute-deep font-medium mb-1">Aún no hay registros</p>
                 <p class="text-mute text-sm mb-5">Agrega el primer colaborador usando el botón superior.</p>
             </div>
+                @endunless
             @endforelse
         </div>
 

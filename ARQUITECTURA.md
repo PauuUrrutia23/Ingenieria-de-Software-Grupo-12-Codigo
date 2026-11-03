@@ -1,6 +1,6 @@
-# Ingecon — Arquitectura e historial de implementación (Incrementos 1, 2 y 3)
+# Ingecon — Arquitectura e historial de implementación (Incrementos 1 a 4)
 
-> **Alcance vigente:** Incrementos 1 + 2 + 3 — **55 Requerimientos Funcionales** (16 I1 + 23 I2 + 16 I3), 17 RNF.
+> **Alcance vigente:** Incrementos 1 a 4 — **59 Requerimientos Funcionales**, 92 Casos de Uso y 24 RNF.
 > **Obligatorios:** RF55 (Banner), CU27.2 (recuperación de contraseña) y CU40.2 (responsable de Consulta).
 > **RNF17:** logotipos ≤500 KB; fotografías/imágenes ≤2 MB; sólo JPG/JPEG/PNG. No se declaran válidos WebP ni MP4.
 
@@ -11,8 +11,8 @@
 > no constituyen evidencia de ejecución ni de pruebas.
 >
 > El diagrama de componentes (§1.1) y el modelo de datos (§3) están tomados directamente de
-> los diagramas oficiales del equipo: `Ingecon_Diagrama_Componentes_hosting_cPanel.drawio` y
-> `DiagramasBD_completos_proyecto_v4 MYSQL(1).drawio` — no son una propuesta nueva, son la
+> los diagramas oficiales del equipo (`incremento4/carpeta_final`): `Ingecon_Diagrama_Componentes (3).drawio` y
+> `Vista_Logica_Incremento4 (1).drawio` — no son una propuesta nueva, son la
 > arquitectura y el esquema de BD ya definidos, traducidos aquí a estructura Laravel concreta.
 >
 > **Nota de ruta:** el código vive repartido en 4 carpetas dentro de [`web/`](web/):
@@ -24,7 +24,8 @@
 > [`README.md`](README.md#estructura-del-proyecto). Las rutas de este documento (§2 y las
 > fases) usan los nombres de carpeta Laravel convencionales (`app/Http/Controllers`,
 > `resources/views`, etc.) por claridad de arquitectura — mentalmente traducilos a la carpeta
-> real usando esa tabla.
+> real usando esa tabla. Los nombres de clase de §2 y de las fases son los del plan original;
+> las clases que existen hoy son las de la tabla de §1.1.
 
 ---
 
@@ -61,7 +62,7 @@
 - Sin proceso persistente: un único **Cron Job de cPanel** ejecuta `php artisan schedule:run` cada minuto, y el scheduler de Laravel decide qué corre. Hoy: `backup:run` a las 02:00 (RNF14, borra copias de más de 30 días) y `consultas:depurar` a las 03:00 (RNF24).
 - Todas las subidas de archivos (imágenes, PDFs) van a `storage/app/public` con symlink (`php artisan storage:link`), nunca a la BD como BLOB (excepto restricciones RT-02).
 
-### 1.1 Diagrama de Componentes oficial (`Ingecon_Diagrama_Componentes_hosting_cPanel.drawio`)
+### 1.1 Diagrama de Componentes oficial (`Ingecon_Diagrama_Componentes (3).drawio`)
 
 El equipo ya definió la arquitectura de componentes en detalle (notación UML `«Boundary»` /
 `«Control»` / `«Entity»`). Este es el diagrama de referencia — todo controller/servicio que se
@@ -101,24 +102,29 @@ Visitante ─┐                                      ┌─▶ OpenStreetMap (t
      └───────────────────────────────────────────────────────────────-┘
 ```
 
-**Mapeo componente oficial → controller Laravel (carpeta §2):**
+**Mapeo componente oficial → clase del código (en `web/controlador/`):**
 
-| Componente oficial | Controllers Laravel equivalentes |
+| Componente oficial | Clase en el código |
 |---|---|
-| `AuthController` | `Auth/LoginController`, `Auth/LogoutController`, `Auth/PasswordController` |
-| `InstitucionalController` | `Public/HomeController` (navegación, banner, footer, T&C) |
-| `ContactoController` | `Public/ContactoController` |
-| `ProyectoController` | `Public/ProyectoPublicoController` (galería) **+** `Admin/ProyectoController` (CRUD) — mismo componente lógico del diagrama, separado en dos controllers Laravel por guard (público vs `auth:admin`) |
-| `CertificadoController` | Certificaciones completas: listado público y descarga del PDF (RF24/RF25) + CRUD del Panel de Gestión (RF26). Agregado al Diagrama de Componentes v3. |
-| `AdminController` | Dashboard, Colaboradores, Contenido multimedia y Consultas Comerciales (RF36/39/41) — el módulo comercial no tiene componente propio en el diagrama |
-| `NotificationService` / `SendmailAdapter` | `app/Services/*` + `app/Mail/*` (ya definidos en §2) |
-| `FinfoValidator` | `app/Services/PdfValidationService.php` |
-| `Argon2id` | Config `hashing.php` (`driver => argon2id`, fallback `bcrypt`) — no es un service propio, es config nativa de Laravel |
-| `StorageAdapter` | `app/Services/ImageUploadService.php` + filesystem `public` |
-| `DBRouterController` | Los **Models Eloquent** (`app/Models/*`) — el diagrama lo representa como un componente intermedio, en Laravel es transparente vía Eloquent, no requiere una clase propia |
+| Router HTTP | `nucleo/routes/web.php` |
+| `AuthController` | `AuthController.php`: inicio y cierre de sesión, bloqueo de cuenta, cambio y recuperación de contraseña. Sesión y permisos en `Middleware/CheckAdminSession.php` y `Middleware/CheckPermiso.php` (C_AdminAuth en los diagramas de secuencia) |
+| `InstitucionalController` | `InstitucionalCtrl.php`: inicio (banner, fases, preguntas frecuentes, productos), colaboradores, documentación de conectores, términos |
+| `ContactoController` | `ContactoController.php` (Formulario de Contacto; no admite archivos) |
+| `ProyectoController` | `ProyectoController.php`: galería pública, mapa y detalle de proyectos, y Gestión de proyectos del panel |
+| `CertificadoController` | `CertificadoController.php`: listado público, descarga y vista del PDF, y Módulo de Certificados |
+| `AdminController` | `AdminController.php`: Colaboradores, Panel de gestión, Módulo comercial y exportación (RF42, en lugar del `CrmController` del diagrama); `ProductoAdminController.php` (Productos, RF43); `AdminGestionController.php` (cuentas y permisos, RF52, RF53, RF59); `HistorialController.php` (Historial de Cambios, RF15) |
+| `NotificationService` / `SendmailAdapter` | `Services/NotificationService.php` → `Services/SendmailAdapter.php` (`/usr/sbin/sendmail`) |
+| `FinfoValidator` | `Services/FinfoValidator.php` (tipo MIME real y cabecera `%PDF-`), usado por la regla `Rules/PdfValido.php` |
+| `Argon2id` | `nucleo/config/hashing.php` + `nucleo/app/Support/AlgoritmoHash.php`: Argon2id si el PHP lo trae, bcrypt si no |
+| `StorageAdapter` | `Services/StorageAdapter.php` (disco `public`, fuera de la BD) |
+| `Spatie Excel` | `spatie/simple-excel`, usado en `AdminController::consultasExportar` (CSV y XLSX) |
+| `DBRouterController` | `DBRouterController.php`: todo acceso de controladores, servicios y middleware a la BD pasa por esta clase (consultas, creación, cambios, borrado, tablas y transacciones), como en los diagramas de secuencia (C_DBRouter) |
+| `Eloquent ORM` | Modelos en `web/base_datos/modelos/` |
+| `Cron Jobs` | `nucleo/app/Console/Kernel.php`: `backup:run` (RNF14) y `consultas:depurar` (RNF24) con un solo Cron Job de cPanel |
 
-**Nota de alcance:** el diagrama histórico menciona `CrmController`; el código vigente
-implementa RF42 en `AdminController` mediante Spatie Simple Excel.
+**Nota de alcance:** el diagrama menciona `CrmController`; el código implementa RF42 en
+`AdminController` mediante Spatie Simple Excel. Las tareas programadas (`Cron Jobs`) acceden a
+MySQL directamente, como muestra el diagrama.
 
 ---
 
@@ -605,7 +611,7 @@ Antes de dar por "completo hasta Incremento 2":
 - [ ] Los 22 RF de Incremento 2 tienen su ruta + controller + vista + test en verde.
 - [ ] Las 22 CU de Incremento 1 tienen al menos un test por excepción documentada.
 - [ ] Las 42 CU de Incremento 2 tienen al menos un test por excepción documentada.
-- [ ] Los 17 RNF están verificados (ver Fase 9).
+- [ ] Los 24 RNF están verificados (ver Fase 9).
 - [ ] `php artisan migrate:fresh --seed` reconstruye la BD desde cero sin intervención manual.
 - [ ] Validar RF07, RF13–RF17 y RF52–RF53 como parte del Incremento 3 vigente.
 - [ ] `git log` muestra commits de los 6 integrantes con trazabilidad por módulo/CU.

@@ -9,7 +9,6 @@ use App\Services\StorageAdapter;
 use App\Support\Rnf17;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CertificadoController extends Controller
@@ -71,8 +70,11 @@ class CertificadoController extends Controller
 
     public function index()
     {
-        $certificados = $this->db->query(Certificado::class)->orderBy('id_certificado', 'desc')->paginate(15);
-        $porVencer = $this->db->query(Certificado::class)->porVencer()->get();
+        $certificados = $this->cargarListado(
+            fn () => $this->db->query(Certificado::class)->orderBy('id_certificado', 'desc')->paginate(15),
+            $this->paginaVacia(15)
+        );
+        $porVencer = $this->cargarListado(fn () => $this->db->query(Certificado::class)->porVencer()->get(), collect());
         return view('admin.certificados.index', compact('certificados', 'porVencer'));
     }
 
@@ -107,7 +109,7 @@ class CertificadoController extends Controller
                 $data['archivo_pdf'] = $this->storage->guardar($request->file('archivo_pdf'), 'certificados_pdf');
                 $escritos[] = $data['archivo_pdf'];
             }
-            DB::transaction(function () use ($data) {
+            $this->db->transaccion(function () use ($data) {
                 $certificado = $this->db->create(Certificado::class, $data);
                 Historial::registrar('creacion', 'certificados', $certificado->id_certificado, null, $certificado->getAttributes());
             });
@@ -153,7 +155,7 @@ class CertificadoController extends Controller
                 $nuevos[] = $data['archivo_pdf'];
                 $anteriores[] = $certificado->archivo_pdf;
             }
-            DB::transaction(function () use ($certificado, $data) {
+            $this->db->transaccion(function () use ($certificado, $data) {
                 $antes = $certificado->getAttributes();
                 $this->db->update($certificado, $data);
                 Historial::registrar('modificacion', 'certificados', $certificado->id_certificado, $antes, $certificado->getAttributes());
@@ -174,11 +176,11 @@ class CertificadoController extends Controller
     public function destroy(int $certificado)
     {
         try {
-            $registro = Certificado::query()->find($certificado);
+            $registro = $this->db->query(Certificado::class)->find($certificado);
             if (!$registro) return redirect()->route('admin.certificados.index')
                 ->withErrors(['certificado' => 'El certificado ya no está disponible.']);
             $rutas = [$registro->imagen, $registro->archivo_pdf];
-            DB::transaction(function () use ($registro) {
+            $this->db->transaccion(function () use ($registro) {
                 $this->db->delete($registro);
                 Historial::registrar('eliminacion', 'certificados', $registro->id_certificado, $registro->getAttributes());
             });

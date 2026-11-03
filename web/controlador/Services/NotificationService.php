@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\DBRouterController;
 use App\Mail\ConsultaRecibidaMail;
 use App\Mail\NuevaConsultaAdminMail;
 use App\Mail\CuentaBloqueadaMail;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class NotificationService
 {
-    public function __construct(private SendmailAdapter $sendmail)
+    public function __construct(private SendmailAdapter $sendmail, private DBRouterController $db)
     {
     }
 
@@ -46,7 +47,7 @@ class NotificationService
 
     public function destinatariosNuevaConsulta()
     {
-        return Administrador::query()
+        return $this->db->query(Administrador::class)
             ->where('activo', true)
             ->whereIn('rol', ['admin', 'admin_jefe'])
             ->whereNotNull('correo')

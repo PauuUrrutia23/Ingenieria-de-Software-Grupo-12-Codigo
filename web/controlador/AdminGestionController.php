@@ -6,15 +6,18 @@ use App\Models\Administrador;
 use App\Services\Historial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class AdminGestionController extends Controller
 {
+    public function __construct(private DBRouterController $db)
+    {
+    }
+
     public function index()
     {
-        $administradores = Administrador::query()->orderBy('id_admin')->paginate(15);
+        $administradores = $this->cargarListado(fn () => $this->db->query(Administrador::class)->orderBy('id_admin')->paginate(15), $this->paginaVacia(15));
         return view('admin.administradores.index', compact('administradores'));
     }
 
@@ -29,8 +32,8 @@ class AdminGestionController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($datos) {
-                $cuenta = Administrador::create([
+            $this->db->transaccion(function () use ($datos) {
+                $cuenta = $this->db->create(Administrador::class, [
                     'correo' => mb_strtolower($datos['correo']),
                     'password_hash' => Hash::make($datos['password']),
                     'rol' => 'admin',
@@ -57,7 +60,7 @@ class AdminGestionController extends Controller
         ]);
 
         try {
-            $objetivo = Administrador::query()->find($administrador);
+            $objetivo = $this->db->query(Administrador::class)->find($administrador);
             if (!$objetivo) {
                 return redirect()->route('admin.administradores.index')
                     ->withErrors(['administrador' => 'El administrador ya no está disponible.']);
@@ -65,9 +68,9 @@ class AdminGestionController extends Controller
             if ($objetivo->rol === 'admin_jefe') {
                 return back()->withErrors(['administrador' => 'El Administrador jefe tiene todos los permisos; no se modifican.']);
             }
-            DB::transaction(function () use ($objetivo, $datos) {
+            $this->db->transaccion(function () use ($objetivo, $datos) {
                 $antes = $objetivo->getAttributes();
-                $objetivo->update(['perm_' . $datos['permiso'] => (bool) $datos['activo']]);
+                $this->db->update($objetivo, ['perm_' . $datos['permiso'] => (bool) $datos['activo']]);
                 Historial::registrar('asignacion_permiso', 'administradores', $objetivo->id_admin, $antes, $objetivo->getAttributes());
             });
         } catch (\Throwable $e) {
@@ -85,21 +88,21 @@ class AdminGestionController extends Controller
         }
 
         try {
-            $eliminado = DB::transaction(function () use ($administrador) {
-                $objetivo = Administrador::query()->whereKey($administrador)->lockForUpdate()->first();
+            $eliminado = $this->db->transaccion(function () use ($administrador) {
+                $objetivo = $this->db->query(Administrador::class)->whereKey($administrador)->lockForUpdate()->first();
                 if (!$objetivo) return false;
                 if ($objetivo->rol === 'admin_jefe') return null;
 
-                DB::table('sesiones')->where('id_admin', $administrador)->update(['estado' => 'cerrada']);
-                DB::table('sesiones')->where('id_admin', $administrador)->delete();
-                DB::table('recuperaciones_password')->where('id_admin', $administrador)->delete();
-                DB::table('consultas')->where('id_admin_responsable', $administrador)
+                $this->db->tabla('sesiones')->where('id_admin', $administrador)->update(['estado' => 'cerrada']);
+                $this->db->tabla('sesiones')->where('id_admin', $administrador)->delete();
+                $this->db->tabla('recuperaciones_password')->where('id_admin', $administrador)->delete();
+                $this->db->tabla('consultas')->where('id_admin_responsable', $administrador)
                     ->update(['id_admin_responsable' => null]);
                 foreach (['proyectos', 'certificados', 'contenidos', 'colaboradores', 'productos'] as $tabla) {
-                    DB::table($tabla)->where('id_admin', $administrador)
+                    $this->db->tabla($tabla)->where('id_admin', $administrador)
                         ->update(['id_admin' => Auth::id()]);
                 }
-                $objetivo->delete();
+                $this->db->delete($objetivo);
                 Historial::registrar('eliminacion', 'administradores', $administrador, $objetivo->getAttributes());
                 return true;
             });

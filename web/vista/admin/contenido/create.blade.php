@@ -59,10 +59,10 @@
             </div>
 
             <div>
-                <label for="cont-archivo" class="ig-label">Imagen o video <span class="font-normal normal-case tracking-normal text-mute">(opcional)</span></label>
-                <input id="cont-archivo" type="file" name="archivo" accept="image/jpeg,image/png,image/webp,video/mp4"
+                <label for="cont-archivo" class="ig-label">Imagen <span class="font-normal normal-case tracking-normal text-mute">(opcional)</span></label>
+                <input id="cont-archivo" type="file" name="archivo" accept="image/jpeg,image/png"
                        class="ig-field-box cursor-pointer @error('archivo') ig-field-box-invalid @enderror">
-                <p class="text-xs text-mute mt-2">JPG, PNG o WebP: máximo 5 MB. Video MP4: máximo 50 MB.</p>
+                <p class="text-xs text-mute mt-2">JPG, JPEG o PNG: máximo 2 MB.</p>
                 @error('archivo') <p class="ig-error">{{ $message }}</p> @enderror
             </div>
 

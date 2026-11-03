@@ -7,24 +7,26 @@ use App\Models\Producto;
 use App\Services\Historial;
 use App\Services\StorageAdapter;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ProductoAdminController extends Controller
 {
-    public function __construct(private StorageAdapter $storage)
+    public function __construct(private DBRouterController $db, private StorageAdapter $storage)
     {
     }
 
     public function index()
     {
-        $productos = Producto::query()->with('componentes')->orderBy('orden')->orderBy('id_producto', 'desc')->get();
+        $productos = $this->cargarListado(
+            fn () => $this->db->query(Producto::class)->with('componentes')->orderBy('orden')->orderBy('id_producto', 'desc')->get(),
+            collect()
+        );
         return view('admin.productos.index', compact('productos'));
     }
 
     public function detalle(int $producto)
     {
         try {
-            $registro = Producto::query()->with('componentes')->find($producto);
+            $registro = $this->db->query(Producto::class)->with('componentes')->find($producto);
             if ($registro && $registro->imagen) {
                 $imagen = $this->storage->existe($registro->imagen)
                     ? $this->storage->url($registro->imagen) : null;
@@ -50,8 +52,8 @@ class ProductoAdminController extends Controller
         $ruta = null;
         try {
             $ruta = $this->storage->guardar($request->file('imagen'), 'productos');
-            DB::transaction(function () use ($datos, $ruta, $request) {
-                $producto = Producto::create([
+            $this->db->transaccion(function () use ($datos, $ruta, $request) {
+                $producto = $this->db->create(Producto::class, [
                     'nombre' => $datos['nombre'],
                     'descripcion' => $datos['descripcion'],
                     'imagen' => $ruta,
@@ -81,8 +83,8 @@ class ProductoAdminController extends Controller
             if ($request->hasFile('imagen')) {
                 $rutaNueva = $this->storage->guardar($request->file('imagen'), 'productos');
             }
-            $actualizado = DB::transaction(function () use ($datos, $producto, $rutaNueva, $request, &$rutaAnterior) {
-                $registro = Producto::query()->whereKey($producto)->lockForUpdate()->first();
+            $actualizado = $this->db->transaccion(function () use ($datos, $producto, $rutaNueva, $request, &$rutaAnterior) {
+                $registro = $this->db->query(Producto::class)->whereKey($producto)->lockForUpdate()->first();
                 if (!$registro) return false;
                 $rutaAnterior = $registro->imagen;
                 $cambios = ['nombre' => $datos['nombre'], 'descripcion' => $datos['descripcion']];
@@ -91,7 +93,7 @@ class ProductoAdminController extends Controller
                     $cambios['tipo_mime'] = $request->file('imagen')->getMimeType();
                 }
                 $antes = $registro->getAttributes();
-                $registro->update($cambios);
+                $this->db->update($registro, $cambios);
                 $registro->componentes()->delete();
                 foreach (array_values($datos['componentes'] ?? []) as $i => $nombre) {
                     $registro->componentes()->create(['nombre' => trim($nombre), 'orden' => $i + 1]);

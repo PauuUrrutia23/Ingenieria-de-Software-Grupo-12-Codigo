@@ -70,7 +70,7 @@
                         <button type="button" @click="abrirEditar({{ $p->id_proyecto }})"
                            class="ig-btn ig-btn-secondary flex-1 !px-4 !py-2">
                             <i data-lucide="pencil" class="h-4 w-4"></i>
-                            Editar Info
+                            Editar Información
                         </button>
                         <button type="button"
                                 @click="abrirEliminar({{ $p->id_proyecto }}, @js($p->nombre_obra), {{ $p->imagenes->count() }})"
@@ -82,11 +82,13 @@
                 </div>
             </article>
             @empty
+                @unless(session('listado_no_disponible'))
             <div class="col-span-full flex flex-col items-center justify-center py-20 text-center">
                 <i data-lucide="hard-hat" class="h-14 w-14 text-line-strong mb-4"></i>
                 <p class="text-carbon font-medium mb-1">Aún no hay registros</p>
                 <p class="text-mute text-sm mb-5">Crea tu primer proyecto usando el botón superior.</p>
             </div>
+                @endunless
             @endforelse
         </div>
 
@@ -157,12 +159,12 @@
                     <button type="button" @click="crear = false"
                             class="ig-btn ig-btn-secondary">Cancelar</button>
                     <button type="submit"
-                            class="ig-btn ig-btn-primary">Guardar Proyecto</button>
+                            class="ig-btn ig-btn-primary">Crear Proyecto</button>
                 </div>
             </form>
         </x-modal>
 
-        <x-modal show="editar" titulo="Editar Info del Proyecto" ancho="max-w-2xl" :errores="old('_modal') === 'editar'">
+        <x-modal show="editar" titulo="Editar Información del Proyecto" ancho="max-w-2xl" :errores="old('_modal') === 'editar'">
             <form :action="'{{ url('admin/proyectos') }}/' + editado.id" method="POST" enctype="multipart/form-data" class="space-y-5" @submit="validarImagenesEdicion($event)">
                 @csrf @method('PUT')
                 <input type="hidden" name="_modal" value="editar">

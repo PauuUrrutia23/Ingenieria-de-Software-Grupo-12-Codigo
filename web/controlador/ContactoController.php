@@ -7,7 +7,6 @@ use App\Models\Visitante;
 use App\Http\Requests\StoreConsultaRequest;
 use App\Services\NotificationService;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 
 class ContactoController extends Controller
@@ -61,7 +60,7 @@ class ContactoController extends Controller
         }
 
         try {
-            [$visitante, $consulta] = DB::transaction(function () use ($datos) {
+            [$visitante, $consulta] = $this->db->transaccion(function () use ($datos) {
                 $visitante = $this->db->firstOrCreate(
                     Visitante::class,
                     ['email' => $datos['email']],

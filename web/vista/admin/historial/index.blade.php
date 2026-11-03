@@ -110,7 +110,9 @@
                 <div class="flex flex-col items-center px-5 py-16 text-center">
                     <i data-lucide="history" class="w-12 h-12 text-line-strong mb-3"></i>
                     <p class="text-mute-deep font-medium">
-                        @if($errorCarga) El Historial de Cambios no puede mostrarse temporalmente.
+                        {{-- CU 15.1 Exc. 2 sin filtros; CU 15.2 Exc. 3 con filtros (los criterios siguen visibles arriba). --}}
+                        @if($errorCarga && $hayFiltros) No fue posible aplicar los filtros. Intente nuevamente.
+                        @elseif($errorCarga) El Historial de Cambios no puede mostrarse temporalmente.
                         @elseif($hayFiltros) Ningún registro cumple los criterios de filtrado.
                         @else Aún no hay registros en el Historial de Cambios.
                         @endif

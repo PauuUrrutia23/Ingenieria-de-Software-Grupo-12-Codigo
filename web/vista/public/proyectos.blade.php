@@ -308,6 +308,11 @@
             params.set('q', (params.get('q') || '').trim());
 
             const sinCriterios = ![...params.values()].some(v => v.trim() !== '');
+            // CU 18.1, Excepción 1: sin criterios la galería se mantiene sin cambios y se pide elegir una opción.
+            if (sinCriterios) {
+              this.aviso = 'Seleccione al menos un criterio para acotar la búsqueda.';
+              return;
+            }
 
             if (this._peticion) this._peticion.abort();
             const peticion = new AbortController();
@@ -347,9 +352,6 @@
                 }
               }
 
-              if (sinCriterios) {
-                this.aviso = 'Seleccione al menos un criterio para acotar la búsqueda.';
-              }
             } catch (err) {
               if (err.name === 'AbortError') return;
 

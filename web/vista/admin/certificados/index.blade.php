@@ -80,12 +80,14 @@
                         </td>
                     </tr>
                     @empty
+                        @unless(session('listado_no_disponible'))
                     <tr><td colspan="4" class="px-6 py-16 text-center">
                         <div class="flex flex-col items-center">
                             <i data-lucide="shield-check" class="w-12 h-12 text-line-strong mb-3"></i>
                             <p class="text-carbon font-medium">Aún no hay registros.</p>
                         </div>
                     </td></tr>
+                        @endunless
                     @endforelse
                 </tbody>
             </table>

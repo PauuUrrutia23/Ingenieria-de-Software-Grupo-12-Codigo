@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\DBRouterController;
 use App\Models\HistorialCambio;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +20,7 @@ class Historial
         // Excepción 3: de una Consulta solo se guarda su identificador, nunca el mensaje ni los datos del Visitante.
         [$antes, $despues] = $modulo === 'consultas' ? [null, null] : self::valores($antes, $despues);
 
-        HistorialCambio::create([
+        app(DBRouterController::class)->create(HistorialCambio::class, [
             'fecha_hora' => Carbon::now(),
             'id_admin' => $admin->id_admin,
             'correo_responsable' => $admin->correo,

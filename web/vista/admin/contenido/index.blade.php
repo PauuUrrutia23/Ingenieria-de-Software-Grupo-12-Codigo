@@ -26,12 +26,17 @@
         @endforeach
     </nav>
 
+    @php
+        // CU 43.2, 43.3 y 43.4: nombre del botón de alta según la sección.
+        $botonAgregar = ['faq' => 'Agregar Pregunta', 'banner' => 'Agregar Banner', 'fases_industriales' => 'Agregar Fase'][$seccionActual]
+            ?? 'Agregar a ' . $nombresSeccion[$seccionActual];
+    @endphp
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <p class="ig-meta">{{ $nombresSeccion[$seccionActual] }} · {{ $contenidos->count() }} {{ $contenidos->count() === 1 ? 'registro' : 'registros' }}</p>
         <a href="{{ route('admin.contenido.create', ['seccion' => $seccionActual]) }}"
            class="ig-btn ig-btn-primary !py-3 !px-5">
             <i data-lucide="plus" class="w-4 h-4"></i>
-            Agregar a {{ $nombresSeccion[$seccionActual] }}
+            {{ $botonAgregar }}
         </a>
     </div>
 
@@ -82,15 +87,17 @@
                         </td>
                     </tr>
                     @empty
+                        @unless(session('listado_no_disponible'))
                     <tr>
                         <td colspan="3" class="px-5 py-16 text-center">
                             <div class="flex flex-col items-center">
                                 <i data-lucide="layout-panel-left" class="w-12 h-12 text-line-strong mb-3"></i>
                                 <p class="text-mute-deep font-medium">Aún no hay contenido en {{ $nombresSeccion[$seccionActual] }}.</p>
-                                <p class="text-mute text-sm mt-1">Usa «Agregar a {{ $nombresSeccion[$seccionActual] }}» para crear el primero.</p>
+                                <p class="text-mute text-sm mt-1">Usa «{{ $botonAgregar }}» para crear el primero.</p>
                             </div>
                         </td>
                     </tr>
+                        @endunless
                     @endforelse
                 </tbody>
             </table>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\DBRouterController;
 use App\Models\Sesion;
 use Closure;
 use Illuminate\Http\Request;
@@ -9,6 +10,10 @@ use Illuminate\Support\Facades\Auth;
 
 class CheckAdminSession
 {
+    public function __construct(private DBRouterController $db)
+    {
+    }
+
     public function handle(Request $request, Closure $next)
     {
         if (!Auth::check()) {
@@ -24,7 +29,7 @@ class CheckAdminSession
         // El token de la sesión debe tener una fila activa en "sesiones" para este administrador.
         $token = $request->session()->get('sesion_ingecon');
 
-        $sesionVigente = $token !== null && Sesion::where('id_admin', $admin->id_admin)
+        $sesionVigente = $token !== null && $this->db->query(Sesion::class)->where('id_admin', $admin->id_admin)
             ->where('estado', 'activa')
             ->where('token_hash', hash('sha256', $token))
             ->exists();
