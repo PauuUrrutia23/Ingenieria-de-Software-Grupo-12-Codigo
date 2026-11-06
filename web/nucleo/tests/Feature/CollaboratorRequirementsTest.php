@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Administrador;
+use App\Models\Colaborador;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -84,5 +85,92 @@ class CollaboratorRequirementsTest extends TestCase
             ->assertSessionHasNoErrors();
         $this->assertDatabaseHas('colaboradores', ['nombre_comercial' => 'Madera Norte']);
         $this->assertDatabaseMissing('colaboradores', ['nombre_comercial' => '  Madera Norte  ']);
+    }
+
+    public function test_editar_sin_nuevo_logo_conserva_logo_y_guarda_el_sitio_web()
+    {
+        Storage::fake('public');
+        $admin = Administrador::factory()->editorContenido()->create();
+        $colaborador = Colaborador::create([
+            'nombre_comercial' => 'Madera Norte',
+            'logotipo' => 'colaboradores/original.png',
+            'tipo_mime' => 'image/png',
+            'sitio_web' => 'https://anterior.example',
+            'id_admin' => $admin->id_admin,
+        ]);
+
+        $this->loginAdmin($admin)->put(route('admin.colaboradores.update', $colaborador), [
+            'nombre_comercial' => '  Madera Renovada  ',
+            'sitio_web' => 'https://nuevo.example',
+        ])->assertRedirect(route('admin.colaboradores.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('colaboradores', [
+            'id_colaborador' => $colaborador->id_colaborador,
+            'nombre_comercial' => 'Madera Renovada',
+            'logotipo' => 'colaboradores/original.png',
+            'tipo_mime' => 'image/png',
+            'sitio_web' => 'https://nuevo.example',
+        ]);
+
+        $this->loginAdmin($admin)->put(route('admin.colaboradores.update', $colaborador), [
+            'nombre_comercial' => 'Madera Renovada',
+            'sitio_web' => '',
+        ])->assertRedirect(route('admin.colaboradores.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('colaboradores', [
+            'id_colaborador' => $colaborador->id_colaborador,
+            'logotipo' => 'colaboradores/original.png',
+            'sitio_web' => null,
+        ]);
+    }
+
+    public function test_modal_editar_reabre_con_datos_y_id_tras_error_de_validacion()
+    {
+        $admin = Administrador::factory()->editorContenido()->create();
+        $colaborador = Colaborador::create([
+            'nombre_comercial' => 'Madera Norte',
+            'logotipo' => 'colaboradores/original.png',
+            'tipo_mime' => 'image/png',
+            'sitio_web' => 'https://anterior.example',
+            'id_admin' => $admin->id_admin,
+        ]);
+
+        $this->loginAdmin($admin)->from(route('admin.colaboradores.index'))
+            ->put(route('admin.colaboradores.update', $colaborador), [
+                '_modal' => 'editar',
+                'colaborador_id' => $colaborador->id_colaborador,
+                'nombre_comercial' => 'nombre invalido',
+                'sitio_web' => 'https://nuevo.example',
+            ])->assertSessionHasErrors('nombre_comercial');
+
+        $this->get(route('admin.colaboradores.index'))
+            ->assertOk()
+            ->assertSee('editar: true', false)
+            ->assertSee('nombre invalido', false)
+            ->assertSee('nuevo.example', false)
+            ->assertSee('colaborador_id', false);
+    }
+
+    public function test_editar_pantalla_completa_rellena_nombre_anterior_tras_error()
+    {
+        $admin = Administrador::factory()->editorContenido()->create();
+        $colaborador = Colaborador::create([
+            'nombre_comercial' => 'Madera Norte',
+            'logotipo' => 'colaboradores/original.png',
+            'tipo_mime' => 'image/png',
+            'sitio_web' => null,
+            'id_admin' => $admin->id_admin,
+        ]);
+
+        $this->loginAdmin($admin)->from(route('admin.colaboradores.edit', $colaborador))
+            ->put(route('admin.colaboradores.update', $colaborador), [
+                'nombre_comercial' => 'nombre invalido',
+            ])->assertSessionHasErrors('nombre_comercial');
+
+        $this->get(route('admin.colaboradores.edit', $colaborador))
+            ->assertOk()
+            ->assertSee('value="nombre invalido"', false);
     }
 }

@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Administrador;
+use App\Models\Producto;
 use Tests\TestCase;
 
 class ProductRequirementsTest extends TestCase
@@ -149,5 +151,45 @@ class ProductRequirementsTest extends TestCase
         $this->assertSame('Cercha', $producto->nombre);
         $this->assertNull($producto->id_producto, 'El id primario no debe ser mass-assignable.');
         $this->assertNull($producto->getAttribute('created_at'));
+    }
+
+    public function test_modal_edicion_conserva_el_id_tras_error_y_actualiza_el_producto()
+    {
+        $admin = Administrador::factory()->editorContenido()->create();
+        $producto = Producto::create([
+            'nombre' => 'Cercha inicial',
+            'descripcion' => 'Descripción inicial',
+            'imagen' => 'productos/cercha.jpg',
+            'tipo_mime' => 'image/jpeg',
+            'id_admin' => $admin->id_admin,
+        ]);
+        $producto->componentes()->create(['nombre' => 'Montante', 'orden' => 1]);
+
+        $this->loginAdmin($admin)->from(route('admin.productos.index'))
+            ->put(route('admin.productos.update', $producto), [
+                'formulario_producto' => 'editar',
+                'producto_id' => $producto->id_producto,
+                'nombre' => '',
+                'descripcion' => 'Descripción editada',
+                'componentes' => ['Montante'],
+            ])->assertSessionHasErrors('nombre');
+
+        $this->get(route('admin.productos.index'))
+            ->assertOk()
+            ->assertSee('name="producto_id" :value="producto.id"', false)
+            ->assertSee('producto: { id: '.$producto->id_producto, false);
+
+        $this->loginAdmin($admin)->put(route('admin.productos.update', $producto), [
+            'nombre' => 'Cercha editada',
+            'descripcion' => 'Descripción editada',
+            'componentes' => ['Montante'],
+        ])->assertRedirect(route('admin.productos.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('productos', [
+            'id_producto' => $producto->id_producto,
+            'nombre' => 'Cercha editada',
+            'descripcion' => 'Descripción editada',
+        ]);
     }
 }

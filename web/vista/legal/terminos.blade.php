@@ -5,7 +5,7 @@
             <p class="ig-eyebrow mb-6">Marco legal</p>
             <h1 class="ig-h-display max-w-4xl mb-8">Términos, Condiciones y Política de Privacidad</h1>
             <div class="flex flex-wrap items-center gap-x-8 gap-y-2">
-                <p class="ig-meta">Última actualización · {{ now()->format('d/m/Y') }}</p>
+                <p class="ig-meta">Última actualización · 02/11/2026</p>
                 <span class="hidden md:block w-16 ig-rule !bg-line-strong" aria-hidden="true"></span>
                 <p class="ig-meta">Documento público · Ingecon</p>
             </div>

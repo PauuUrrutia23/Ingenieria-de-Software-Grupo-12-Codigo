@@ -1,6 +1,12 @@
 <x-admin-layout>
     <x-slot name="header">Colaboradores</x-slot>
 
+    @php
+        $colaboradorTrasError = old('_modal') === 'editar'
+            ? $colaboradores->getCollection()->firstWhere('id_colaborador', (int) old('colaborador_id'))
+            : null;
+    @endphp
+
     <div x-data="moduloColaboradores()">
 
         <div class="flex flex-wrap items-end justify-between gap-4 mb-8 -mt-2">
@@ -103,6 +109,7 @@
             <form :action="'{{ url('admin/colaboradores') }}/' + seleccionado.id" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf @method('PUT')
                 <input type="hidden" name="_modal" value="editar">
+                <input type="hidden" name="colaborador_id" :value="seleccionado.id">
                 <div>
                     <label for="editar-nombre" class="ig-label">Nombre Comercial</label>
                     <input id="editar-nombre" type="text" name="nombre_comercial" x-model="seleccionado.nombre"
@@ -149,10 +156,15 @@
       function moduloColaboradores() {
         return {
           crear: false,
-          editar: false,
+          editar: @js(old('_modal') === 'editar'),
           eliminar: false,
           aviso: '',
-          seleccionado: { id: null, nombre: '', logo: '', sitio_web: '' },
+          seleccionado: {
+            id: @js(old('_modal') === 'editar' ? (int) old('colaborador_id') : null),
+            nombre: @js(old('_modal') === 'editar' ? old('nombre_comercial', '') : ''),
+            logo: @js($colaboradorTrasError?->logo_url),
+            sitio_web: @js(old('_modal') === 'editar' ? old('sitio_web', '') : ''),
+          },
 
           init() {
             @if($errors->any() && old('_modal') === 'crear')

@@ -56,6 +56,21 @@ class PasswordManagementTest extends TestCase
         $response->assertSessionHasErrors('password');
     }
 
+    public function test_password_change_rejects_same_password_as_current()
+    {
+        $admin = Administrador::factory()->create(['password_hash' => Hash::make('Actual123!')]);
+        $hashOriginal = $admin->password_hash;
+
+        $response = $this->loginAdmin($admin)->put('/admin/password', [
+            'password_actual' => 'Actual123!',
+            'password' => 'Actual123!',
+            'password_confirmation' => 'Actual123!',
+        ]);
+
+        $response->assertSessionHasErrors('password');
+        $this->assertSame($hashOriginal, $admin->fresh()->password_hash);
+    }
+
     public function test_forgot_password_generates_token_and_sends_email()
     {
         Mail::fake();

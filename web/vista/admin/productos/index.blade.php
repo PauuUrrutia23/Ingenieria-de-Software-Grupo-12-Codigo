@@ -54,6 +54,7 @@
             <form :action="`{{ url('admin/productos') }}/${producto.id}`" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf @method('PUT')
                 <input type="hidden" name="formulario_producto" value="editar">
+                <input type="hidden" name="producto_id" :value="producto.id">
                 <div><label class="ig-label" for="editar-nombre">Nombre</label><input id="editar-nombre" name="nombre" x-model="producto.nombre" required maxlength="150" class="ig-input"></div>
                 <div><label class="ig-label" for="editar-descripcion">Descripción</label><textarea id="editar-descripcion" name="descripcion" x-model="producto.descripcion" required class="ig-input" rows="4"></textarea></div>
                 <div><label class="ig-label" for="editar-imagen">Reemplazar imagen, si corresponde</label><input id="editar-imagen" name="imagen" type="file" accept=".jpg,.jpeg,.png" class="ig-input"></div>

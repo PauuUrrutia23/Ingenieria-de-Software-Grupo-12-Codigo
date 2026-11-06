@@ -190,6 +190,10 @@
 
     <script>
       function galeriaProyectos() {
+        // El mapa y sus marcadores quedan fuera del estado reactivo de Alpine: si se envuelven en Proxy,
+        // Leaflet pierde la posición de los marcadores al filtrar y cambiar el zoom.
+        let mapa = null;
+        let marcadores = {};
         return {
           filtroActivo: @js((bool) $hayFiltros),
           cargando: false,
@@ -202,8 +206,6 @@
 
           _peticion: null,
           _detallePeticion: null,
-          _mapa: null,
-          _marcadores: {},
 
           init() {
             document.getElementById('resultados-proyectos')
@@ -212,6 +214,15 @@
                 if (card) this.abrirFicha(Number(card.dataset.proyectoId));
               });
             this.iniciarMapa();
+            // Al llegar desde un proyecto de la página de inicio se abre directamente su ficha (CU 22.2).
+            const parametros = new URLSearchParams(window.location.search);
+            const proyectoInicial = Number(parametros.get('proyecto'));
+            if (parametros.has('proyecto')) {
+              parametros.delete('proyecto');
+              const consulta = parametros.toString();
+              history.replaceState(null, '', window.location.pathname + (consulta ? '?' + consulta : ''));
+            }
+            if (proyectoInicial) this.abrirFicha(proyectoInicial);
           },
 
           async abrirFicha(id) {
@@ -228,7 +239,7 @@
                 signal: peticion.signal,
               });
               if (respuesta.status === 410) {
-                if (this._marcadores[id]) this._mapa.removeLayer(this._marcadores[id]);
+                if (marcadores[id]) mapa.removeLayer(marcadores[id]);
                 this.aviso = 'Este proyecto ya no está disponible. Actualice la galería.';
                 return;
               }
@@ -264,11 +275,11 @@
             }
 
             try {
-              this._mapa = L.map('mapa-proyectos').setView([-35.6, -71.5], 5);
+              mapa = L.map('mapa-proyectos').setView([-35.6, -71.5], 5);
               L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 18,
                 attribution: '&copy; OpenStreetMap contributors',
-              }).on('tileerror', () => { this.mapaError = true; }).addTo(this._mapa);
+              }).on('tileerror', () => { this.mapaError = true; }).addTo(mapa);
 
               const datos = JSON.parse(document.getElementById('marcadores-proyectos').textContent);
               this.actualizarMarcadores(datos);
@@ -278,9 +289,9 @@
           },
 
           actualizarMarcadores(datos) {
-            if (!this._mapa) return;
-            Object.values(this._marcadores).forEach((marcador) => this._mapa.removeLayer(marcador));
-            this._marcadores = {};
+            if (!mapa) return;
+            Object.values(marcadores).forEach((marcador) => mapa.removeLayer(marcador));
+            marcadores = {};
             const puntos = [];
 
             for (const proyecto of datos) {
@@ -288,17 +299,17 @@
               const lng = Number(proyecto.longitud);
               if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) continue;
 
-              const marcador = L.marker([lat, lng]).addTo(this._mapa);
+              const marcador = L.marker([lat, lng]).addTo(mapa);
               const etiqueta = document.createElement('span');
               etiqueta.textContent = `${proyecto.nombre} · ${proyecto.anio}`;
               marcador.bindTooltip(etiqueta);
               marcador.on('click', () => this.abrirFicha(Number(proyecto.id)));
-              this._marcadores[proyecto.id] = marcador;
+              marcadores[proyecto.id] = marcador;
               puntos.push([lat, lng]);
             }
 
-            if (puntos.length === 1) this._mapa.setView(puntos[0], 9);
-            if (puntos.length > 1) this._mapa.fitBounds(puntos, { padding: [24, 24] });
+            if (puntos.length === 1) mapa.setView(puntos[0], 9);
+            if (puntos.length > 1) mapa.fitBounds(puntos, { padding: [24, 24] });
             this.sinMarcadores = puntos.length === 0;
           },
 
@@ -337,15 +348,15 @@
               if (window.lucide) lucide.createIcons();
               if (window.igRefrescarContenidoDinamico) window.igRefrescarContenidoDinamico(document.getElementById('resultados-proyectos'));
 
-              if (this._mapa) {
+              if (mapa) {
                 try {
                   const respMapa = await fetch('/proyectos/marcadores?' + params.toString(), {
                     headers: { 'Accept': 'application/json' }, signal: peticion.signal,
                   });
                   if (!respMapa.ok) throw new Error('marcadores no disponibles');
-                  const marcadores = await respMapa.json();
+                  const datosMarcadores = await respMapa.json();
                   if (peticion.signal.aborted) return;
-                  this.actualizarMarcadores(marcadores);
+                  this.actualizarMarcadores(datosMarcadores);
                   this.mapaError = false;
                 } catch (error) {
                   if (error.name !== 'AbortError') this.mapaError = true;

@@ -18,7 +18,7 @@
 
         <div>
             <label for="nombre-comercial" class="ig-label">Nombre Comercial</label>
-            <input id="nombre-comercial" type="text" name="nombre_comercial" value="{{ $colaborador->nombre_comercial }}"
+            <input id="nombre-comercial" type="text" name="nombre_comercial" value="{{ old('nombre_comercial', $colaborador->nombre_comercial) }}"
                    class="ig-field-box" required>
         </div>
 

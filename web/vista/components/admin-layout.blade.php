@@ -134,12 +134,37 @@
     <script>
       (() => {
         let cambiosSinGuardar = false;
+        let formulariosEnviados = new WeakSet();
+        // Al volver con «Atrás» el navegador puede restaurar la página desde su caché: se reactivan los botones.
+        window.addEventListener('pageshow', (event) => {
+          if (!event.persisted) return;
+          formulariosEnviados = new WeakSet();
+          document.querySelectorAll('form button[disabled][data-envio-bloqueado], form input[disabled][data-envio-bloqueado]').forEach((boton) => {
+            boton.disabled = false;
+            delete boton.dataset.envioBloqueado;
+          });
+        });
         document.querySelectorAll('form').forEach((form) => {
           if (!form.querySelector('input:not([type=hidden]), textarea, select')) return;
-          form.addEventListener('input', () => { cambiosSinGuardar = true; });
-          form.addEventListener('change', () => { cambiosSinGuardar = true; });
-          form.addEventListener('submit', () => { cambiosSinGuardar = false; });
+          form.addEventListener('input', () => { cambiosSinGuardar = true; }, true);
+          form.addEventListener('change', () => { cambiosSinGuardar = true; }, true);
         });
+        document.addEventListener('submit', (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || event.defaultPrevented) return;
+          if (formulariosEnviados.has(form)) {
+            event.preventDefault();
+            return;
+          }
+          formulariosEnviados.add(form);
+          cambiosSinGuardar = false;
+          form.querySelectorAll('button[type="submit"], button:not([type]), input[type="submit"]').forEach((boton) => {
+            if (boton.disabled) return;
+            boton.disabled = true;
+            boton.dataset.envioBloqueado = '1';
+          });
+        });
+        document.addEventListener('form-cancel', () => { cambiosSinGuardar = false; });
         window.addEventListener('beforeunload', (event) => {
           if (!cambiosSinGuardar) return;
           event.preventDefault();
@@ -148,6 +173,15 @@
         document.addEventListener('click', (event) => {
           const enlace = event.target.closest('a[href]');
           if (!enlace || !cambiosSinGuardar || enlace.target === '_blank') return;
+          const destino = enlace.getAttribute('href').trim().toLowerCase();
+          if (destino.startsWith('mailto:') || destino.startsWith('tel:')) {
+            cambiosSinGuardar = false;
+            return;
+          }
+          if (enlace.closest('form') && enlace.textContent.trim().toLocaleLowerCase() === 'cancelar') {
+            cambiosSinGuardar = false;
+            return;
+          }
           if (window.confirm('Hay cambios sin guardar. ¿Desea abandonar esta página?')) {
             cambiosSinGuardar = false;
           } else {

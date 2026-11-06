@@ -48,7 +48,7 @@
                     <div class="flex items-center gap-2 mb-3 flex-wrap">
                         <form action="{{ route('admin.proyectos.visibilidad', $p) }}" method="POST" class="leading-none">
                             @csrf @method('PATCH')
-                            <select name="estado_publicacion" onchange="this.form.submit()"
+                            <select name="estado_publicacion" onchange="this.form.requestSubmit()"
                                     aria-label="Visibilidad de {{ $p->nombre_obra }}"
                                     class="ig-badge cursor-pointer appearance-none border-0 pr-7 py-1 pl-3 align-middle focus:outline-none
                                     {{ $p->estado_publicacion === 'publicado' ? 'ig-badge-ok' : 'ig-badge-warn' }}"

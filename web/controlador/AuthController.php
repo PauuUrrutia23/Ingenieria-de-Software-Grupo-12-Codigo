@@ -150,8 +150,10 @@ class AuthController extends Controller
     {
         $request->validate([
             'password_actual' => ['required'],
-            'password' => self::REGLAS_PASSWORD,
-        ], [], [
+            'password' => [...self::REGLAS_PASSWORD, 'different:password_actual'],
+        ], [
+            'password.different' => 'La nueva contraseña debe ser distinta de la actual.',
+        ], [
             'password' => 'la nueva contraseña',
         ]);
 

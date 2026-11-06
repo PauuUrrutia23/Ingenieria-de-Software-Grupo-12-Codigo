@@ -28,7 +28,7 @@ class ProyectoController extends Controller
         $galeriaNoDisponible = false;
         try {
             $query = $this->consultaPublica($filtros)->with('imagenes');
-            $proyectos = $query->orderBy('anio_ejecucion', 'desc')->paginate(15)->withQueryString();
+            $proyectos = $query->orderBy('anio_ejecucion', 'desc')->paginate(15)->appends($request->except('proyecto', 'page'));
         } catch (\Throwable $e) {
             $galeriaNoDisponible = true;
             $proyectos = new LengthAwarePaginator([], 0, 15, LengthAwarePaginator::resolveCurrentPage(), [

@@ -186,7 +186,7 @@
                 @php $destacado = $proyectos_recientes->first(); $secundarios = $proyectos_recientes->slice(1, 2); @endphp
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                    <a href="/proyectos" class="lg:col-span-7 ig-shot h-[340px] md:h-[480px] ig-reveal">
+                    <a href="/proyectos?proyecto={{ $destacado->id_proyecto }}" class="lg:col-span-7 ig-shot h-[340px] md:h-[480px] ig-reveal">
                         @if($destacado->imagenes->isNotEmpty())
                             <img src="{{ Storage::url($destacado->imagenes->first()->imagen) }}"
                                  alt="{{ $destacado->nombre_obra }}" loading="lazy">
@@ -207,7 +207,7 @@
 
                     <div class="lg:col-span-5 grid grid-cols-1 gap-4">
                         @forelse($secundarios as $i => $proyecto)
-                        <a href="/proyectos" class="ig-shot h-[220px] md:h-[232px] ig-reveal ig-d{{ $i + 2 }}">
+                        <a href="/proyectos?proyecto={{ $proyecto->id_proyecto }}" class="ig-shot h-[220px] md:h-[232px] ig-reveal ig-d{{ $i + 2 }}">
                             @if($proyecto->imagenes->isNotEmpty())
                                 <img src="{{ Storage::url($proyecto->imagenes->first()->imagen) }}"
                                      alt="{{ $proyecto->nombre_obra }}" loading="lazy">
@@ -236,7 +236,7 @@
                 @if($proyectos_recientes->count() > 3)
                 <div class="mt-14 border-t border-line">
                     @foreach($proyectos_recientes->slice(3) as $proyecto)
-                    <a href="/proyectos"
+                    <a href="/proyectos?proyecto={{ $proyecto->id_proyecto }}"
                        class="group flex flex-wrap items-baseline gap-x-6 gap-y-2 py-5 border-b border-line ig-reveal">
                         <span class="font-display text-lg font-light text-carbon group-hover:text-wood-deep transition-colors">
                             {{ $proyecto->nombre_obra }}

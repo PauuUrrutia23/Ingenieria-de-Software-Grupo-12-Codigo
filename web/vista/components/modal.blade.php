@@ -8,11 +8,12 @@
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
      class="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-6"
-     @keydown.escape.window="{{ $show }} = false"
+     @keydown.escape.window="if ({{ $show }}) { document.activeElement?.blur(); {{ $show }} = false; $dispatch('form-cancel') }"
+     @click.capture="if ($event.target.closest('button')?.textContent.trim().toLowerCase() === 'cancelar') $dispatch('form-cancel')"
      x-trap.noscroll="{{ $show }}"
      role="dialog" aria-modal="true">
 
-    <div class="absolute inset-0 bg-carbon/65 backdrop-blur-[3px]" @click="{{ $show }} = false" aria-hidden="true"></div>
+    <div class="absolute inset-0 bg-carbon/65 backdrop-blur-[3px]" @click="{{ $show }} = false; $dispatch('form-cancel')" aria-hidden="true"></div>
 
     <div @click.stop
          x-transition:enter="transition ease-out duration-250"
@@ -29,7 +30,7 @@
                     <h3 class="font-display text-[1.0625rem] sm:text-xl font-light tracking-[-0.015em] leading-snug text-carbon">{{ $titulo }}</h3>
                 @endif
             </div>
-            <button type="button" @click="{{ $show }} = false" aria-label="Cerrar ventana"
+            <button type="button" @click="{{ $show }} = false; $dispatch('form-cancel')" aria-label="Cerrar ventana"
                     class="shrink-0 -mr-1 p-1.5 text-mute hover:text-carbon transition-colors">
                 <i data-lucide="x" class="h-5 w-5"></i>
             </button>
