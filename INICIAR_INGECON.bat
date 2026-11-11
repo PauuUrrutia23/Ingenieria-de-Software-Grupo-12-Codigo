@@ -250,7 +250,7 @@ echo ============================================================
 echo   Listo. Ingecon esta corriendo en %APP_URL%
 echo.
 echo   Credenciales de administrador:
-echo     Correo:      admin@ingecon.cl
+echo     Correo:      contacto@ingeconltda.cl
 echo     Contrasena:  Admin123!
 echo.
 echo   Quedaron 2 ventanas abiertas:

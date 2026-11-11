@@ -34,6 +34,32 @@
         </dl>
     </div>
 
+    @if(session('success'))<p class="ig-badge-ok border px-5 py-3 mt-8">{{ session('success') }}</p>@endif
+    @if($errors->any())<p class="bg-paper-deep border border-line-strong px-5 py-3 mt-8 text-wood-deep">{{ $errors->first() }}</p>@endif
+
+    @if(Auth::user()->rol === 'admin_jefe')
+        @php $enConstruccion = \App\Services\SitioEnConstruccion::activo(); @endphp
+        <form method="POST" action="{{ route('admin.sitio.construccion') }}"
+              class="ig-card mt-8 px-5 py-5 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            @csrf
+            @method('PATCH')
+            <input type="hidden" name="activo" value="{{ $enConstruccion ? '0' : '1' }}">
+            <div>
+                <p class="ig-meta mb-1.5">Estado del sitio público</p>
+                <p class="text-[0.9375rem] text-carbon">
+                    @if($enConstruccion)
+                        En construcción. Los visitantes ven la página de espera. Con su sesión iniciada, usted ve el sitio completo para revisarlo.
+                    @else
+                        Publicado. Los visitantes ven todo el contenido.
+                    @endif
+                </p>
+            </div>
+            <button type="submit" class="ig-btn {{ $enConstruccion ? 'ig-btn-primary' : 'ig-btn-secondary' }} shrink-0">
+                {{ $enConstruccion ? 'Publicar sitio' : 'Poner en construcción' }}
+            </button>
+        </form>
+    @endif
+
     <div class="ig-rule my-9 lg:my-11" aria-hidden="true"></div>
 
     <div class="flex items-baseline justify-between gap-6 mb-5">

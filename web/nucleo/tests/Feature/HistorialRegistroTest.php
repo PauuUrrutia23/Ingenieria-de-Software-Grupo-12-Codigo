@@ -147,9 +147,9 @@ class HistorialRegistroTest extends TestCase
     public function test_las_acciones_sobre_cuentas_y_permisos_quedan_registradas()
     {
         $this->loginAdmin($this->jefe)->post(route('admin.administradores.store'), [
-            'correo' => 'nuevo@ingecon.cl', 'password' => 'ClaveSegura1!', 'password_confirmation' => 'ClaveSegura1!',
+            'correo' => 'nuevo@ingeconltda.cl', 'password' => 'ClaveSegura1!', 'password_confirmation' => 'ClaveSegura1!',
         ])->assertSessionHasNoErrors();
-        $nuevo = Administrador::query()->where('correo', 'nuevo@ingecon.cl')->firstOrFail();
+        $nuevo = Administrador::query()->where('correo', 'nuevo@ingeconltda.cl')->firstOrFail();
         $this->loginAdmin($this->jefe)->patch(route('admin.administradores.permisos', $nuevo->id_admin), [
             'permiso' => 'exportar_consultas', 'activo' => '1',
         ])->assertSessionHasNoErrors();

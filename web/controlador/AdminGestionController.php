@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Administrador;
 use App\Services\Historial;
+use App\Services\SitioEnConstruccion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -23,12 +24,14 @@ class AdminGestionController extends Controller
 
     public function store(Request $request)
     {
+        $dominio = config('app.dominio_correo');
         $datos = $request->validate([
-            'correo' => ['required', 'email:rfc', 'max:150', 'regex:/@ingecon\.cl$/i', Rule::unique('administradores', 'correo')],
+            'correo' => ['required', 'email:rfc', 'not_regex:/[\r\n]/', 'max:150', 'regex:/@' . preg_quote($dominio, '/') . '$/i', Rule::unique('administradores', 'correo')],
             'password' => ['required', 'string', 'min:8', 'confirmed',
                 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[^a-zA-Z0-9]/'],
         ], [
-            'correo.regex' => 'El correo debe ser un Correo Institucional (@ingecon.cl).',
+            'correo.regex' => "El correo debe ser un Correo Institucional (@{$dominio}).",
+            'correo.not_regex' => 'Ingrese un correo electrónico válido.',
         ]);
 
         try {
@@ -52,6 +55,26 @@ class AdminGestionController extends Controller
     }
 
     // CU 59.1: cada Casilla de Selección se guarda al marcarla o desmarcarla.
+    public function cambiarSitioEnConstruccion(Request $request)
+    {
+        $datos = $request->validate(['activo' => ['required', 'boolean']]);
+        $activo = (bool) $datos['activo'];
+
+        try {
+            $this->db->transaccion(function () use ($activo) {
+                [$registro, $antes] = SitioEnConstruccion::cambiar($activo);
+                Historial::registrar($antes ? 'modificacion' : 'creacion', 'contenido', $registro->id_contenido, $antes, $registro->getAttributes());
+            });
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withErrors(['sitio' => 'No se pudo cambiar el estado del sitio.']);
+        }
+
+        return back()->with('success', $activo
+            ? 'El sitio quedó en construcción: los visitantes ven la página de espera.'
+            : 'El sitio quedó publicado: los visitantes ya ven el contenido.');
+    }
+
     public function actualizarPermiso(Request $request, int $administrador)
     {
         $datos = $request->validate([

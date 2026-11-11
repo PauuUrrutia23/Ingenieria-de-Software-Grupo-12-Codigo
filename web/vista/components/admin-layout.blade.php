@@ -34,8 +34,8 @@
     <div x-data="{ navMovil: false }" class="lg:flex min-h-screen">
 
         <header class="lg:hidden sticky top-0 z-40 flex items-center justify-between gap-4 bg-surface/95 backdrop-blur-md border-b border-line px-4 py-3">
-            <a href="/admin/dashboard" class="flex items-baseline gap-1.5 font-display text-lg tracking-[0.28em] text-carbon">
-                INGECON<span class="text-wood-deep">.</span>
+            <a href="/admin/dashboard" class="flex items-center shrink-0">
+                <img src="{{ asset('img/logo-ingecon.jpg') }}" alt="Ingecon" width="160" height="90" class="h-9 w-auto mix-blend-multiply">
             </a>
             <button type="button" @click="navMovil = true" aria-controls="nav-lateral"
                     :aria-expanded="navMovil.toString()" aria-label="Abrir menú del panel"
@@ -54,9 +54,9 @@
                       bg-paper-deep border-r border-line flex flex-col
                       transition-transform duration-400 ease-premium lg:transition-none">
 
-            <div class="flex items-start justify-between gap-3 px-5 h-[4.5rem] border-b border-line">
-                <a href="/admin/dashboard" class="flex items-baseline gap-1.5 font-display text-lg tracking-[0.28em] text-carbon leading-none">
-                    INGECON<span class="text-wood-deep">.</span>
+            <div class="flex items-center justify-between gap-3 px-5 h-[4.5rem] border-b border-line">
+                <a href="/admin/dashboard" class="flex items-center shrink-0">
+                    <img src="{{ asset('img/logo-ingecon.jpg') }}" alt="Ingecon" width="160" height="90" class="h-9 w-auto mix-blend-multiply">
                 </a>
                 <button type="button" @click="navMovil = false" aria-label="Cerrar menú del panel"
                         class="lg:hidden p-1.5 -mr-1.5 text-mute hover:text-carbon transition-colors">

@@ -17,7 +17,7 @@ class StoreConsultaRequest extends FormRequest
         return [
             'nombre' => ['required', 'string', 'max:80', 'regex:/^[\pL\s]+$/u'],
             'apellido' => ['nullable', 'string', 'max:80', 'regex:/^[\pL\s]+$/u'],
-            'email' => ['required', 'email:rfc', 'max:150', new DominioCorreoValido()],
+            'email' => ['required', 'email:rfc', 'not_regex:/[\r\n]/', 'max:150', new DominioCorreoValido()],
             'mensaje' => ['required', 'string', 'min:10', 'max:1000'],
             'acepta_terminos' => ['required', 'accepted'],
         ];
@@ -27,6 +27,7 @@ class StoreConsultaRequest extends FormRequest
     {
         return [
             'nombre.regex' => 'El nombre solo puede contener letras y espacios.',
+            'email.not_regex' => 'Ingrese un correo electrónico válido.',
             'apellido.regex' => 'El apellido solo puede contener letras y espacios.',
             'mensaje.min' => 'El mensaje debe tener al menos 10 caracteres.',
             'mensaje.max' => 'El mensaje no puede superar los 1000 caracteres.',

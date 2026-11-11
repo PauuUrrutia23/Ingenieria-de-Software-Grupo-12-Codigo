@@ -78,7 +78,7 @@ class CorreccionesRevisionFuncionalTest extends TestCase
         $this->loginAdmin($jefe)
             ->from('/admin/administradores')
             ->post('/admin/administradores', [
-                '_modal' => 'crear', 'correo' => 'nuevo@ingecon.cl', 'password' => 'clave123', 'password_confirmation' => 'clave123',
+                '_modal' => 'crear', 'correo' => 'nuevo@ingeconltda.cl', 'password' => 'clave123', 'password_confirmation' => 'clave123',
             ])->assertSessionHasErrors('password');
 
         $html = $this->get('/admin/administradores')->assertStatus(200)->getContent();
@@ -94,6 +94,6 @@ class CorreccionesRevisionFuncionalTest extends TestCase
             ->post('/admin/administradores', [
                 'correo' => 'persona@gmail.com', 'password' => 'ClaveQa2026!', 'password_confirmation' => 'ClaveQa2026!',
             ])
-            ->assertSessionHasErrors(['correo' => 'El correo debe ser un Correo Institucional (@ingecon.cl).']);
+            ->assertSessionHasErrors(['correo' => 'El correo debe ser un Correo Institucional (@ingeconltda.cl).']);
     }
 }

@@ -63,8 +63,8 @@
     <nav x-data="{ isMobileMenuOpen: false }" class="ig-nav">
         <div class="ig-container !px-6 md:!px-12">
             <div class="flex justify-between items-center gap-6">
-                <a href="/" class="ig-brand flex items-baseline">
-                    INGECON<span class="ig-brand-dot">.</span>
+                <a href="/" class="shrink-0 bg-white rounded-sm px-1.5 py-0.5 shadow-sm">
+                    <img src="{{ asset('img/logo-ingecon.jpg') }}" alt="Ingecon" width="160" height="90" class="h-9 w-auto">
                 </a>
 
                 <div class="hidden lg:flex items-center gap-8">
@@ -146,8 +146,8 @@
         <div class="ig-container pt-20 pb-10">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 mb-16">
                 <div class="md:col-span-5">
-                    <a href="/" class="ig-brand inline-flex items-baseline mb-5">
-                        INGECON<span class="ig-brand-dot">.</span>
+                    <a href="/" class="inline-flex bg-white rounded-sm px-2 py-1 mb-5">
+                        <img src="{{ asset('img/logo-ingecon.jpg') }}" alt="Ingecon" width="160" height="90" class="h-12 w-auto">
                     </a>
                     <p class="text-white/55 text-sm font-light leading-relaxed max-w-sm">
                         Industrialización de la madera: estructuras, obra civil prefabricada y

@@ -19,3 +19,19 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Seguridad para la subida al hosting.
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Header always set Strict-Transport-Security "max-age=31536000" env=HTTPS
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
+    RequestHeader unset Cache-Control
+</IfModule>
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

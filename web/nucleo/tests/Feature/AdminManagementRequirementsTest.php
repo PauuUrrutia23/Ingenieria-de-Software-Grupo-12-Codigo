@@ -33,11 +33,11 @@ class AdminManagementRequirementsTest extends TestCase
         ])->assertSessionHasErrors(['correo', 'password']);
 
         $this->post('/admin/administradores', [
-            'correo' => 'nuevo@ingecon.cl', 'password' => 'ClaveSegura1!',
+            'correo' => 'nuevo@ingeconltda.cl', 'password' => 'ClaveSegura1!',
             'password_confirmation' => 'ClaveSegura1!',
         ])->assertRedirect(route('admin.administradores.index'));
 
-        $nuevo = Administrador::where('correo', 'nuevo@ingecon.cl')->firstOrFail();
+        $nuevo = Administrador::where('correo', 'nuevo@ingeconltda.cl')->firstOrFail();
         $this->assertSame('admin', $nuevo->rol);
         $this->assertTrue($nuevo->activo);
         $this->assertTrue(Hash::check('ClaveSegura1!', $nuevo->password_hash));

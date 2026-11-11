@@ -101,7 +101,7 @@
                         <div>
                             <label for="correo" class="ig-label">Correo Electrónico</label>
                             <input id="correo" name="correo" type="email" value="{{ old('correo') }}" required
-                                   class="ig-input" placeholder="admin@ingecon.cl" autocomplete="username">
+                                   class="ig-input" placeholder="nombre@ingeconltda.cl" autocomplete="username">
                         </div>
                         <div>
                             <label for="password" class="ig-label">Contraseña</label>
@@ -157,7 +157,7 @@
                         <div>
                             <label for="correo-recuperacion" class="ig-label">Correo institucional</label>
                             <input id="correo-recuperacion" name="correo" type="email" required
-                                   class="ig-input" placeholder="admin@ingecon.cl" autocomplete="username">
+                                   class="ig-input" placeholder="nombre@ingeconltda.cl" autocomplete="username">
                         </div>
                         <button type="submit" class="w-full ig-btn ig-btn-primary">
                             Enviar enlace de recuperación

@@ -157,7 +157,7 @@ El `.env` de desarrollo ya trae `DB_CONNECTION=sqlite`, `MAIL_MAILER=log` y
 
 El seeder `AdminJefeSeeder` (llamado desde `DatabaseSeeder`) crea:
 
-- **Correo:** `admin@ingecon.cl`
+- **Correo:** `contacto@ingeconltda.cl` (se cambia con `CORREO_ADMIN_JEFE` en el `.env`)
 - **Contraseña:** `Admin123!`
 
 Cambiar esta contraseña antes de cualquier despliegue real.

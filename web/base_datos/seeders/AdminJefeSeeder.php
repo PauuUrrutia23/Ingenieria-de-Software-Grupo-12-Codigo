@@ -11,7 +11,8 @@ class AdminJefeSeeder extends Seeder
     public function run()
     {
         Administrador::updateOrCreate(
-            ['correo' => 'admin@ingecon.cl'],
+            // Subida al hosting: el correo se define en CORREO_ADMIN_JEFE del .env.
+            ['correo' => config('app.correo_admin_jefe')],
             [
                 'password_hash' => Hash::make('Admin123!'),
                 'rol' => 'admin_jefe',

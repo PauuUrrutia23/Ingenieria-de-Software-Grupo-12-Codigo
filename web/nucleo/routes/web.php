@@ -12,32 +12,35 @@ use App\Http\Controllers\AdminGestionController;
 use App\Http\Controllers\HistorialController;
 use App\Http\Middleware\CheckAdminJefe;
 use App\Http\Middleware\CheckAdminSession;
+use App\Http\Middleware\MostrarSitioEnConstruccion;
 
-Route::get('/', [InstitucionalCtrl::class, 'home'])->name('inicio');
+Route::middleware(MostrarSitioEnConstruccion::class)->group(function () {
+    Route::get('/', [InstitucionalCtrl::class, 'home'])->name('inicio');
 
-Route::get('/proyectos', [ProyectoController::class, 'galeriaPublica'])->name('public.proyectos.index');
-Route::get('/proyectos/marcadores', [ProyectoController::class, 'marcadoresPublicos'])->name('public.proyectos.marcadores');
-Route::get('/proyectos/{proyecto}/detalle', [ProyectoController::class, 'detallePublico'])
-    ->whereNumber('proyecto')->name('public.proyectos.detalle');
+    Route::get('/proyectos', [ProyectoController::class, 'galeriaPublica'])->name('public.proyectos.index');
+    Route::get('/proyectos/marcadores', [ProyectoController::class, 'marcadoresPublicos'])->name('public.proyectos.marcadores');
+    Route::get('/proyectos/{proyecto}/detalle', [ProyectoController::class, 'detallePublico'])
+        ->whereNumber('proyecto')->name('public.proyectos.detalle');
 
-Route::get('/producto', [InstitucionalCtrl::class, 'producto'])->name('public.producto');
+    Route::get('/producto', [InstitucionalCtrl::class, 'producto'])->name('public.producto');
 
-Route::get('/conectores/documentacion', [InstitucionalCtrl::class, 'documentacionConectores'])
-    ->name('public.documentacion.conectores');
+    Route::get('/conectores/documentacion', [InstitucionalCtrl::class, 'documentacionConectores'])
+        ->name('public.documentacion.conectores');
 
-Route::get('/certificaciones', [CertificadoController::class, 'listadoPublico'])->name('public.certificaciones');
+    Route::get('/certificaciones', [CertificadoController::class, 'listadoPublico'])->name('public.certificaciones');
 
-Route::get('/certificaciones/{certificado}/descargar', [CertificadoController::class, 'descargar'])
-    ->name('public.certificaciones.descargar');
+    Route::get('/certificaciones/{certificado}/descargar', [CertificadoController::class, 'descargar'])
+        ->name('public.certificaciones.descargar');
 
-Route::get('/certificaciones/{certificado}/preview', [CertificadoController::class, 'preview'])
-    ->name('public.certificaciones.preview');
+    Route::get('/certificaciones/{certificado}/preview', [CertificadoController::class, 'preview'])
+        ->name('public.certificaciones.preview');
 
-Route::get('/colaboradores', [InstitucionalCtrl::class, 'colaboradores'])->name('public.colaboradores');
+    Route::get('/colaboradores', [InstitucionalCtrl::class, 'colaboradores'])->name('public.colaboradores');
 
-Route::post('/contacto', [ContactoController::class, 'store'])->name('contacto.store');
+    Route::post('/contacto', [ContactoController::class, 'store'])->name('contacto.store');
 
-Route::get('/terminos', [InstitucionalCtrl::class, 'terminos'])->name('terminos');
+    Route::get('/terminos', [InstitucionalCtrl::class, 'terminos'])->name('terminos');
+});
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
@@ -104,6 +107,7 @@ Route::middleware(['auth', CheckAdminSession::class])->group(function () {
 
     Route::middleware(CheckAdminJefe::class)->group(function () {
         Route::get('admin/administradores', [AdminGestionController::class, 'index'])->name('admin.administradores.index');
+        Route::patch('admin/sitio/construccion', [AdminGestionController::class, 'cambiarSitioEnConstruccion'])->name('admin.sitio.construccion');
         Route::get('admin/historial', [HistorialController::class, 'index'])->name('admin.historial.index');
         Route::get('admin/historial/{registro}/detalle', [HistorialController::class, 'detalle'])
             ->whereNumber('registro')->name('admin.historial.detalle');

@@ -78,14 +78,14 @@ class HistorialDetalleTest extends TestCase
     public function test_la_asignacion_de_permiso_muestra_la_casilla_y_la_cuenta_nueva_no_guarda_su_clave()
     {
         $this->loginAdmin($this->jefe)->post(route('admin.administradores.store'), [
-            'correo' => 'nuevo@ingecon.cl', 'password' => 'ClaveSegura1!', 'password_confirmation' => 'ClaveSegura1!',
+            'correo' => 'nuevo@ingeconltda.cl', 'password' => 'ClaveSegura1!', 'password_confirmation' => 'ClaveSegura1!',
         ])->assertSessionHasNoErrors();
         $creacion = json_encode($this->detalleDelUltimo());
-        $this->assertStringContainsString('nuevo@ingecon.cl', $creacion);
+        $this->assertStringContainsString('nuevo@ingeconltda.cl', $creacion);
         $this->assertStringNotContainsString('password', $creacion);
         $this->assertStringNotContainsString('$argon', $creacion);
 
-        $nuevo = Administrador::query()->where('correo', 'nuevo@ingecon.cl')->firstOrFail();
+        $nuevo = Administrador::query()->where('correo', 'nuevo@ingeconltda.cl')->firstOrFail();
         $this->loginAdmin($this->jefe)->patch(route('admin.administradores.permisos', $nuevo->id_admin), [
             'permiso' => 'exportar_consultas', 'activo' => '1',
         ])->assertSessionHasNoErrors();

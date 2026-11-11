@@ -51,7 +51,7 @@ class HistorialListadoTest extends TestCase
     {
         $jefe = $this->jefe();
         $this->loginAdmin($jefe)->post(route('admin.administradores.store'), [
-            'correo' => 'nuevo@ingecon.cl', 'password' => 'ClaveSegura1!', 'password_confirmation' => 'ClaveSegura1!',
+            'correo' => 'nuevo@ingeconltda.cl', 'password' => 'ClaveSegura1!', 'password_confirmation' => 'ClaveSegura1!',
         ]);
         $id = HistorialCambio::query()->value('id_historial');
 

@@ -63,7 +63,7 @@
             <form action="{{ route('admin.administradores.store') }}" method="POST" class="space-y-5">
                 @csrf
                 <input type="hidden" name="_modal" value="crear">
-                <div><label for="admin-correo" class="ig-label">Correo institucional</label><input id="admin-correo" type="email" name="correo" value="{{ old('correo') }}" required class="ig-input" placeholder="nombre@ingecon.cl"></div>
+                <div><label for="admin-correo" class="ig-label">Correo institucional</label><input id="admin-correo" type="email" name="correo" value="{{ old('correo') }}" required class="ig-input" placeholder="nombre@ingeconltda.cl"></div>
                 <div><label for="admin-password" class="ig-label">Contraseña</label><input id="admin-password" type="password" name="password" required minlength="8" autocomplete="new-password" class="ig-input"></div>
                 <div><label for="admin-confirmacion" class="ig-label">Confirmar contraseña</label><input id="admin-confirmacion" type="password" name="password_confirmation" required autocomplete="new-password" class="ig-input"></div>
                 <p class="ig-meta">Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo.</p>

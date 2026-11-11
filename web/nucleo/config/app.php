@@ -21,6 +21,10 @@ return [
     // RNF18: correo de contacto de Ingecon, publicado en el pie de página y en la Política de Privacidad.
     'correo_contacto' => env('CORREO_CONTACTO', 'contacto@ingeconltda.cl'),
 
+    'dominio_correo' => env('DOMINIO_CORREO', 'ingeconltda.cl'),
+
+    'correo_admin_jefe' => env('CORREO_ADMIN_JEFE', 'contacto@ingeconltda.cl'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
