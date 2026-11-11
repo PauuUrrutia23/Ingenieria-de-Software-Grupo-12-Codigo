@@ -88,7 +88,11 @@ class HistorialController extends Controller
         $nuevos = json_decode((string) $r->valores_nuevos, true) ?: [];
         $cambios = [];
         foreach (array_unique(array_merge(array_keys($anteriores), array_keys($nuevos))) as $campo) {
-            $cambios[] = ['campo' => $campo, 'anterior' => $anteriores[$campo] ?? null, 'nuevo' => $nuevos[$campo] ?? null];
+            $cambios[] = [
+                'campo' => $r->etiquetaCampo($campo),
+                'anterior' => $r->valorLegible($campo, $anteriores[$campo] ?? null),
+                'nuevo' => $r->valorLegible($campo, $nuevos[$campo] ?? null),
+            ];
         }
 
         return response()->json([

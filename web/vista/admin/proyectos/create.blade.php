@@ -48,7 +48,7 @@
                     <input id="c-anio" type="number" name="anio_ejecucion" value="{{ old('anio_ejecucion', date('Y')) }}" class="ig-field-box" required>
                 </div>
                 <div class="sm:col-span-2">
-                    <p class="text-xs text-mute mt-1.5">RF48: El proyecto se creará como <strong>Borrador</strong>; podrás publicarlo después desde el listado.</p>
+                    <p class="text-xs text-mute mt-1.5">El proyecto se creará como <strong>Borrador</strong>; podrás publicarlo después desde el listado.</p>
                 </div>
             </div>
 

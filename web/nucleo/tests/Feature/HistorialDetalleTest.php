@@ -35,6 +35,18 @@ class HistorialDetalleTest extends TestCase
         return $this->loginAdmin($this->jefe)->getJson(route('admin.historial.detalle', $id))->assertOk()->json();
     }
 
+    // El detalle muestra el nombre del campo como en el panel y los valores de sí o no como «Sí» o «No».
+    public function test_asignar_un_permiso_muestra_el_campo_y_los_valores_legibles()
+    {
+        $cuenta = Administrador::factory()->create(['correo' => 'ventas@ingecon.cl']);
+
+        $this->loginAdmin($this->jefe)->patch(route('admin.administradores.permisos', $cuenta->id_admin), [
+            'permiso' => 'editar_contenido', 'activo' => '1',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame([['campo' => 'Editar Contenido', 'anterior' => 'No', 'nuevo' => 'Sí']], $this->detalleDelUltimo()['cambios']);
+    }
+
     public function test_editar_muestra_solo_los_campos_que_cambiaron()
     {
         $cert = Certificado::create(['nombre' => 'NCh 1198', 'organismo' => 'INN Chile', 'fecha_emision' => '2024-01-15', 'id_admin' => $this->editor->id_admin]);
@@ -48,7 +60,7 @@ class HistorialDetalleTest extends TestCase
         $this->assertSame('Modificación', $detalle['accion']);
         $this->assertSame('Certificados', $detalle['modulo']);
         $this->assertSame($cert->id_certificado, $detalle['id_registro']);
-        $this->assertSame([['campo' => 'nombre', 'anterior' => 'NCh 1198', 'nuevo' => 'NCh 1198 Of.2006']], $detalle['cambios']);
+        $this->assertSame([['campo' => 'Nombre de la Normativa', 'anterior' => 'NCh 1198', 'nuevo' => 'NCh 1198 Of.2006']], $detalle['cambios']);
     }
 
     public function test_crear_guarda_los_valores_nuevos_y_eliminar_los_anteriores()
@@ -56,11 +68,11 @@ class HistorialDetalleTest extends TestCase
         $this->loginAdmin($this->editor)->post(route('admin.certificados.store'), [
             'nombre' => 'NCh 819', 'organismo' => 'INN Chile', 'fecha_emision' => '2024-03-01',
         ])->assertSessionHasNoErrors();
-        $this->assertContains(['campo' => 'nombre', 'anterior' => null, 'nuevo' => 'NCh 819'], $this->detalleDelUltimo()['cambios']);
+        $this->assertContains(['campo' => 'Nombre de la Normativa', 'anterior' => null, 'nuevo' => 'NCh 819'], $this->detalleDelUltimo()['cambios']);
 
         $cert = Certificado::query()->firstOrFail();
         $this->loginAdmin($this->editor)->delete(route('admin.certificados.destroy', $cert))->assertSessionHasNoErrors();
-        $this->assertContains(['campo' => 'nombre', 'anterior' => 'NCh 819', 'nuevo' => null], $this->detalleDelUltimo()['cambios']);
+        $this->assertContains(['campo' => 'Nombre de la Normativa', 'anterior' => 'NCh 819', 'nuevo' => null], $this->detalleDelUltimo()['cambios']);
     }
 
     public function test_la_asignacion_de_permiso_muestra_la_casilla_y_la_cuenta_nueva_no_guarda_su_clave()
@@ -78,7 +90,7 @@ class HistorialDetalleTest extends TestCase
             'permiso' => 'exportar_consultas', 'activo' => '1',
         ])->assertSessionHasNoErrors();
         $this->assertSame(
-            [['campo' => 'perm_exportar_consultas', 'anterior' => 0, 'nuevo' => 1]],
+            [['campo' => 'Exportar Consultas', 'anterior' => 'No', 'nuevo' => 'Sí']],
             $this->detalleDelUltimo()['cambios']
         );
     }

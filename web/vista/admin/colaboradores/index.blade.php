@@ -85,7 +85,7 @@
                              class="h-16 max-w-full object-contain">
                         <span class="text-sm text-mute-deep" :class="nombreArchivo ? 'font-medium' : ''"
                               x-text="nombreArchivo || 'Haz clic para seleccionar el logotipo'"></span>
-                        <span class="ig-meta" x-text="nombreArchivo ? 'Haz clic para elegir otro' : 'Máximo 500 KB (RNF17)'"></span>
+                        <span class="ig-meta" x-text="nombreArchivo ? 'Haz clic para elegir otro' : 'Máximo 500 KB'"></span>
                     </label>
                     <input id="crear-logo" type="file" name="logotipo" accept="image/jpeg,image/png" class="sr-only" required
                            @change="nombreArchivo = $event.target.files[0] ? $event.target.files[0].name : '';

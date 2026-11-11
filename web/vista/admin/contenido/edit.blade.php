@@ -46,7 +46,7 @@
                 <input id="cont-enlace" type="text" name="enlace" value="{{ old('enlace', $contenido->enlace) }}" required maxlength="300"
                        placeholder="{{ $contenido->seccion === 'ubicacion' ? 'https://maps.google.com/?q=...' : 'https://... o /docs/archivo.pdf' }}"
                        class="ig-field-box @error('enlace') ig-field-box-invalid @enderror">
-                <p class="text-xs text-mute mt-2">{{ $contenido->seccion === 'ubicacion' ? 'Enlace de Google Maps que se abre desde el pie de página (RF03).' : 'Enlace de la documentación técnica de Conectores Metálicos (RF10).' }} Se abre en una nueva pestaña.</p>
+                <p class="text-xs text-mute mt-2">{{ $contenido->seccion === 'ubicacion' ? 'Enlace de Google Maps que se abre desde el pie de página.' : 'Enlace de la documentación técnica de Conectores Metálicos.' }} Se abre en una nueva pestaña.</p>
                 @error('enlace') <p class="ig-error">{{ $message }}</p> @enderror
             </div>
             @else

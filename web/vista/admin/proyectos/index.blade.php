@@ -130,7 +130,7 @@
                     <div><label for="pr-latitud" class="ig-label">Latitud (opcional)</label><input id="pr-latitud" type="number" step="any" min="-90" max="90" name="latitud" value="{{ old('latitud') }}" class="ig-field-box"></div>
                     <div><label for="pr-longitud" class="ig-label">Longitud (opcional)</label><input id="pr-longitud" type="number" step="any" min="-180" max="180" name="longitud" value="{{ old('longitud') }}" class="ig-field-box"></div>
                     <div class="sm:col-span-2">
-                        <p class="text-xs text-mute mt-1.5">RF48: El proyecto se creará como <strong>Borrador</strong>; podrás publicarlo después desde el listado.</p>
+                        <p class="text-xs text-mute mt-1.5">El proyecto se creará como <strong>Borrador</strong>; podrás publicarlo después desde el listado.</p>
                     </div>
                 </div>
 

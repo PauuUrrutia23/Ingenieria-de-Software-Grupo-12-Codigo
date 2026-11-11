@@ -25,7 +25,7 @@
         <div>
             <label for="logotipo" class="ig-label">Logotipo</label>
             <input id="logotipo" type="file" name="logotipo" accept="image/jpeg,image/png" class="ig-field-box cursor-pointer" required>
-            <p class="ig-meta mt-2">Máximo 500 KB (RNF17).</p>
+            <p class="ig-meta mt-2">Máximo 500 KB.</p>
         </div>
 
         <div>
