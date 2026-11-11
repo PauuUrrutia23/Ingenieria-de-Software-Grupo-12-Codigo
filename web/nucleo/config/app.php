@@ -18,6 +18,9 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // RNF18: correo de contacto de Ingecon, publicado en el pie de página y en la Política de Privacidad.
+    'correo_contacto' => env('CORREO_CONTACTO', 'contacto@ingeconltda.cl'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

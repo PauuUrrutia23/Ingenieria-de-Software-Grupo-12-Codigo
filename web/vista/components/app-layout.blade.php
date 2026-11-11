@@ -172,6 +172,8 @@
                         <li><a href="{{ route('public.colaboradores') }}" class="text-white/55 hover:text-white text-sm font-light transition-colors">Colaboradores</a></li>
                         <li><a href="{{ route('public.producto') }}" target="_blank" rel="noopener" class="text-white/55 hover:text-white text-sm font-light transition-colors">Conectores metálicos</a></li>
                         <li><a href="/#contacto" class="text-white/55 hover:text-white text-sm font-light transition-colors">Contactar</a></li>
+                        {{-- RNF18: canal para ejercer los derechos sobre los datos personales. --}}
+                        <li><a href="mailto:{{ config('app.correo_contacto') }}" class="text-white/55 hover:text-white text-sm font-light transition-colors">{{ config('app.correo_contacto') }}</a></li>
                     </ul>
                 </div>
             </div>
