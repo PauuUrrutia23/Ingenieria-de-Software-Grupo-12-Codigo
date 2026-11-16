@@ -50,17 +50,14 @@ class ProductoContenidoSeeder extends Seeder
             [
                 'titulo' => 'imagen_principal',
                 'orden' => 4,
-                'archivo' => 'img/conector-pieza-sola.jpg',
-                'cuerpo' => 'Conector metálico galvanizado en forma de U, con alas perforadas para clavos y base atornillable, sobre fondo blanco',
+                'archivo' => 'img/conector-placas-cercha-1.jpg',
+                'cuerpo' => 'Dos placas conectoras dentadas de acero galvanizado sobre los planos de elevación de una cercha',
             ],
             [
                 'titulo' => 'miniaturas',
                 'orden' => 5,
                 'cuerpo' => $json([
-                    ['src' => 'img/conector-familia.jpg', 'alt' => 'Familia de conectores galvanizados: apoyos para viga, escuadras, placa ranurada y base de pilar'],
-                    ['src' => 'img/conector-instalado-nudo.jpg', 'alt' => 'Conector galvanizado atornillado con pernos en el nudo entre una columna y dos vigas de madera laminada'],
-                    ['src' => 'img/conector-cercha-planta.jpg', 'alt' => 'Cerchas de madera terminadas con placas metálicas dentadas en los nudos, apiladas en la nave de fabricación'],
-                    ['src' => 'img/proceso-ensamblado.jpg', 'alt' => 'Placa conectora metálica fijada con clavadora neumática al nudo de una cercha sobre la mesa de armado'],
+                    ['src' => 'img/conector-placas-cercha-2.jpg', 'alt' => 'Placas conectoras dentadas sobre los planos de la cercha C1 y del frontón F1'],
                 ]),
             ],
         ];

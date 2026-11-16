@@ -257,9 +257,9 @@ class InstitucionalCtrl extends Controller
         };
 
         $principal = $porTitulo['imagen_principal'] ?? null;
-        $srcPrincipal = ($principal && $principal->archivo) ? $principal->archivo : 'img/conector-pieza-sola.jpg';
+        $srcPrincipal = ($principal && $principal->archivo) ? $principal->archivo : 'img/conector-placas-cercha-1.jpg';
         $altPrincipal = ($principal && $principal->cuerpo) ? $principal->cuerpo
-            : 'Conector metálico galvanizado en forma de U, con alas perforadas para clavos y base atornillable, sobre fondo blanco';
+            : 'Dos placas conectoras dentadas de acero galvanizado sobre los planos de elevación de una cercha';
 
         return [
             'descripcion' => $porTitulo['descripcion']->cuerpo ?? '',

@@ -37,7 +37,7 @@
     @if(session('success'))<p class="ig-badge-ok border px-5 py-3 mt-8">{{ session('success') }}</p>@endif
     @if($errors->any())<p class="bg-paper-deep border border-line-strong px-5 py-3 mt-8 text-wood-deep">{{ $errors->first() }}</p>@endif
 
-    @if(Auth::user()->rol === 'admin_jefe')
+    @if(false && Auth::user()->rol === 'admin_jefe')
         @php $enConstruccion = \App\Services\SitioEnConstruccion::activo(); @endphp
         <form method="POST" action="{{ route('admin.sitio.construccion') }}"
               class="ig-card mt-8 px-5 py-5 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

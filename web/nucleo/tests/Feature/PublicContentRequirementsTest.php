@@ -66,7 +66,7 @@ class PublicContentRequirementsTest extends TestCase
     public function test_imagen_principal_ausente_produce_placeholder()
     {
         $this->get('/producto')->assertStatus(200)->assertViewHas('ficha', function (array $ficha) {
-            return $ficha['imagen_principal']['src'] === 'img/conector-pieza-sola.jpg';
+            return $ficha['imagen_principal']['src'] === 'img/conector-placas-cercha-1.jpg';
         });
     }
 
@@ -75,7 +75,7 @@ class PublicContentRequirementsTest extends TestCase
         $this->fila('imagen_principal', 'Solo alt, sin archivo.', null, 4);
 
         $this->get('/producto')->assertStatus(200)->assertViewHas('ficha', function (array $ficha) {
-            return $ficha['imagen_principal']['src'] === 'img/conector-pieza-sola.jpg'
+            return $ficha['imagen_principal']['src'] === 'img/conector-placas-cercha-1.jpg'
                 && $ficha['imagen_principal']['alt'] === 'Solo alt, sin archivo.';
         });
     }
@@ -92,7 +92,7 @@ class PublicContentRequirementsTest extends TestCase
         $respuesta->assertSee('dimensionados según el cálculo de cada proyecto', false);
         $respuesta->assertSee('Acero estructural galvanizado', false);
         $respuesta->assertSee('Cerchas de techumbre', false);
-        $respuesta->assertSee('img/conector-pieza-sola.jpg', false);
+        $respuesta->assertSee('img/conector-placas-cercha-1.jpg', false);
     }
 
     public function test_colaborador_muestra_nombre_y_alt_bajo_el_logo()
