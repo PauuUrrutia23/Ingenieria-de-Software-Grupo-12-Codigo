@@ -1,19 +1,3 @@
--- =====================================================================
--- Plataforma Web Ingecon · Script DML 1: datos iniciales
---
--- Carga la cuenta del Administrador jefe de demostración y los datos de
--- ejemplo del sitio: proyectos con sus imágenes, certificados,
--- colaboradores, productos y contenidos (banner, FAQ, fases industriales,
--- ficha de Conectores metálicos y enlaces institucionales). Son los mismos
--- datos que cargan los seeders (web/base_datos/seeders).
---
--- Cuenta de demostración: contacto@ingeconltda.cl / Admin123!
--- (solo para desarrollo: en producción se crea con otra contraseña)
---
--- Las imágenes referenciadas se copian a storage/app/public con
--- ImagenesProyectoSeeder. Ejecutar después de 01_ddl_crear_base_datos.sql.
--- =====================================================================
-
 USE `ingecon`;
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

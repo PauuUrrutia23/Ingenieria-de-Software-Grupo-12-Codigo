@@ -1,14 +1,3 @@
--- =====================================================================
--- Plataforma Web Ingecon · Script DDL (definición de la base de datos)
--- Motor: MySQL 5.6 o superior · Juego de caracteres: utf8mb4_unicode_ci
---
--- Crea la base `ingecon` y sus 14 tablas, con sus claves primarias,
--- índices y claves foráneas. Es el mismo esquema que generan las
--- migraciones de Laravel (web/base_datos/migrations).
---
--- Uso:  mysql -u root -p < 01_ddl_crear_base_datos.sql
--- =====================================================================
-
 CREATE DATABASE IF NOT EXISTS `ingecon` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `ingecon`;
 
